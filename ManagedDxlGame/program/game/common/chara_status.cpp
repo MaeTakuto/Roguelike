@@ -1,0 +1,1 @@
+#include "chara_status.h"
