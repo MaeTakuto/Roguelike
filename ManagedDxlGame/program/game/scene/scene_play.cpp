@@ -1,12 +1,13 @@
 #include "../../dxlib_ext/dxlib_ext.h"
 #include "../manager/gm_manager.h"
 #include "../manager/resource_manager.h"
-#include "scene_title.h"
 #include "scene_play.h"
+#include "scene_title.h"
 #include "../dungeon/dungeon_manager.h"
-#include "../common/camera.h"
-#include "../character/player.h"
 #include "../manager/enemy_manager.h"
+#include "../common/camera.h"
+#include "../base/character_base.h"
+#include "../character/player.h"
 
 
 ScenePlay::ScenePlay() {
@@ -106,6 +107,26 @@ void ScenePlay::charaUpdate(float delta_time) {
 	enemy_mgr_->update(delta_time);
 }
 
+std::shared_ptr<Enemy> ScenePlay::findEnemy(const tnl::Vector3& pos) {
+
+	std::shared_ptr<Enemy> enemy = enemy_mgr_->findEnemy(pos);
+
+	return enemy;
+}
+
+// attaker が target にダメージを与える。
+void ScenePlay::applyDamage(std::shared_ptr<Character> attacker, std::shared_ptr<Character> target) {
+
+	target->takeDamage(attacker->getAtk());
+
+	tnl::DebugTrace("%dダメージを与えた。\n", attacker->getAtk());
+
+	if (!target->isAlive()) {
+		setMapData(target->getNextPos(), getTerrainData(target->getNextPos()));
+		tnl::DebugTrace("倒した\n");
+	}
+}
+
 // ==================================================================================
 //								メインシーケンス
 // ==================================================================================
@@ -157,11 +178,11 @@ bool ScenePlay::seqGenerateDungeon(const float delta_time) {
 // ダンジョン探索シーケンス
 bool ScenePlay::seqMain(const float delta_time) {
 
-	if (tnl::Input::IsKeyDownTrigger(eKeys::KB_SPACE)) {
+	/*if (tnl::Input::IsKeyDownTrigger(eKeys::KB_SPACE)) {
 		main_seq_.change(&ScenePlay::seqGenerateDungeon);
 		in_dungeon_seq_.change(&ScenePlay::seqPlayerAct);
 		player_->beginAct();
-	}
+	}*/
 
 	// camera_->control();
 
@@ -181,7 +202,7 @@ bool ScenePlay::seqPlayerAct(const float delta_time) {
 
 	charaUpdate(delta_time);
 
-	if (player_->getActState() == eActState::MOVE) {
+	if (player_->getActState() != eActState::IDLE && player_->getActState() != eActState::END) {
 		
 		if ( getMapData( player_->getNextPos() ) ==  eMapData::WALL )  { player_->collisionProcess(); }
 		else if (getMapData(player_->getNextPos()) == eMapData::ENEMY) { player_->collisionProcess(); }
@@ -199,9 +220,26 @@ bool ScenePlay::seqPlayerAct(const float delta_time) {
 // 
 bool ScenePlay::seqEnemyAct(const float delta_time) {
 
-	enemy_mgr_->beginAction();
+	enemy_mgr_->desideAction();
 
+	if (player_->getActState() == eActState::MOVE) {
+		in_dungeon_seq_.change(&ScenePlay::seqCharaMove);
+		enemy_mgr_->beginAction();
+	}
+	else if(player_->getActState() == eActState::ATTACK) in_dungeon_seq_.change(&ScenePlay::seqPlayerAttack);
+	return true;
+}
+
+// 
+bool ScenePlay::seqPlayerAttack(const float delta_time) {
+
+	charaUpdate(delta_time);
+
+	if (player_->getActState() != eActState::END) return true;
+
+	enemy_mgr_->beginAction();
 	in_dungeon_seq_.change(&ScenePlay::seqCharaMove);
+
 	return true;
 }
 

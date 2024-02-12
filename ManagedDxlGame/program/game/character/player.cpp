@@ -2,6 +2,8 @@
 #include "../manager/gm_manager.h"
 #include "../common/camera.h"
 #include "../manager/resource_manager.h"
+#include "../scene/scene_play.h"
+#include "../character/enemy.h"
 #include "player.h"
 
 
@@ -25,6 +27,7 @@ Player::Player() {
 		);
 	}
 
+	status_.setStatus(1, 15, 5, 0, 0);
 	dir_ = eDir::DOWN;
 	act_state_ = eActState::IDLE;
 	is_collision_ = false;
@@ -87,6 +90,13 @@ bool Player::seqIdle(const float delta_time) {
 	if (tnl::Input::IsKeyDown(eKeys::KB_LSHIFT)) {
 		act_state_ = eActState::MOVE;
 		sequence_.change(&Player::seqMove);
+		return true;
+	}
+
+	if (tnl::Input::IsKeyDownTrigger(eKeys::KB_SPACE)) {
+		act_state_ = eActState::ATTACK;
+		sequence_.change(&Player::seqAttack);
+		attack_dir_ = getNextPosInDir();
 	}
 
 	return true;
@@ -125,5 +135,22 @@ bool Player::seqMove(const float delta_time) {
 	//	pos_.x += MOVE_SPEED;
 	//}
 
+	return true;
+}
+
+bool Player::seqAttack(const float delta_time) {
+
+	std::shared_ptr<ScenePlay> scene_play = std::dynamic_pointer_cast<ScenePlay>(GameManager::GetInstance()->getSceneInstance());
+
+	if (!scene_play) return true;
+
+	std::shared_ptr<Player> player = scene_play->getPlayer();
+	std::shared_ptr<Enemy> target = scene_play->findEnemy(attack_dir_);
+
+	if (target) scene_play->applyDamage(player, target);
+
+	act_state_ = eActState::END;
+	sequence_.change(&Player::seqIdle);
+	
 	return true;
 }

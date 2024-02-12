@@ -21,6 +21,10 @@ public:
 
 	inline const eActState& getActState() override { return act_state_; }
 
+	inline int getAtk() override { return status_.getAtk(); }
+
+	inline int getDef() override { return status_.getDef(); }
+
 	inline void beginAct() { act_state_ = eActState::IDLE; };
 
 	// è’ìÀèàóù
@@ -40,7 +44,18 @@ private:
 
 	bool seqIdle(const float delta_time);
 	bool seqCheckCollision(const float delta_time);
-	bool seqActionStundby(const float delta_time);
 	bool seqMove(const float delta_time);
+	bool seqAttack(const float delta_time);
+
+	inline const tnl::Vector3& getNextPosInDir() {
+
+		tnl::Vector3 next = pos_;
+
+		if (dir_ == eDir::UP) next.y -= 1;
+		else if(dir_ == eDir::DOWN) next.y += 1;
+		else if(dir_ == eDir::LEFT) next.x -= 1;
+		else if(dir_ == eDir::RIGHT) next.x += 1;
+		return next;
+	}
 
 };

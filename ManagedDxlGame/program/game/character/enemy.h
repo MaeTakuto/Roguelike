@@ -38,6 +38,7 @@ private:
 	int target_entrance_id_ = 0;
 
 	bool seqIdle(const float delta_time);
+	bool seqActionStundby(const float delta_time);
 	bool seqMove(const float delta_time);
 
 public:
@@ -50,6 +51,8 @@ public:
 	inline const tnl::Vector3& getNextPos() override { return next_pos_; }
 	inline bool isAlive() override { return is_alive_; }
 	inline const eActState& getActState() override { return act_state_; }
+	inline int getAtk() override { return status_.getAtk(); }
+	inline int getDef() override { return status_.getDef(); }
 
 	// 
 	inline void collisionProcess() override {
@@ -57,7 +60,13 @@ public:
 	}
 
 	// ダメージを受ける
-	inline void takeDamage(int damage) override {}
+	inline void takeDamage(int damage) override {
+		status_.takeDamage(damage);
+
+		if (status_.getHP() == 0) {
+			is_alive_ = false;
+		}
+	}
 
 	// 死亡判定にする
 	inline void death() { 
@@ -75,6 +84,9 @@ public:
 		if (scene_play->getPlace(pos_) == ePlace::ROAD) onRoadAction();
 		else onRoomAction();
 	}
+
+	// 行動を開始する
+	inline void beginAction() { sequence_.immediatelyChange(&Enemy::seqMove); }
 
 	// 自身をスポーンさせる
 	inline void spawn(const tnl::Vector3& pos) {
@@ -172,7 +184,7 @@ private:
 
 		scene_play->setMapData(pos_, scene_play->getTerrainData(pos_));
 		scene_play->setMapData(next_pos_, eMapData::ENEMY);
-		sequence_.immediatelyChange(&Enemy::seqMove);
+		// sequence_.change(&Enemy::seqActionStundby);
 		act_state_ = eActState::MOVE;
 	}
 

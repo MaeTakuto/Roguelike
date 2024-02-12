@@ -6,7 +6,7 @@
 
 Enemy::Enemy() {
 
-	gpc_hdl_data_ = tnl::LoadCsv("csv/player_gpc_data.csv");
+	gpc_hdl_data_ = tnl::LoadCsv("csv/enemy_gpc_data.csv");
 
 	gpc_hdl_.resize( static_cast<int>( eDir::MAX ) );
 
@@ -24,6 +24,7 @@ Enemy::Enemy() {
 		);
 	}
 
+	status_.setStatus(1, 8, 5, 0, 5);
 	dir_ = eDir::DOWN;
 	act_state_ = eActState::IDLE;
 	nodes_ = new Node[8];
@@ -77,6 +78,14 @@ void Enemy::draw(const std::shared_ptr<Camera> camera) {
 // 待機シーケンス
 // =====================================================================================
 bool Enemy::seqIdle(const float delta_time) {
+
+	return true;
+}
+
+// =====================================================================================
+// 行動待機シーケンス
+// =====================================================================================
+bool Enemy::seqActionStundby(const float delta_time) {
 
 	return true;
 }
