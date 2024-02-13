@@ -42,20 +42,81 @@ private:
 
 	tnl::Sequence<Player> sequence_ = tnl::Sequence<Player>(this, &Player::seqIdle);
 
+	// 現在見ている方向
+	eDir_8 looking_dir_ = eDir_8::DOWN;
+
+	// 選択中のセルの画像
+	int select_cell_blue_gpc_hdl_ = 0;
+	int select_cell_red_gpc_hdl_ = 0;
+
+	// プレイヤーシーケンス
 	bool seqIdle(const float delta_time);
 	bool seqCheckCollision(const float delta_time);
 	bool seqMove(const float delta_time);
 	bool seqAttack(const float delta_time);
 
-	inline const tnl::Vector3& getNextPosInDir() {
+	// 関数のプロトタイプ宣言
+	bool checkMapDataFromPos(const tnl::Vector3& pos, eMapData map_data);
+	bool isEnableDir(eDir_8 dir);
 
-		tnl::Vector3 next = pos_;
+	// インライン関数
+	inline const tnl::Vector3& getPosFromDir(eDir_8 dir) {
+		tnl::Vector3 next;
 
-		if (dir_ == eDir::UP) next.y -= 1;
-		else if(dir_ == eDir::DOWN) next.y += 1;
-		else if(dir_ == eDir::LEFT) next.x -= 1;
-		else if(dir_ == eDir::RIGHT) next.x += 1;
+		if (dir == eDir_8::UP)				next.y -= 1;
+		else if(dir == eDir_8::DOWN)		next.y += 1;
+		else if(dir == eDir_8::LEFT)		next.x -= 1;
+		else if(dir == eDir_8::RIGHT)		next.x += 1;
+		else if(dir == eDir_8::UP_LEFT)		next += tnl::Vector3(-1, -1, 0 );
+		else if(dir == eDir_8::UP_RIGHT)	next += tnl::Vector3( 1, -1, 0 );
+		else if(dir == eDir_8::DOWN_LEFT)	next += tnl::Vector3(-1,  1, 0 );
+		else if(dir == eDir_8::DOWN_RIGHT)	next += tnl::Vector3( 1,  1, 0 );
 		return next;
+	}
+
+	inline void setNextPosInDir(eDir_8 dir) {
+
+		if (dir == eDir_8::UP) {
+			dir_ = eDir_4::UP;
+			looking_dir_ = dir;
+			next_pos_ += getPosFromDir(dir);
+		}
+		else if (dir == eDir_8::DOWN) {
+			dir_ = eDir_4::DOWN;
+			looking_dir_ = dir;
+			next_pos_ += getPosFromDir(dir);
+		}
+		else if (dir == eDir_8::LEFT) {
+			dir_ = eDir_4::LEFT;
+			looking_dir_ = dir;
+			next_pos_ += getPosFromDir(dir);
+		}
+		else if (dir == eDir_8::RIGHT) {
+			dir_ = eDir_4::RIGHT;
+			looking_dir_ = dir;
+			next_pos_ += getPosFromDir(dir);
+		}
+		else if (dir == eDir_8::UP_LEFT) {
+			dir_ = eDir_4::UP;
+			looking_dir_ = dir;
+			next_pos_ += getPosFromDir(dir);
+		}
+		else if (dir == eDir_8::UP_RIGHT) {
+			dir_ = eDir_4::UP;
+			looking_dir_ = dir;
+			next_pos_ += getPosFromDir(dir);
+		}
+		else if (dir == eDir_8::DOWN_LEFT) {
+			dir_ = eDir_4::DOWN;
+			looking_dir_ = dir;
+			next_pos_ += getPosFromDir(dir);
+		}
+		else if (dir == eDir_8::DOWN_RIGHT) {
+			dir_ = eDir_4::DOWN;
+			looking_dir_ = dir;
+			next_pos_ += getPosFromDir(dir);
+		}
+
 	}
 
 };

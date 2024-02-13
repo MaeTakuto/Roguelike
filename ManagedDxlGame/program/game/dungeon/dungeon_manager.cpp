@@ -250,7 +250,7 @@ void DungeonManager::connectRoom(int area_index) {
 		// 各部屋から通路を伸ばし
 		// 
 		switch (areas_[area_index].connect_area_dir) {
-		case eDir::UP:
+		case eDir_4::UP:
 			// 両ルームの適当な座標指定
 			index = order_connect_rooms_[order_index_ - 1 - connect_error_count_];
 			dx1 = random(areas_[index].room.x + ROOM_AND_ROAD_SPACE, areas_[index].room.x + areas_[index].room.width - 1 - ROOM_AND_ROAD_SPACE);
@@ -281,7 +281,7 @@ void DungeonManager::connectRoom(int area_index) {
 			connectUpAndDownRooms(dx2, dy2, dx1, dy1);
 			break;
 
-		case eDir::DOWN:
+		case eDir_4::DOWN:
 			// 両ルームの適当な座標指定
 			index = order_connect_rooms_[order_index_ - 1 - connect_error_count_];
 			dx1 = random(areas_[index].room.x + ROOM_AND_ROAD_SPACE, areas_[index].room.x + areas_[index].room.width - 1 - ROOM_AND_ROAD_SPACE);
@@ -312,7 +312,7 @@ void DungeonManager::connectRoom(int area_index) {
 			connectUpAndDownRooms(dx1, dy1, dx2, dy2);
 			break;
 
-		case eDir::LEFT:
+		case eDir_4::LEFT:
 			// 両ルームの適当な座標指定
 			index = order_connect_rooms_[order_index_ - 1 - connect_error_count_];
 			dx1 = areas_[index].room.x;
@@ -343,7 +343,7 @@ void DungeonManager::connectRoom(int area_index) {
 			connectLeftAndRightRooms(dx2, dy2, dx1, dy1);
 			break;
 
-		case eDir::RIGHT:
+		case eDir_4::RIGHT:
 			// 両ルームの適当な座標指定
 			index = order_connect_rooms_[order_index_ - 1 - connect_error_count_];
 			dx1 = areas_[index].room.x + areas_[index].room.width - 1 - rand() % (ROOM_AND_ROAD_SPACE + 1);
@@ -415,7 +415,7 @@ void DungeonManager::getNextConnectRoomIndex(int area_index) {
 			// すでにエリアの通路が確認されていた場合、次のエリアまで跳ぶ
 			if (areas_[field_[y][x].area_id].is_connect) continue;
 
-			if (checkConnectAreaNumMax(x, y, area_index)) areas_[area_index].connect_area_dir = eDir::UP;
+			if (checkConnectAreaNumMax(x, y, area_index)) areas_[area_index].connect_area_dir = eDir_4::UP;
 		}
 	}
 	// -------- 下側 --------
@@ -431,7 +431,7 @@ void DungeonManager::getNextConnectRoomIndex(int area_index) {
 			// すでにエリアの通路が確認されていた場合、次のエリアまで跳ぶ
 			if (areas_[field_[y][x].area_id].is_connect) continue;
 
-			if (checkConnectAreaNumMax(x, y, area_index)) areas_[area_index].connect_area_dir = eDir::DOWN;
+			if (checkConnectAreaNumMax(x, y, area_index)) areas_[area_index].connect_area_dir = eDir_4::DOWN;
 		}
 	}
 	// -------- 左側 --------
@@ -447,7 +447,7 @@ void DungeonManager::getNextConnectRoomIndex(int area_index) {
 		{
 			if (areas_[field_[y][x].area_id].is_connect) continue;
 
-			if (checkConnectAreaNumMax(x, y, area_index)) areas_[area_index].connect_area_dir = eDir::LEFT;
+			if (checkConnectAreaNumMax(x, y, area_index)) areas_[area_index].connect_area_dir = eDir_4::LEFT;
 		}
 	}
 	// -------- 右側 --------
@@ -463,7 +463,7 @@ void DungeonManager::getNextConnectRoomIndex(int area_index) {
 		{
 			if (areas_[field_[y][x].area_id].is_connect) continue;
 
-			if (checkConnectAreaNumMax(x, y, area_index)) areas_[area_index].connect_area_dir = eDir::RIGHT;
+			if (checkConnectAreaNumMax(x, y, area_index)) areas_[area_index].connect_area_dir = eDir_4::RIGHT;
 		}
 	}
 }

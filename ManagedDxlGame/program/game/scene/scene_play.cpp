@@ -84,13 +84,13 @@ void ScenePlay::draw() {
 
 
 	// デバッグ（ 部屋の入口を表示 ）
-	for (int i = 0; i < areas_.size(); i++) {
+	/*for (int i = 0; i < areas_.size(); i++) {
 		for (int j = 0; j < areas_[i].room.entrance.size(); j++) {
 			tnl::Vector3 draw_pos = areas_[i].room.entrance[j].pos * GameManager::DRAW_CHIP_SIZE - camera_->getPos() + tnl::Vector3(DXE_WINDOW_WIDTH >> 1, DXE_WINDOW_HEIGHT >> 1, 0);
 
 			DrawBox(draw_pos.x, draw_pos.y, draw_pos.x + GameManager::DRAW_CHIP_SIZE, draw_pos.y + GameManager::DRAW_CHIP_SIZE, -1, true);
 		}
-	}
+	}*/
 
 	player_->draw(camera_);
 	enemy_mgr_->draw(camera_);
@@ -178,11 +178,11 @@ bool ScenePlay::seqGenerateDungeon(const float delta_time) {
 // ダンジョン探索シーケンス
 bool ScenePlay::seqMain(const float delta_time) {
 
-	/*if (tnl::Input::IsKeyDownTrigger(eKeys::KB_SPACE)) {
+	if (tnl::Input::IsKeyDownTrigger(eKeys::KB_SPACE)) {
 		main_seq_.change(&ScenePlay::seqGenerateDungeon);
 		in_dungeon_seq_.change(&ScenePlay::seqPlayerAct);
 		player_->beginAct();
-	}*/
+	}
 
 	// camera_->control();
 
