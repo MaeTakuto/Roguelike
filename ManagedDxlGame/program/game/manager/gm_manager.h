@@ -25,7 +25,7 @@ public:
 	void update(float delta_time);
 
 	// シーンの切り替えを行う
-	void changeScene(std::shared_ptr<SceneBase> next_scene, float fade_time = 2.0f);
+	void changeScene(std::shared_ptr<SceneBase> next_scene, float fade_time = 1.0f);
 
 	// シーンのインスタンスを返す。
 	inline std::shared_ptr<SceneBase> getSceneInstance() { return now_scene_; }	

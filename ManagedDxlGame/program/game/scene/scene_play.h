@@ -6,7 +6,9 @@
 class DungeonManager;
 class Camera;
 class Player;
+class Enemy;
 class EnemyManager;
+class UI_Manager;
 
 // プレイシーンクラス
 class ScenePlay : public SceneBase {
@@ -23,10 +25,11 @@ private:
 	tnl::Sequence<ScenePlay> main_seq_ = tnl::Sequence<ScenePlay>(this, &ScenePlay::seqSceneStart);
 	tnl::Sequence<ScenePlay> in_dungeon_seq_ = tnl::Sequence<ScenePlay>(this, &ScenePlay::seqPlayerAct);
 
-	std::shared_ptr<DungeonManager> dungeon_mgr_ = nullptr;
 	std::shared_ptr<Camera> camera_ = nullptr;
 	std::shared_ptr<Player> player_ = nullptr;
+	std::shared_ptr<DungeonManager> dungeon_mgr_ = nullptr;
 	std::shared_ptr<EnemyManager> enemy_mgr_ = nullptr;
+	std::shared_ptr<UI_Manager> ui_mgr_ = nullptr;
 
 	// エリアデータ
 	std::vector<Area> areas_;
@@ -77,12 +80,20 @@ private:
 	// =========== ダンジョン探索中のシーケンス ===========
 	bool seqPlayerAct(const float delta_time);
 	bool seqEnemyAct(const float delta_time);
+	bool seqPlayerAttack(const float delta_time);
 	bool seqCharaMove(const float delta_time);
 	bool seqActEndProcess(const float delta_time);
 
 	// void charaAnimUpdate(float delta_time);
 
 public:
+
+	// ==============================================
+	// プロトタイプ宣言
+	// ==============================================
+	std::shared_ptr<Enemy> findEnemy(const tnl::Vector3& pos);
+	void applyDamage(std::shared_ptr<Character> attacker, std::shared_ptr<Character> target);
+
 	// ==============================================
 	//				インライン関数
 	// ==============================================
@@ -145,7 +156,10 @@ public:
 		return areas_[area_id].room.entrance;
 	}
 
-	// 
+	// プレイヤーの位置を取得 
 	inline const tnl::Vector3& getPlayerPos() { return player_->getPos(); }
+
+	// プレイヤーを取得
+	inline std::shared_ptr<Player> getPlayer() { return player_; }
 
 };
