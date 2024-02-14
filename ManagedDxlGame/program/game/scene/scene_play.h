@@ -6,6 +6,7 @@
 class DungeonManager;
 class Camera;
 class Player;
+class Enemy;
 class EnemyManager;
 
 // プレイシーンクラス
@@ -77,12 +78,20 @@ private:
 	// =========== ダンジョン探索中のシーケンス ===========
 	bool seqPlayerAct(const float delta_time);
 	bool seqEnemyAct(const float delta_time);
+	bool seqPlayerAttack(const float delta_time);
 	bool seqCharaMove(const float delta_time);
 	bool seqActEndProcess(const float delta_time);
 
 	// void charaAnimUpdate(float delta_time);
 
 public:
+
+	// ==============================================
+	// プロトタイプ宣言
+	// ==============================================
+	std::shared_ptr<Enemy> findEnemy(const tnl::Vector3& pos);
+	void applyDamage(std::shared_ptr<Character> attacker, std::shared_ptr<Character> target);
+
 	// ==============================================
 	//				インライン関数
 	// ==============================================
@@ -145,7 +154,10 @@ public:
 		return areas_[area_id].room.entrance;
 	}
 
-	// 
+	// プレイヤーの位置を取得 
 	inline const tnl::Vector3& getPlayerPos() { return player_->getPos(); }
+
+	// プレイヤーを取得
+	inline std::shared_ptr<Player> getPlayer() { return player_; }
 
 };

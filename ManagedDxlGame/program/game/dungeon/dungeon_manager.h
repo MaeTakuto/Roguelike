@@ -49,7 +49,7 @@ public:
 	bool is_connect = false;
 
 	// 通路が存在するかの判定
-	eDir connect_area_dir = eDir::NONE;
+	eDir_4 connect_area_dir = eDir_4::NONE;
 };
 
 // 1マスのデータを管理するクラス
