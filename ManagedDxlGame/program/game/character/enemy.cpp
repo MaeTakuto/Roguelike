@@ -24,6 +24,7 @@ Enemy::Enemy() {
 		);
 	}
 
+	name_ = "‚¨‚Î‚¯‚©‚Ú‚¿‚á";
 	status_.setStatus(1, 8, 5, 0, 5);
 	dir_ = eDir_4::DOWN;
 	act_state_ = eActState::IDLE;

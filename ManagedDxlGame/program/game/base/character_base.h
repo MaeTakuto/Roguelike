@@ -32,6 +32,8 @@ public:
 
 	virtual const eActState& getActState() = 0;
 
+	virtual const std::string& getName() = 0;
+
 	virtual int getAtk() = 0;
 
 	virtual int getDef() = 0;
@@ -46,6 +48,7 @@ protected:
 	std::vector< std::vector<int> > chara_gpc_hdl_;
 	std::vector< std::vector<tnl::CsvCell> > gpc_hdl_data_;
 
+	std::string name_ = "";
 	CharaStatus status_ = CharaStatus();
 
 	tnl::Vector3 pos_ = { 0, 0, 0 };

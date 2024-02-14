@@ -21,6 +21,8 @@ public:
 
 	inline const eActState& getActState() override { return act_state_; }
 
+	inline const std::string& getName() override { return name_; };
+
 	inline int getAtk() override { return status_.getAtk(); }
 
 	inline int getDef() override { return status_.getDef(); }

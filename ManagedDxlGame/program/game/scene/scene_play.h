@@ -8,6 +8,7 @@ class Camera;
 class Player;
 class Enemy;
 class EnemyManager;
+class UI_Manager;
 
 // プレイシーンクラス
 class ScenePlay : public SceneBase {
@@ -24,10 +25,11 @@ private:
 	tnl::Sequence<ScenePlay> main_seq_ = tnl::Sequence<ScenePlay>(this, &ScenePlay::seqSceneStart);
 	tnl::Sequence<ScenePlay> in_dungeon_seq_ = tnl::Sequence<ScenePlay>(this, &ScenePlay::seqPlayerAct);
 
-	std::shared_ptr<DungeonManager> dungeon_mgr_ = nullptr;
 	std::shared_ptr<Camera> camera_ = nullptr;
 	std::shared_ptr<Player> player_ = nullptr;
+	std::shared_ptr<DungeonManager> dungeon_mgr_ = nullptr;
 	std::shared_ptr<EnemyManager> enemy_mgr_ = nullptr;
+	std::shared_ptr<UI_Manager> ui_mgr_ = nullptr;
 
 	// エリアデータ
 	std::vector<Area> areas_;

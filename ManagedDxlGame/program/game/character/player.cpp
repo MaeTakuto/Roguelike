@@ -30,6 +30,7 @@ Player::Player() {
 	select_cell_blue_gpc_hdl_ = ResourceManager::getInstance()->loadGraph("graphics/blue.bmp");
 	select_cell_red_gpc_hdl_ = ResourceManager::getInstance()->loadGraph("graphics/red.bmp");
 
+	name_ = "ƒvƒŒƒCƒ„[";
 	status_.setStatus(1, 15, 5, 0, 0);
 	dir_ = eDir_4::DOWN;
 	act_state_ = eActState::IDLE;

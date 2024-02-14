@@ -1,13 +1,15 @@
 #include "../../dxlib_ext/dxlib_ext.h"
 #include "../manager/gm_manager.h"
 #include "../manager/resource_manager.h"
-#include "scene_play.h"
 #include "scene_title.h"
 #include "../dungeon/dungeon_manager.h"
 #include "../manager/enemy_manager.h"
+#include "../manager/ui_manager.h"
 #include "../common/camera.h"
 #include "../base/character_base.h"
 #include "../character/player.h"
+#include "../ui/message_window.h"
+#include "scene_play.h"
 
 
 ScenePlay::ScenePlay() {
@@ -15,6 +17,7 @@ ScenePlay::ScenePlay() {
 	dungeon_mgr_ = std::make_shared<DungeonManager>();
 	camera_ = std::make_shared<Camera>();
 	enemy_mgr_ = std::make_shared<EnemyManager>();
+	ui_mgr_ = std::make_shared<UI_Manager>();
 	// enemy_mgr_->setScenePlay(dynamic_pointer_cast<ScenePlay>( GameManager::GetInstance()->getSceneInstance()));
 
 	field_.resize(GameManager::FIELD_HEIGHT);
@@ -94,6 +97,7 @@ void ScenePlay::draw() {
 
 	player_->draw(camera_);
 	enemy_mgr_->draw(camera_);
+	ui_mgr_->draw(camera_);
 
 	// ======= デバッグ ========
 	 // DrawStringEx(100, 100, -1, "シーンプレイ");
@@ -119,10 +123,17 @@ void ScenePlay::applyDamage(std::shared_ptr<Character> attacker, std::shared_ptr
 
 	target->takeDamage(attacker->getAtk());
 
+	std::string message = attacker->getName() + "は" + target->getName() + "に" + std::to_string(attacker->getAtk()) + "ダメージを与えた。\n";
+
+	ui_mgr_->getMessageWindow()->setMessgae(message);
+	ui_mgr_->getMessageWindow()->setTimeLimit(3.0f);
 	tnl::DebugTrace("%dダメージを与えた。\n", attacker->getAtk());
 
 	if (!target->isAlive()) {
 		setMapData(target->getNextPos(), getTerrainData(target->getNextPos()));
+		message = target->getName() + "を倒した";
+		ui_mgr_->getMessageWindow()->setMessgae(message);
+		ui_mgr_->getMessageWindow()->setTimeLimit(3.0f);
 		tnl::DebugTrace("倒した\n");
 	}
 }
@@ -188,6 +199,7 @@ bool ScenePlay::seqMain(const float delta_time) {
 
 	 in_dungeon_seq_.update(delta_time);
 	 camera_->setPos(player_->getPos());
+	 ui_mgr_->update(delta_time);
 
 
 	return true;
