@@ -6,15 +6,15 @@
 
 Enemy::Enemy() {
 
-	gpc_hdl_data_ = tnl::LoadCsv("csv/player_gpc_data.csv");
+	gpc_hdl_data_ = tnl::LoadCsv("csv/enemy_gpc_data.csv");
 
-	gpc_hdl_.resize( static_cast<int>( eDir::MAX ) );
+	chara_gpc_hdl_.resize( static_cast<int>( eDir_4::MAX ) );
 
 	for (int i = 1; i < gpc_hdl_data_.size(); i++) {
 
-		gpc_hdl_[i - 1].resize(gpc_hdl_data_[i][1].getInt());
+		chara_gpc_hdl_[i - 1].resize(gpc_hdl_data_[i][1].getInt());
 
-		gpc_hdl_[i - 1] = ResourceManager::getInstance()->loadAnimation
+		chara_gpc_hdl_[i - 1] = ResourceManager::getInstance()->loadAnimation
 		(gpc_hdl_data_[i][0].getString(),
 			gpc_hdl_data_[i][1].getInt(),
 			gpc_hdl_data_[i][2].getInt(),
@@ -24,13 +24,9 @@ Enemy::Enemy() {
 		);
 	}
 
-<<<<<<< HEAD
 	name_ = "おばけかぼちゃ";
 	status_.setStatus(1, 8, 5, 0, 5);
 	dir_ = eDir_4::DOWN;
-=======
-	dir_ = eDir::DOWN;
->>>>>>> origin/main
 	act_state_ = eActState::IDLE;
 	nodes_ = new Node[8];
 
@@ -76,13 +72,21 @@ void Enemy::draw(const std::shared_ptr<Camera> camera) {
 		- camera->getPos() + tnl::Vector3(DXE_WINDOW_WIDTH >> 1, DXE_WINDOW_HEIGHT >> 1, 0);
 
 	DrawExtendGraph(draw_pos.x, draw_pos.y, draw_pos.x + GameManager::DRAW_CHIP_SIZE, draw_pos.y + GameManager::DRAW_CHIP_SIZE,
-		gpc_hdl_[static_cast<int>(dir_)][0], true);
+		chara_gpc_hdl_[static_cast<int>(dir_)][0], true);
 }
 
 // =====================================================================================
 // 待機シーケンス
 // =====================================================================================
 bool Enemy::seqIdle(const float delta_time) {
+
+	return true;
+}
+
+// =====================================================================================
+// 行動待機シーケンス
+// =====================================================================================
+bool Enemy::seqActionStundby(const float delta_time) {
 
 	return true;
 }
@@ -119,7 +123,7 @@ void Enemy::onRoadAction() {
 		action_error_ = 0;
 	}
 
-	std::vector<eDir> directions;
+	std::vector<eDir_4> directions;
 	//std::vector<eDir> directions = getNearbyMapData( pos_, eMapData::PLAYER );
 
 	//// プレイヤーが隣接していた場合
@@ -200,10 +204,10 @@ void Enemy::moveToTarget() {
 	next_pos_ = tnl::Vector3(next_node->pos_.x, next_node->pos_.y, 0);
 
 	// 方向の設定
-	if((next_pos_.y - pos_.y) > 0 ) dir_ = eDir::DOWN;
-	else if ((next_pos_.y - pos_.y) < 0) dir_ = eDir::UP;
-	else if ((next_pos_.x - pos_.x) > 0) dir_ = eDir::RIGHT;
-	else if ((next_pos_.x - pos_.x) < 0) dir_ = eDir::LEFT;
+	if((next_pos_.y - pos_.y) > 0 ) dir_ = eDir_4::DOWN;
+	else if ((next_pos_.y - pos_.y) < 0) dir_ = eDir_4::UP;
+	else if ((next_pos_.x - pos_.x) > 0) dir_ = eDir_4::RIGHT;
+	else if ((next_pos_.x - pos_.x) < 0) dir_ = eDir_4::LEFT;
 
 	if (scene_play->getPlace(next_pos_) == ePlace::ROAD) is_target_pos_ = false;
 	changeToMoveAction();

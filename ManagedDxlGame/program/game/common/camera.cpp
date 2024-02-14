@@ -15,6 +15,10 @@ Camera::~Camera() {
 void Camera::update(const tnl::Vector3& target) {
 
 	pos_ = tnl::Vector3( target.x * GameManager::DRAW_CHIP_SIZE, pos_.y * GameManager::DRAW_CHIP_SIZE, 0) + tnl::Vector3(DXE_WINDOW_WIDTH >> 1, DXE_WINDOW_HEIGHT >> 1, 0);
+
+	if (target_.x < MAX_CAMERA_POS_X) pos_.x = MAX_CAMERA_POS_X * GameManager::DRAW_CHIP_SIZE;
+	if (target_.x > GameManager::FIELD_WIDTH - MAX_CAMERA_POS_X) pos_.x = ( GameManager::FIELD_WIDTH - MAX_CAMERA_POS_X ) * GameManager::DRAW_CHIP_SIZE;
+
 }
 
 void Camera::control() {

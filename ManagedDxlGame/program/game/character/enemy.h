@@ -38,6 +38,7 @@ private:
 	int target_entrance_id_ = 0;
 
 	bool seqIdle(const float delta_time);
+	bool seqActionStundby(const float delta_time);
 	bool seqMove(const float delta_time);
 
 public:
@@ -50,12 +51,9 @@ public:
 	inline const tnl::Vector3& getNextPos() override { return next_pos_; }
 	inline bool isAlive() override { return is_alive_; }
 	inline const eActState& getActState() override { return act_state_; }
-<<<<<<< HEAD
 	inline const std::string& getName() override { return name_; };
 	inline int getAtk() override { return status_.getAtk(); }
 	inline int getDef() override { return status_.getDef(); }
-=======
->>>>>>> origin/main
 
 	// 
 	inline void collisionProcess() override {
@@ -63,7 +61,13 @@ public:
 	}
 
 	// ダメージを受ける
-	inline void takeDamage(int damage) override {}
+	inline void takeDamage(int damage) override {
+		status_.takeDamage(damage);
+
+		if (status_.getHP() == 0) {
+			is_alive_ = false;
+		}
+	}
 
 	// 死亡判定にする
 	inline void death() { 
@@ -82,6 +86,9 @@ public:
 		else onRoomAction();
 	}
 
+	// 行動を開始する
+	inline void beginAction() { sequence_.immediatelyChange(&Enemy::seqMove); }
+
 	// 自身をスポーンさせる
 	inline void spawn(const tnl::Vector3& pos) {
 
@@ -89,7 +96,8 @@ public:
 		pos_ = pos;
 		next_pos_ = pos;
 
-		dir_ = eDir::DOWN;
+		status_.setStatus(1, 8, 5, 0, 5);
+		dir_ = eDir_4::DOWN;
 		act_state_ = eActState::IDLE;
 	}
 
@@ -114,33 +122,33 @@ private:
 	// =====================================================================================
 	// 向いている方向を反対を取得する
 	// =====================================================================================
-	inline eDir getOppositeDir(eDir dir) {
+	inline eDir_4 getOppositeDir(eDir_4 dir) {
 
-		if (dir == eDir::UP)			return eDir::DOWN;
-		else if (dir == eDir::DOWN)		return eDir::UP;
-		else if (dir == eDir::LEFT)		return eDir::RIGHT;
-		else if (dir == eDir::RIGHT)	return eDir::LEFT;
+		if (dir == eDir_4::UP)			return eDir_4::DOWN;
+		else if (dir == eDir_4::DOWN)		return eDir_4::UP;
+		else if (dir == eDir_4::LEFT)		return eDir_4::RIGHT;
+		else if (dir == eDir_4::RIGHT)	return eDir_4::LEFT;
 	}
 
 	// =====================================================================================
 	// 指定した方向の１マス先を next_pos_ にセット
 	// =====================================================================================
-	inline void setNextPosInDir(eDir dir) {
+	inline void setNextPosInDir(eDir_4 dir) {
 
 		switch (dir) {
-		case eDir::UP:
+		case eDir_4::UP:
 			next_pos_.y -= 1;
 			dir_ = dir;
 			break;
-		case eDir::DOWN:
+		case eDir_4::DOWN:
 			next_pos_.y += 1;
 			dir_ = dir;
 			break;
-		case eDir::LEFT:
+		case eDir_4::LEFT:
 			next_pos_.x -= 1;
 			dir_ = dir;
 			break;
-		case eDir::RIGHT:
+		case eDir_4::RIGHT:
 			next_pos_.x += 1;
 			dir_ = dir;
 			break;
@@ -153,17 +161,17 @@ private:
 	// =====================================================================================
 	// 指定した地形データを、指定した位置の周りの4方向から探し、存在する方向を返す。
 	// =====================================================================================
-	inline std::vector<eDir> getNearbyMapData(const tnl::Vector3& pos, eMapData map_data) {
+	inline std::vector<eDir_4> getNearbyMapData(const tnl::Vector3& pos, eMapData map_data) {
 		
 		auto scene_play = scene_play_.lock();		
-		std::vector<eDir> directions;
+		std::vector<eDir_4> directions;
 
 		if (scene_play == nullptr) return directions;
 
-		if (scene_play->getMapData(tnl::Vector3(pos.x, pos.y - 1, pos.z)) == map_data) directions.emplace_back(eDir::UP);
-		if (scene_play->getMapData(tnl::Vector3(pos.x, pos.y + 1, pos.z)) == map_data) directions.emplace_back(eDir::DOWN);
-		if (scene_play->getMapData(tnl::Vector3(pos.x - 1, pos.y, pos.z)) == map_data) directions.emplace_back(eDir::LEFT);
-		if (scene_play->getMapData(tnl::Vector3(pos.x + 1, pos.y, pos.z)) == map_data) directions.emplace_back(eDir::RIGHT);
+		if (scene_play->getMapData(tnl::Vector3(pos.x, pos.y - 1, pos.z)) == map_data) directions.emplace_back(eDir_4::UP);
+		if (scene_play->getMapData(tnl::Vector3(pos.x, pos.y + 1, pos.z)) == map_data) directions.emplace_back(eDir_4::DOWN);
+		if (scene_play->getMapData(tnl::Vector3(pos.x - 1, pos.y, pos.z)) == map_data) directions.emplace_back(eDir_4::LEFT);
+		if (scene_play->getMapData(tnl::Vector3(pos.x + 1, pos.y, pos.z)) == map_data) directions.emplace_back(eDir_4::RIGHT);
 
 		return directions;
 	}
@@ -178,7 +186,7 @@ private:
 
 		scene_play->setMapData(pos_, scene_play->getTerrainData(pos_));
 		scene_play->setMapData(next_pos_, eMapData::ENEMY);
-		sequence_.immediatelyChange(&Enemy::seqMove);
+		// sequence_.change(&Enemy::seqActionStundby);
 		act_state_ = eActState::MOVE;
 	}
 
