@@ -1,5 +1,6 @@
 #pragma once
 #include "../../dxlib_ext/dxlib_ext.h"
+#include "../scene/scene_play.h"
 #include "../character/enemy.h"
 
 class Camera;
@@ -47,20 +48,12 @@ public:
 	}
 
 	// “G‚Ìs“®‚ğŒˆ’è‚·‚é
-	inline void desideAction() {
+	inline void beginAction() {
 
 		for (int i = 0; i < enemys_.size(); i++) {
 			// tnl::DebugTrace("%d\n", i);
 			if (enemys_[i]->isAlive() == false) continue;
 			enemys_[i]->desideAction();
-		}
-	}
-
-	// 
-	inline void beginAction() {
-		for (int i = 0; i < enemys_.size(); i++) {
-			if (enemys_[i]->isAlive() == false) continue;
-			enemys_[i]->beginAction();
 		}
 	}
 	
@@ -73,18 +66,6 @@ public:
 		}
 
 		return true;
-	}
-
-	// w’è‚µ‚½ˆÊ’u‚É‚¢‚é“G‚ğ•Ô‚·Bˆê’v‚·‚é“G‚ª‚¢‚È‚¯‚ê‚Î nullptr ‚ğ•Ô‚·B
-	inline std::shared_ptr<Enemy> findEnemy(const tnl::Vector3& pos) {
-
-		for (int i = 0; i < enemys_.size(); i++) {
-			if (!enemys_[i]->isAlive()) continue;
-			if ((enemys_[i]->getPos() - pos).length() < FLT_EPSILON)
-				return enemys_[i];
-		}
-
-		return nullptr;
 	}
 
 };

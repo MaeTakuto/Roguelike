@@ -1,37 +1,15 @@
 #pragma once
-#include "../../dxlib_ext/dxlib_ext.h"
+
 
 class CharaStatus {
 public:
 	CharaStatus();
 	~CharaStatus();
 
-	// ゲッター
-	inline int getLevel() { return level_; }
 	inline int getMaxHP() { return max_hp_; }
 	inline int getHP() { return hp_; }
 	inline int getAtk() { return atk_; }
 	inline int getDef() { return def_; }
-	inline int getExp() { return exp_; }
-
-	// ステータスをセット	
-	inline void setStatus(int level, int max_hp, int atk, int def, int exp) {
-		level_ = level;
-		max_hp_ = max_hp;
-		hp_ = max_hp_;
-		atk_ = atk;
-		def_ = def;
-		exp_ = exp;
-	}
-
-	// 経験値を得る
-	inline void addExp(int exp) { exp_ += exp; }
-
-	// ダメージを受ける
-	inline void takeDamage(int damage) {
-		hp_ -= damage;
-		hp_ = max(0, hp_);
-	}
 
 	// HPを回復する
 	inline int healHP(int amount) {
@@ -49,22 +27,9 @@ public:
 	}
 
 private:
-	// レベル
-	int level_;
-
-	// HPの最大値
 	int max_hp_;
-	
-	// 現在のHP
 	int hp_;
-	
-	// 攻撃力
 	int atk_;
-
-	// 防御力
 	int def_;
-
-	// 経験値
-	int exp_;
 
 };

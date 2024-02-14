@@ -1,26 +1,12 @@
 #pragma once
 
-// 4•ûŒü
-enum class eDir_4 {
+// ’Ê˜H
+enum class eDir {
 	NONE = -1,
 	UP = 0,
 	DOWN,
 	LEFT,
 	RIGHT,
-	MAX
-};
-
-// 8•ûŒü
-enum class eDir_8 {
-	NONE = -1,
-	UP = 0,
-	DOWN,
-	LEFT,
-	RIGHT,
-	UP_LEFT,
-	UP_RIGHT,
-	DOWN_LEFT,
-	DOWN_RIGHT,
 	MAX
 };
 
