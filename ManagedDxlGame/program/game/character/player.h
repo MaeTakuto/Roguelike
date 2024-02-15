@@ -23,14 +23,12 @@ public:
 
 	inline const std::string& getName() override { return name_; };
 
-	inline int getAtk() override { return status_.getAtk(); }
-
-	inline int getDef() override { return status_.getDef(); }
+	inline CharaStatus& getStatus() override { return status_; }
 
 	inline void beginAct() { act_state_ = eActState::IDLE; };
 
 	// Õ“Ëˆ—
-	inline void collisionProcess() override {
+	inline void collisionProcess() {
 
 		act_state_ = eActState::IDLE;
 		is_collision_ = false;

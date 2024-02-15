@@ -34,11 +34,7 @@ public:
 
 	virtual const std::string& getName() = 0;
 
-	virtual int getAtk() = 0;
-
-	virtual int getDef() = 0;
-
-	virtual void collisionProcess() = 0;
+	virtual CharaStatus& getStatus() = 0;
 
 	virtual void takeDamage(int damage) = 0;
 

@@ -124,7 +124,7 @@ void Enemy::onRoadAction() {
 	}
 
 	std::vector<eDir_4> directions;
-	//std::vector<eDir> directions = getNearbyMapData( pos_, eMapData::PLAYER );
+	std::vector<eDir> directions = getNearbyMapData( pos_, eMapData::PLAYER );
 
 	//// ƒvƒŒƒCƒ„[‚ª—×Ú‚µ‚Ä‚¢‚½ê‡
 	//if (directions.size() != 0) {

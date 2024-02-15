@@ -9,17 +9,21 @@
 #include "../base/character_base.h"
 #include "../character/player.h"
 #include "../ui/message_window.h"
+#include "../ui/hp_bar.h"
 #include "scene_play.h"
 
 
 ScenePlay::ScenePlay() {
 
+	// 各クラスの生成
+	player_ = std::make_shared<Player>();
 	dungeon_mgr_ = std::make_shared<DungeonManager>();
 	camera_ = std::make_shared<Camera>();
 	enemy_mgr_ = std::make_shared<EnemyManager>();
 	ui_mgr_ = std::make_shared<UI_Manager>();
 	// enemy_mgr_->setScenePlay(dynamic_pointer_cast<ScenePlay>( GameManager::GetInstance()->getSceneInstance()));
 
+	// フィールドサイズの初期化
 	field_.resize(GameManager::FIELD_HEIGHT);
 	map_data_.resize(GameManager::FIELD_HEIGHT);
 
@@ -29,8 +33,6 @@ ScenePlay::ScenePlay() {
 		field_[i].resize(GameManager::FIELD_WIDTH);
 		map_data_[i].resize(GameManager::FIELD_WIDTH);
 	}
-
-	player_ = std::make_shared<Player>();
 
 	// 画像のロード
 	mapchip_gpc_hdl_ =
@@ -44,6 +46,10 @@ ScenePlay::ScenePlay() {
 		);
 
 	is_transition_process_ = false;
+
+	ui_mgr_->getHP_Bar()->setMaxHP(player_->getStatus().getMaxHP());
+	ui_mgr_->getHP_Bar()->setHP(player_->getStatus().getHP());
+	ui_mgr_->getHP_Bar()->updateHP_Text();
 }
 
 ScenePlay::~ScenePlay() {
@@ -121,13 +127,13 @@ std::shared_ptr<Enemy> ScenePlay::findEnemy(const tnl::Vector3& pos) {
 // attaker が target にダメージを与える。
 void ScenePlay::applyDamage(std::shared_ptr<Character> attacker, std::shared_ptr<Character> target) {
 
-	target->takeDamage(attacker->getAtk());
+	target->takeDamage(attacker->getStatus().getAtk());
 
-	std::string message = attacker->getName() + "は" + target->getName() + "に" + std::to_string(attacker->getAtk()) + "ダメージを与えた。\n";
+	std::string message = attacker->getName() + "は" + target->getName() + "に" + std::to_string(attacker->getStatus().getAtk()) + "ダメージを与えた。\n";
 
 	ui_mgr_->getMessageWindow()->setMessgae(message);
 	ui_mgr_->getMessageWindow()->setTimeLimit(3.0f);
-	tnl::DebugTrace("%dダメージを与えた。\n", attacker->getAtk());
+	tnl::DebugTrace("%dダメージを与えた。\n", attacker->getStatus().getAtk());
 
 	if (!target->isAlive()) {
 		setMapData(target->getNextPos(), getTerrainData(target->getNextPos()));
