@@ -32,14 +32,21 @@ private:
 
 	Node* nodes_ = nullptr;
 
-	bool is_target_pos_ = false;
+	// 目標位置を見つけたか判定
+	bool is_find_target_ = false;
+
+	// プレイヤーを見つけたか判定
+	bool is_find_player_ = false;
 
 	int action_error_ = 0;
 	int target_entrance_id_ = 0;
 
+	float count_ = 0.0f;
+
 	bool seqIdle(const float delta_time);
 	bool seqActionStundby(const float delta_time);
 	bool seqMove(const float delta_time);
+	bool seqAttack(const float delta_time);
 
 public:
 
@@ -66,7 +73,8 @@ public:
 	// 死亡判定にする
 	inline void death() { 
 		is_alive_ = false;
-		is_target_pos_ = false;
+		is_find_target_ = false;
+		is_find_player_ = false;
 		action_error_ = 0;
 	}
 
@@ -81,7 +89,18 @@ public:
 	}
 
 	// 行動を開始する
-	inline void beginAction() { sequence_.immediatelyChange(&Enemy::seqMove); }
+	inline void beginAction() { 
+
+		// シーケンスが ActionStandby でない場合、関数を抜ける
+		if (!sequence_.isComparable(&Enemy::seqIdle)) return;
+		if (act_state_ == eActState::MOVE) {
+			sequence_.immediatelyChange(&Enemy::seqMove);
+			return;
+		}
+		if (act_state_ == eActState::ATTACK) {
+			sequence_.immediatelyChange(&Enemy::seqAttack);
+		}
+	}
 
 	// 自身をスポーンさせる
 	inline void spawn(const tnl::Vector3& pos) {
@@ -96,12 +115,15 @@ public:
 	}
 
 private:
+	// 通路での行動処理
 	void onRoadAction();
 
+	// 部屋での行動処理
 	void onRoomAction();
 
 	void moveToTarget();
 	void findTargetInRoom();
+	void findPlayer();
 	Node* getMinimunScoreNodeForEnabled();
 
 	bool isEnableMapPosition(const tnl::Vector2i& pos) {
@@ -119,8 +141,8 @@ private:
 	inline eDir_4 getOppositeDir(eDir_4 dir) {
 
 		if (dir == eDir_4::UP)			return eDir_4::DOWN;
-		else if (dir == eDir_4::DOWN)		return eDir_4::UP;
-		else if (dir == eDir_4::LEFT)		return eDir_4::RIGHT;
+		else if (dir == eDir_4::DOWN)	return eDir_4::UP;
+		else if (dir == eDir_4::LEFT)	return eDir_4::RIGHT;
 		else if (dir == eDir_4::RIGHT)	return eDir_4::LEFT;
 	}
 
@@ -173,7 +195,7 @@ private:
 	// =====================================================================================
 	// 移動シーケンスに切り替える。
 	// =====================================================================================
-	inline void changeToMoveAction() {
+	inline void changeToMoveSeq() {
 
 		auto scene_play = scene_play_.lock();
 		if (scene_play == nullptr) return;
@@ -184,4 +206,84 @@ private:
 		act_state_ = eActState::MOVE;
 	}
 
+	// =====================================================================================
+	// 攻撃シーケンスに切り替える。
+	// =====================================================================================
+	inline void changeToAttackSeq() {
+		// sequence_.change(&Enemy::seqActionStundby);
+		act_state_ = eActState::ATTACK;
+	}
+
+	// =====================================================================================
+	// プレイヤーを 8方向確認して、存在していた場合その方向を返す。
+	// =====================================================================================
+	inline eDir_8 findPlayerDir_8() {
+
+		auto scene_play = scene_play_.lock();
+		if (scene_play == nullptr) return eDir_8::NONE;
+
+		if (scene_play->getMapData(pos_ + getPosFromDir(eDir_8::UP)) == eMapData::PLAYER)				return eDir_8::UP;
+		else if (scene_play->getMapData(pos_ + getPosFromDir(eDir_8::DOWN)) == eMapData::PLAYER)		return eDir_8::DOWN;
+		else if (scene_play->getMapData(pos_ + getPosFromDir(eDir_8::LEFT)) == eMapData::PLAYER)		return eDir_8::LEFT;
+		else if (scene_play->getMapData(pos_ + getPosFromDir(eDir_8::RIGHT)) == eMapData::PLAYER)		return eDir_8::RIGHT;
+		else if (scene_play->getMapData(pos_ + getPosFromDir(eDir_8::UP_LEFT)) == eMapData::PLAYER)		return eDir_8::UP_LEFT;
+		else if (scene_play->getMapData(pos_ + getPosFromDir(eDir_8::UP_RIGHT)) == eMapData::PLAYER)	return eDir_8::UP_RIGHT;
+		else if (scene_play->getMapData(pos_ + getPosFromDir(eDir_8::DOWN_LEFT)) == eMapData::PLAYER)	return eDir_8::DOWN_LEFT;
+		else if (scene_play->getMapData(pos_ + getPosFromDir(eDir_8::DOWN_RIGHT)) == eMapData::PLAYER)	return eDir_8::DOWN_RIGHT;
+
+		return eDir_8::NONE;
+	}
+
+	// =====================================================================================
+	// 指定した位置のセルが指定したマップデータか判定
+	// =====================================================================================
+	inline bool checkMapDataFromPos(const tnl::Vector3& pos, eMapData map_data) {
+
+		auto scene_play = scene_play_.lock();
+		if (scene_play == nullptr) return false;
+
+		return scene_play->getMapData(pos) == map_data;
+	}
+
+	// =====================================================================================
+	// 指定した方向が有効か
+	// =====================================================================================
+	inline bool isEnableDir(eDir_8 dir) {
+		
+		if (dir == eDir_8::UP_LEFT) {
+			if (checkMapDataFromPos(pos_ + getPosFromDir(dir), eMapData::WALL)) return false;
+			if (checkMapDataFromPos(pos_ + getPosFromDir(eDir_8::UP), eMapData::WALL)) return false;
+			if (checkMapDataFromPos(pos_ + getPosFromDir(eDir_8::LEFT), eMapData::WALL)) return false;
+			return true;
+		}
+		else if (dir == eDir_8::UP_RIGHT) {
+			if (checkMapDataFromPos(pos_ + getPosFromDir(dir), eMapData::WALL)) return false;
+			if (checkMapDataFromPos(pos_ + getPosFromDir(eDir_8::UP), eMapData::WALL)) return false;
+			if (checkMapDataFromPos(pos_ + getPosFromDir(eDir_8::RIGHT), eMapData::WALL)) return false;
+			return true;
+		}
+		else if (dir == eDir_8::DOWN_LEFT) {
+			if (checkMapDataFromPos(pos_ + getPosFromDir(dir), eMapData::WALL)) return false;
+			if (checkMapDataFromPos(pos_ + getPosFromDir(eDir_8::DOWN), eMapData::WALL)) return false;
+			if (checkMapDataFromPos(pos_ + getPosFromDir(eDir_8::LEFT), eMapData::WALL)) return false;
+			return true;
+		}
+		else if (dir == eDir_8::DOWN_RIGHT) {
+			if (checkMapDataFromPos(pos_ + getPosFromDir(dir), eMapData::WALL)) return false;
+			if (checkMapDataFromPos(pos_ + getPosFromDir(eDir_8::DOWN), eMapData::WALL)) return false;
+			if (checkMapDataFromPos(pos_ + getPosFromDir(eDir_8::RIGHT), eMapData::WALL)) return false;
+			return true;
+		}
+		return !checkMapDataFromPos(pos_ + getPosFromDir(dir), eMapData::WALL);
+	}
+
+	// =====================================================================================
+	// 指定した方向が有効か
+	// =====================================================================================
+	bool checkAttackForPlayer() {
+		eDir_8 dir = findPlayerDir_8();
+
+		if (dir == eDir_8::NONE) return false;
+		return isEnableDir(dir);
+	}
 };

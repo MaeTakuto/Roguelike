@@ -26,11 +26,12 @@ enum class eDir_8 {
 
 // マップデータ
 enum class eMapData {
-	NONE = -1,
-	GROUND = 0,
-	WALL,
-	PLAYER,
-	ENEMY
+	NONE = -1,		// 
+	GROUND = 0,		// 地面
+	WALL,			// 壁
+	STAIR,			// 階段
+	PLAYER,			// プレイヤー
+	ENEMY			// 敵
 };
 
 enum class ePlace {

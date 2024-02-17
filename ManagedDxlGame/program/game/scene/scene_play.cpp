@@ -15,6 +15,8 @@
 
 ScenePlay::ScenePlay() {
 
+	tnl::DebugTrace("ScenePlayのコンストラクタが実行されました\n");
+
 	// 各クラスの生成
 	player_ = std::make_shared<Player>();
 	dungeon_mgr_ = std::make_shared<DungeonManager>();
@@ -25,22 +27,24 @@ ScenePlay::ScenePlay() {
 
 	// フィールドサイズの初期化
 	field_.resize(GameManager::FIELD_HEIGHT);
-	map_data_.resize(GameManager::FIELD_HEIGHT);
+	// map_data_.resize(GameManager::FIELD_HEIGHT);
 
 	areas_.resize(dungeon_mgr_->AREA_MAX);
 
 	for (int i = 0; i < GameManager::FIELD_HEIGHT; i++) {
 		field_[i].resize(GameManager::FIELD_WIDTH);
-		map_data_[i].resize(GameManager::FIELD_WIDTH);
+		// map_data_[i].resize(GameManager::FIELD_WIDTH);
 	}
+
+	gpc_hdl_data_ = tnl::LoadCsv("csv/dungeon_chip_data.csv");
 
 	// 画像のロード
 	mapchip_gpc_hdl_ =
 		ResourceManager::getInstance()->loadAnimation(
-			"graphics/mapchip.bmp",
-			mapchip_all_size_,
-			2,
-			1,
+			gpc_hdl_data_[1][0].getString(),
+			gpc_hdl_data_[1][1].getInt(),
+			gpc_hdl_data_[1][2].getInt(),
+			gpc_hdl_data_[1][3].getInt(),
 			GameManager::CHIP_SIZE,
 			GameManager::CHIP_SIZE
 		);
@@ -55,12 +59,19 @@ ScenePlay::ScenePlay() {
 ScenePlay::~ScenePlay() {
 
 	tnl::DebugTrace("ScenePlayのデストラクタが実行されました\n");
+	
+	// 画像の削除
+	ResourceManager::getInstance()->deleteAnimation(
+		gpc_hdl_data_[1][0].getString(),
+		gpc_hdl_data_[1][1].getInt()
+	);
 }
 
 void ScenePlay::update(float delta_time) {
 
 	main_seq_.update(delta_time);
 
+	if (GameManager::GetInstance()->isTransition()) return;
 	if (tnl::Input::IsKeyDownTrigger(eKeys::KB_RETURN)) {
 		is_transition_process_ = true;
 		GameManager::GetInstance()->changeScene( std::make_shared<SceneTitle>() );
@@ -82,12 +93,22 @@ void ScenePlay::draw() {
 			tnl::Vector3 draw_pos = tnl::Vector3{ static_cast<float>(x) * GameManager::DRAW_CHIP_SIZE, static_cast<float>(y) * GameManager::DRAW_CHIP_SIZE, 0 }
 			- camera_->getPos() + tnl::Vector3(DXE_WINDOW_WIDTH >> 1, DXE_WINDOW_HEIGHT >> 1, 0);
 
-			// 描画
 			DrawExtendGraph(draw_pos.x, draw_pos.y,
 				draw_pos.x + GameManager::DRAW_CHIP_SIZE,
 				draw_pos.y + GameManager::DRAW_CHIP_SIZE,
-				mapchip_gpc_hdl_[static_cast<int>( field_[y][x].terrain_data ) ], true);
-
+				mapchip_gpc_hdl_[0], true);
+			if (field_[y][x].terrain_data == eMapData::WALL) {
+				DrawExtendGraph(draw_pos.x, draw_pos.y,
+					draw_pos.x + GameManager::DRAW_CHIP_SIZE,
+					draw_pos.y + GameManager::DRAW_CHIP_SIZE,
+					mapchip_gpc_hdl_[1], true);
+			}
+			/*else if (field_[y][x].terrain_data == eMapData::STAIR) {
+				DrawExtendGraph(draw_pos.x, draw_pos.y,
+					draw_pos.x + GameManager::DRAW_CHIP_SIZE,
+					draw_pos.y + GameManager::DRAW_CHIP_SIZE,
+					mapchip_gpc_hdl_[2], true);
+			}*/
 		}
 	}
 
@@ -158,17 +179,17 @@ bool ScenePlay::seqSceneStart(const float delta_time) {
 	return true;
 }
 
-// ダンジョン生成
+// ダンジョン生成シーケンス
 bool ScenePlay::seqGenerateDungeon(const float delta_time) {
 	
 	enemy_mgr_->deathAllEnemys();
 	dungeon_mgr_->generateDungeon();
 	field_ = dungeon_mgr_->getField();
-	map_data_ = dungeon_mgr_->getMapData();
+	// map_data_ = dungeon_mgr_->getMapData();
 	areas_ = dungeon_mgr_->getAreas();
 
-	for (int y = 0; y < map_data_.size(); y++) {
-		for (int x = 0; x < map_data_[y].size(); x++) {
+	for (int y = 0; y < field_.size(); y++) {
+		for (int x = 0; x < field_[y].size(); x++) {
 			if (field_[y][x].map_data == eMapData::PLAYER ) {
 				tnl::DebugTrace("player x = %d, y = %d\n", x, y);
 				tnl::Vector3 pos = { static_cast<float>(x) , static_cast<float>(y), 0 };
@@ -207,7 +228,6 @@ bool ScenePlay::seqMain(const float delta_time) {
 	 camera_->setPos(player_->getPos());
 	 ui_mgr_->update(delta_time);
 
-
 	return true;
 }	
 
@@ -215,7 +235,9 @@ bool ScenePlay::seqMain(const float delta_time) {
 //								ダンジョン探索シーケンス
 // ==================================================================================
 
-// 
+// ====================================================
+// プレイヤーの入力シーケンス
+// ====================================================
 bool ScenePlay::seqPlayerAct(const float delta_time) {
 
 	charaUpdate(delta_time);
@@ -235,33 +257,101 @@ bool ScenePlay::seqPlayerAct(const float delta_time) {
 	return true;
 }
 
-// 
+// ====================================================
+// 敵の行動を決定するシーケンス
+// ====================================================
 bool ScenePlay::seqEnemyAct(const float delta_time) {
 
 	enemy_mgr_->desideAction();
 
+	// プレイヤーが移動する場合
 	if (player_->getActState() == eActState::MOVE) {
+
+		atk_enemy_ = enemy_mgr_->getEnemyToAttackAction();
+		// 攻撃する敵がいた場合
+		if (atk_enemy_) {
+			in_dungeon_seq_.change(&ScenePlay::seqPlayerMove);
+			return true;
+		}
 		in_dungeon_seq_.change(&ScenePlay::seqCharaMove);
-		enemy_mgr_->beginAction();
+		enemy_mgr_->beginActionToMove();
+		return true;
 	}
+
+	// プレイヤーが攻撃する場合
 	else if(player_->getActState() == eActState::ATTACK) in_dungeon_seq_.change(&ScenePlay::seqPlayerAttack);
 	return true;
 }
 
-// 
+// ====================================================
+// プレイヤーのみ移動
+// ====================================================
+bool ScenePlay::seqPlayerMove(const float delta_time) {
+
+	charaUpdate(delta_time);
+
+	if (player_->getActState() != eActState::END) return true;
+	ui_mgr_->getHP_Bar()->setMaxHP(player_->getStatus().getMaxHP());
+	ui_mgr_->getHP_Bar()->setHP(player_->getStatus().getHP());
+	ui_mgr_->getHP_Bar()->updateHP_Text();
+	in_dungeon_seq_.change(&ScenePlay::seqEnemyAttack);
+	return true;
+}
+
+// ====================================================
+// プレイヤーの攻撃シーケンス
+// ====================================================
 bool ScenePlay::seqPlayerAttack(const float delta_time) {
 
 	charaUpdate(delta_time);
 
 	if (player_->getActState() != eActState::END) return true;
 
-	enemy_mgr_->beginAction();
+	atk_enemy_ = enemy_mgr_->getEnemyToAttackAction();
+
+	// 攻撃する敵がいた場合
+	if (enemy_mgr_->getEnemyToAttackAction()) {
+		in_dungeon_seq_.change(&ScenePlay::seqEnemyAttack);
+		return true;
+	}
+
+	enemy_mgr_->beginActionToMove();
 	in_dungeon_seq_.change(&ScenePlay::seqCharaMove);
 
 	return true;
 }
 
-// 
+// ====================================================
+// 敵の攻撃シーケンス
+// ====================================================
+bool ScenePlay::seqEnemyAttack(const float delta_time) {
+	if (in_dungeon_seq_.isStart()) {
+		atk_enemy_->beginAction();
+	}
+
+	charaUpdate(delta_time);
+
+	if (atk_enemy_->getActState() != eActState::END) return true;
+
+	applyDamage(atk_enemy_, player_);
+	ui_mgr_->getHP_Bar()->setMaxHP(player_->getStatus().getMaxHP());
+	ui_mgr_->getHP_Bar()->setHP(player_->getStatus().getHP());
+	ui_mgr_->getHP_Bar()->updateHP_Text();
+	atk_enemy_ = enemy_mgr_->getEnemyToAttackAction();
+
+	// 攻撃する敵がいない場合
+	if (atk_enemy_ == nullptr) {
+		in_dungeon_seq_.change(&ScenePlay::seqCharaMove);
+		enemy_mgr_->beginActionToMove();
+		return true;
+	}
+	atk_enemy_->beginAction();
+	return true;
+}
+
+// ====================================================
+// 行動を終えていないキャラクターを行動させるシーケンス
+// ====================================================
 bool ScenePlay::seqCharaMove(const float delta_time) {
 
 	charaUpdate(delta_time);
@@ -274,12 +364,16 @@ bool ScenePlay::seqCharaMove(const float delta_time) {
 	return true;
 }
 
-// 
+// ====================================================
+// ターン終了後の処理シーケンス
+// ====================================================
 bool ScenePlay::seqActEndProcess(const float delta_time) {
 
 	charaUpdate(delta_time);
 	// debugMapData();
-
+	ui_mgr_->getHP_Bar()->setMaxHP(player_->getStatus().getMaxHP());
+	ui_mgr_->getHP_Bar()->setHP(player_->getStatus().getHP());
+	ui_mgr_->getHP_Bar()->updateHP_Text();
 	player_->beginAct();
 	in_dungeon_seq_.change(&ScenePlay::seqPlayerAct);
 

@@ -106,7 +106,7 @@ public:
 
 	// ゲッター
 	inline std::vector< std::vector<Cell> >& getField() { return field_; }
-	inline std::vector< std::vector<int> >& getMapData() { return map_data_; }
+	// inline std::vector< std::vector<int> >& getMapData() { return map_data_; }
 	inline std::vector<Area>& getAreas() { return areas_; }
 
 private:
@@ -114,7 +114,7 @@ private:
 
 	// 地形データ
 	std::vector<std::vector<Cell> > field_{ GameManager::FIELD_HEIGHT, std::vector<Cell>( GameManager::FIELD_WIDTH ) };
-	std::vector<std::vector<int> > map_data_{ GameManager::FIELD_HEIGHT, std::vector<int>( GameManager::FIELD_WIDTH ) };
+	// std::vector<std::vector<int> > map_data_{ GameManager::FIELD_HEIGHT, std::vector<int>( GameManager::FIELD_WIDTH ) };
 
 	int area_count_ = 0;
 	std::vector<Area> areas_;
@@ -139,11 +139,6 @@ private:
 	// 部屋を作成
 	void createRoom();
 
-	// ======== 未実装 =========
-	void createSmallRoom(int area_index);
-	void createMidiumRoom(int area_index);
-	// =========================
-
 	// フィールド作成
 	void generateRoom();
 
@@ -159,8 +154,8 @@ private:
 	void connectUpAndDownRooms(int up_x, int up_y, int down_x, int down_y);
 	void connectLeftAndRightRooms(int left_x, int left_y, int right_x, int right_y);
 
-	// マップデータの作成（ 地形データ、各キャラの位置データ ）
-	void generateMapData();
+	// 階段を生成
+	// void createStair();
 
 	// プレイヤーの生成位置を決める
 	void spawnPlayer();

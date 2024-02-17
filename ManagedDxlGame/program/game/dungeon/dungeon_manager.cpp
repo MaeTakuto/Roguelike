@@ -45,7 +45,10 @@ void DungeonManager::generateDungeon() {
 		tnl::DebugTrace("x = %d, y = %d, width = %d, height = %d\n", areas_[i].area.x, areas_[i].area.y, areas_[i].area.width, areas_[i].area.height);
 	}
 
+	// 部屋を作成
 	createRoom();
+
+	// 部屋をマップ上に生成
 	generateRoom();
 
 	order_connect_rooms_[order_index_] = rand() % area_count_;
@@ -57,8 +60,13 @@ void DungeonManager::generateDungeon() {
 		tnl::DebugTrace("order_index + 1 = %d\n", order_index_ + 1);
 	}
 
-	generateMapData();
+	//// 階段を生成
+	//createStair();
+
+	// プレイヤーの生成位置を決める
 	spawnPlayer();
+
+	// 敵の生成位置を決める
 	spawnEnemy();
 
 	debugEntranceData();
@@ -188,25 +196,25 @@ void DungeonManager::createRoom() {
 	}
 
 }
-
-// 小部屋を作成
-void DungeonManager::createSmallRoom(int area_index) {
-	
-	int rand_x = rand() % (AREA_SPACE);
-	int rand_y = rand() % (AREA_SPACE);
-	int rand_width = rand() % (AREA_SPACE) + rand_x;
-	int rand_height = rand() % (AREA_SPACE) + rand_y;
-
-	areas_[area_index].room.x = areas_[area_index].area.x + AREA_SPACE + rand_x;
-	areas_[area_index].room.y = areas_[area_index].area.y + AREA_SPACE + rand_y;
-	areas_[area_index].room.width = areas_[area_index].area.width - ( AREA_SPACE * 2 ) - rand_width;
-	areas_[area_index].room.height = areas_[area_index].area.height - ( AREA_SPACE * 2 ) - rand_height;
-}
-
-// 中部屋
-void DungeonManager::createMidiumRoom(int area_index) {
-
-}
+//
+//// 小部屋を作成
+//void DungeonManager::createSmallRoom(int area_index) {
+//	
+//	int rand_x = rand() % (AREA_SPACE);
+//	int rand_y = rand() % (AREA_SPACE);
+//	int rand_width = rand() % (AREA_SPACE) + rand_x;
+//	int rand_height = rand() % (AREA_SPACE) + rand_y;
+//
+//	areas_[area_index].room.x = areas_[area_index].area.x + AREA_SPACE + rand_x;
+//	areas_[area_index].room.y = areas_[area_index].area.y + AREA_SPACE + rand_y;
+//	areas_[area_index].room.width = areas_[area_index].area.width - ( AREA_SPACE * 2 ) - rand_width;
+//	areas_[area_index].room.height = areas_[area_index].area.height - ( AREA_SPACE * 2 ) - rand_height;
+//}
+//
+//// 中部屋
+//void DungeonManager::createMidiumRoom(int area_index) {
+//
+//}
 
 
 // 
@@ -585,27 +593,34 @@ void DungeonManager::displayAreaNumber(const std::shared_ptr<Camera> camera) {
 	}
 }
 
-// 
-void DungeonManager::generateMapData() {
-
-	for (int y = 0; y < field_.size(); y++) {
-		for (int x = 0; x < field_[y].size(); x++) {
-			map_data_[y][x] = static_cast<int>(field_[y][x].place);
-		}
-	}
-}
+//// 階段の生成
+//void DungeonManager::createStair() {
+//
+//	int area_index = rand() % area_count_;
+//
+//	int create_x = rand() % areas_[area_index].room.width + areas_[area_index].room.x;
+//	int create_y = rand() % areas_[area_index].room.height + areas_[area_index].room.y;
+//
+//	tnl::DebugTrace("player x = %d, y = %d\n", create_x, create_y);
+//	field_[create_y][create_x].terrain_data = eMapData::STAIR;
+//	field_[create_y][create_x].map_data = eMapData::STAIR;
+//}
 
 // プレイヤーの生成位置を決める
 void DungeonManager::spawnPlayer() {
 
-	int area_index = rand() % area_count_;
+	while (1) {
+		int area_index = rand() % area_count_;
 
-	int spawn_x = rand() % areas_[area_index].room.width + areas_[area_index].room.x;
-	int spawn_y = rand() % areas_[area_index].room.height + areas_[area_index].room.y;
+		int spawn_x = rand() % areas_[area_index].room.width + areas_[area_index].room.x;
+		int spawn_y = rand() % areas_[area_index].room.height + areas_[area_index].room.y;
 
-	tnl::DebugTrace("player x = %d, y = %d\n", spawn_x, spawn_y);
-	field_[spawn_y][spawn_x].map_data = eMapData::PLAYER;
-
+		if (field_[spawn_y][spawn_x].map_data == eMapData::GROUND) {
+			tnl::DebugTrace("player x = %d, y = %d\n", spawn_x, spawn_y);
+			field_[spawn_y][spawn_x].map_data = eMapData::PLAYER;
+			break;
+		}
+	}
 }
 
 // 敵の生成位置を決める
