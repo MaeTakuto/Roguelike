@@ -40,5 +40,4 @@ void EnemyManager::draw(const std::shared_ptr<Camera> camera) {
 		if (enemys_[i]->isAlive())
 			enemys_[i]->draw(camera);
 	}
-
 }

@@ -6,15 +6,17 @@
 
 SceneTitle::SceneTitle() {
 
+	tnl::DebugTrace("SceneTitleのコンストラクタが実行されました\n");
 	is_transition_process_ = false;
 }
 
 SceneTitle::~SceneTitle() {
-
+	tnl::DebugTrace("SceneTitleのデストラクタが実行されました\n");
 }
 
 void SceneTitle::update(float delta_time) {
 
+	if (GameManager::GetInstance()->isTransition()) return;
 	if (tnl::Input::IsKeyDownTrigger(eKeys::KB_RETURN)) {
 		is_transition_process_ = true;
 		GameManager::GetInstance()->changeScene(  std::make_shared<ScenePlay>() );

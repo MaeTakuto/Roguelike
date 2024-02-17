@@ -23,14 +23,12 @@ public:
 
 	inline const std::string& getName() override { return name_; };
 
-	inline int getAtk() override { return status_.getAtk(); }
-
-	inline int getDef() override { return status_.getDef(); }
+	inline CharaStatus& getStatus() override { return status_; }
 
 	inline void beginAct() { act_state_ = eActState::IDLE; };
 
 	// 衝突処理
-	inline void collisionProcess() override {
+	inline void collisionProcess() {
 
 		act_state_ = eActState::IDLE;
 		is_collision_ = false;
@@ -38,7 +36,13 @@ public:
 		next_pos_ = pos_;
 	}
 
-	inline void takeDamage(int damage) override {}
+	inline void takeDamage(int damage) override {
+		status_.takeDamage(damage);
+
+		if (status_.getHP() == 0) {
+			is_alive_ = false;
+		}
+	}
 
 private:
 
@@ -59,23 +63,8 @@ private:
 
 	// 関数のプロトタイプ宣言
 	bool checkMapDataFromPos(const tnl::Vector3& pos, eMapData map_data);
-	bool isEnableDir(eDir_8 dir);
 
 	// インライン関数
-	inline const tnl::Vector3& getPosFromDir(eDir_8 dir) {
-		tnl::Vector3 next;
-
-		if (dir == eDir_8::UP)				next.y -= 1;
-		else if(dir == eDir_8::DOWN)		next.y += 1;
-		else if(dir == eDir_8::LEFT)		next.x -= 1;
-		else if(dir == eDir_8::RIGHT)		next.x += 1;
-		else if(dir == eDir_8::UP_LEFT)		next += tnl::Vector3(-1, -1, 0 );
-		else if(dir == eDir_8::UP_RIGHT)	next += tnl::Vector3( 1, -1, 0 );
-		else if(dir == eDir_8::DOWN_LEFT)	next += tnl::Vector3(-1,  1, 0 );
-		else if(dir == eDir_8::DOWN_RIGHT)	next += tnl::Vector3( 1,  1, 0 );
-		return next;
-	}
-
 	inline void setNextPosInDir(eDir_8 dir) {
 
 		if (dir == eDir_8::UP) {
@@ -119,6 +108,36 @@ private:
 			next_pos_ += getPosFromDir(dir);
 		}
 
+	}
+
+	// 指定した方向が有効か
+	inline bool isEnableDir(eDir_8 dir) {
+
+		if (dir == eDir_8::UP_LEFT) {
+			if (checkMapDataFromPos(pos_ + getPosFromDir(dir), eMapData::WALL)) return false;
+			if (checkMapDataFromPos(pos_ + getPosFromDir(eDir_8::UP), eMapData::WALL)) return false;
+			if (checkMapDataFromPos(pos_ + getPosFromDir(eDir_8::LEFT), eMapData::WALL)) return false;
+			return true;
+		}
+		else if (dir == eDir_8::UP_RIGHT) {
+			if (checkMapDataFromPos(pos_ + getPosFromDir(dir), eMapData::WALL)) return false;
+			if (checkMapDataFromPos(pos_ + getPosFromDir(eDir_8::UP), eMapData::WALL)) return false;
+			if (checkMapDataFromPos(pos_ + getPosFromDir(eDir_8::RIGHT), eMapData::WALL)) return false;
+			return true;
+		}
+		else if (dir == eDir_8::DOWN_LEFT) {
+			if (checkMapDataFromPos(pos_ + getPosFromDir(dir), eMapData::WALL)) return false;
+			if (checkMapDataFromPos(pos_ + getPosFromDir(eDir_8::DOWN), eMapData::WALL)) return false;
+			if (checkMapDataFromPos(pos_ + getPosFromDir(eDir_8::LEFT), eMapData::WALL)) return false;
+			return true;
+		}
+		else if (dir == eDir_8::DOWN_RIGHT) {
+			if (checkMapDataFromPos(pos_ + getPosFromDir(dir), eMapData::WALL)) return false;
+			if (checkMapDataFromPos(pos_ + getPosFromDir(eDir_8::DOWN), eMapData::WALL)) return false;
+			if (checkMapDataFromPos(pos_ + getPosFromDir(eDir_8::RIGHT), eMapData::WALL)) return false;
+			return true;
+		}
+		return !checkMapDataFromPos(pos_ + getPosFromDir(dir), eMapData::WALL);
 	}
 
 };

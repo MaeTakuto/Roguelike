@@ -95,36 +95,6 @@ bool Player::checkMapDataFromPos(const tnl::Vector3& pos, eMapData map_data) {
 	return scene_play->getMapData(pos) == map_data;
 }
 
-// Žw’è‚µ‚½•ûŒü‚ª—LŒø‚©
-bool Player::isEnableDir(eDir_8 dir) {
-
-	if (dir == eDir_8::UP_LEFT) {
-		if( checkMapDataFromPos( pos_ + getPosFromDir(dir), eMapData::WALL ) ) return false;
-		if( checkMapDataFromPos( pos_ + getPosFromDir(eDir_8::UP), eMapData::WALL ) ) return false;
-		if( checkMapDataFromPos( pos_ + getPosFromDir(eDir_8::LEFT), eMapData::WALL ) ) return false;
-		return true;
-	}
-	else if (dir == eDir_8::UP_RIGHT) {
-		if (checkMapDataFromPos(pos_ + getPosFromDir(dir), eMapData::WALL)) return false;
-		if (checkMapDataFromPos(pos_ + getPosFromDir(eDir_8::UP), eMapData::WALL)) return false;
-		if (checkMapDataFromPos(pos_ + getPosFromDir(eDir_8::RIGHT), eMapData::WALL)) return false;
-		return true;
-	}
-	else if (dir == eDir_8::DOWN_LEFT) {
-		if (checkMapDataFromPos(pos_ + getPosFromDir(dir), eMapData::WALL)) return false;
-		if (checkMapDataFromPos(pos_ + getPosFromDir(eDir_8::DOWN), eMapData::WALL)) return false;
-		if (checkMapDataFromPos(pos_ + getPosFromDir(eDir_8::LEFT), eMapData::WALL)) return false;
-		return true;
-	}
-	else if (dir == eDir_8::DOWN_RIGHT) {
-		if (checkMapDataFromPos(pos_ + getPosFromDir(dir), eMapData::WALL)) return false;
-		if (checkMapDataFromPos(pos_ + getPosFromDir(eDir_8::DOWN), eMapData::WALL)) return false;
-		if (checkMapDataFromPos(pos_ + getPosFromDir(eDir_8::RIGHT), eMapData::WALL)) return false;
-		return true;
-	}
-	return !checkMapDataFromPos(pos_ + getPosFromDir(dir), eMapData::WALL);
-}
-
 bool Player::seqIdle(const float delta_time) {
 
 	if (act_state_ != eActState::IDLE) return true;
@@ -252,6 +222,7 @@ bool Player::seqMove(const float delta_time) {
 		pos_ += (next_pos_ - pos_ ) * MOVE_SPEED;
 	}
 	else {
+		status_.healHP(1);
 		pos_ = next_pos_;
 		act_state_ = eActState::END;
 		sequence_.change(&Player::seqIdle);

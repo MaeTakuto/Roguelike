@@ -24,7 +24,7 @@ public:
 	virtual void draw(const std::shared_ptr<Camera> camera) = 0;
 
 	virtual const tnl::Vector3& getPos() = 0;
-	virtual void setPos(const tnl::Vector3&) = 0;
+	virtual void setPos(const tnl::Vector3& pos) = 0;
 	
 	virtual const tnl::Vector3& getNextPos() = 0;
 
@@ -34,11 +34,7 @@ public:
 
 	virtual const std::string& getName() = 0;
 
-	virtual int getAtk() = 0;
-
-	virtual int getDef() = 0;
-
-	virtual void collisionProcess() = 0;
+	virtual CharaStatus& getStatus() = 0;
 
 	virtual void takeDamage(int damage) = 0;
 
@@ -61,5 +57,21 @@ protected:
 	bool is_alive_ = true;;
 	bool is_collision_ = false;
 
+	// =====================================================================================
+	// Žw’è‚µ‚½•ûŒü
+	// =====================================================================================
+	inline const tnl::Vector3& getPosFromDir(eDir_8 dir) {
+		tnl::Vector3 next = { 0, 0, 0 };
+
+		if (dir == eDir_8::UP)				next.y -= 1;
+		else if (dir == eDir_8::DOWN)		next.y += 1;
+		else if (dir == eDir_8::LEFT)		next.x -= 1;
+		else if (dir == eDir_8::RIGHT)		next.x += 1;
+		else if (dir == eDir_8::UP_LEFT)	next += tnl::Vector3(-1, -1, 0);
+		else if (dir == eDir_8::UP_RIGHT)	next += tnl::Vector3(1, -1, 0);
+		else if (dir == eDir_8::DOWN_LEFT)	next += tnl::Vector3(-1, 1, 0);
+		else if (dir == eDir_8::DOWN_RIGHT)	next += tnl::Vector3(1, 1, 0);
+		return next;
+	}
 
 };

@@ -31,24 +31,27 @@ private:
 	std::shared_ptr<EnemyManager> enemy_mgr_ = nullptr;
 	std::shared_ptr<UI_Manager> ui_mgr_ = nullptr;
 
+	std::shared_ptr<Enemy> atk_enemy_ = nullptr;
+
 	// エリアデータ
 	std::vector<Area> areas_;
 
 	// 地形データ
 	std::vector< std::vector<Cell> > field_;
-	std::vector< std::vector<int> > map_data_;
 
+	// マップチップのデータ
+	std::vector< std::vector<tnl::CsvCell> > gpc_hdl_data_;
+	
 	// マップチップの画像格納
 	std::vector<int> mapchip_gpc_hdl_;
-	int mapchip_all_size_ = 2;
-
+	
 	// ========= デバッグ ============
 	void debugMapData() {
 
 		tnl::DebugTrace("============== map_data_ ===============\n");
 
-		for (int y = 0; y < map_data_.size(); y++) {
-			for (int x = 0; x < map_data_[y].size(); x++) {
+		for (int y = 0; y < field_.size(); y++) {
+			for (int x = 0; x < field_[y].size(); x++) {
 				tnl::DebugTrace("%d", static_cast<int>(field_[y][x].map_data));
 			}
 			tnl::DebugTrace("\n");
@@ -59,8 +62,8 @@ private:
 
 		tnl::DebugTrace("============== field_.place ===============\n");
 
-		for (int y = 0; y < map_data_.size(); y++) {
-			for (int x = 0; x < map_data_[y].size(); x++) {
+		for (int y = 0; y < field_.size(); y++) {
+			for (int x = 0; x < field_[y].size(); x++) {
 				tnl::DebugTrace("%d", static_cast<int>(field_[y][x].place));
 			}
 			tnl::DebugTrace("\n");
@@ -80,7 +83,9 @@ private:
 	// =========== ダンジョン探索中のシーケンス ===========
 	bool seqPlayerAct(const float delta_time);
 	bool seqEnemyAct(const float delta_time);
+	bool seqPlayerMove(const float delta_time);
 	bool seqPlayerAttack(const float delta_time);
+	bool seqEnemyAttack(const float delta_time);
 	bool seqCharaMove(const float delta_time);
 	bool seqActEndProcess(const float delta_time);
 
@@ -152,6 +157,7 @@ public:
 		return true;
 	}
 
+	// 部屋の入口の座標を返す
 	inline std::vector<Entrance>& getRoomEntrance(int area_id) {
 		return areas_[area_id].room.entrance;
 	}

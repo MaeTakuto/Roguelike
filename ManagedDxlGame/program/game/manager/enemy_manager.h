@@ -56,10 +56,22 @@ public:
 		}
 	}
 
-	// 
-	inline void beginAction() {
+	// 攻撃行動をする敵を取得。いない場合は nullptr
+	inline std::shared_ptr<Enemy> getEnemyToAttackAction() {
 		for (int i = 0; i < enemys_.size(); i++) {
 			if (enemys_[i]->isAlive() == false) continue;
+			if (enemys_[i]->getActState() != eActState::ATTACK) continue;
+			return enemys_[i];
+		}
+		return nullptr;
+	}
+
+
+	// 移動を行う敵の行動を開始させる
+	inline void beginActionToMove() {
+		for (int i = 0; i < enemys_.size(); i++) {
+			if (enemys_[i]->isAlive() == false) continue;
+			if (enemys_[i]->getActState() != eActState::MOVE) continue;
 			enemys_[i]->beginAction();
 		}
 	}

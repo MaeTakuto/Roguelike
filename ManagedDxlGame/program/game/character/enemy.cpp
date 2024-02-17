@@ -108,13 +108,26 @@ bool Enemy::seqMove(const float delta_time) {
 	return true;
 }
 
+bool Enemy::seqAttack(const float delta_time) {
+
+	auto scene_play = scene_play_.lock();
+	if (scene_play == nullptr) return true;
+	count_ += delta_time;
+
+	if (count_ > 0.5f) {
+		count_ = 0.0f;
+		act_state_ = eActState::END;
+		sequence_.change(&Enemy::seqIdle);
+	}
+	return true;
+}
+
 // =====================================================================================
 // 通路での行動
 // =====================================================================================
 void Enemy::onRoadAction() {
 
 	auto scene_play = scene_play_.lock();
-
 	if (scene_play == nullptr) return;
 
 	// 行動エラーのカウント回数が3回以上の場合、来た道に方向を向ける
@@ -123,18 +136,37 @@ void Enemy::onRoadAction() {
 		action_error_ = 0;
 	}
 
-	std::vector<eDir_4> directions;
-	//std::vector<eDir> directions = getNearbyMapData( pos_, eMapData::PLAYER );
+	// プレイヤーを見つけていた場合
+	if (is_find_player_) {
+		// プレイヤーに攻撃できる場合
+		if (checkAttackForPlayer()) {
+			changeToAttackSeq();
+			return;
+		}
+		else {
+			target_pos_ = scene_play->getPlayerPos();
+			moveToTarget();
+			return;
+		}
+	}
 
-	//// プレイヤーが隣接していた場合
-	//if (directions.size() != 0) {
-	//	// 攻撃決定処理
-	//	action_error_++;
-	//	return;
-	//}
+	 eDir_8 dir = findPlayerDir_8();
+
+	if (dir != eDir_8::NONE) {
+		is_find_player_ = true;
+		if (isEnableDir(dir)) {
+			changeToAttackSeq();
+			return;
+		}
+		else {
+			target_pos_ = scene_play->getPlayerPos();
+			moveToTarget();
+			return;
+		}
+	}
 
 	// 地面がある方向を取得する
-	directions = getNearbyMapData( pos_, eMapData::GROUND );
+	std::vector<eDir_4> directions = getNearbyMapData( pos_, eMapData::GROUND );
 
 	// 来た方向の要素だけ削除する
 	auto it = std::find(directions.begin(), directions.end(), getOppositeDir(dir_));
@@ -149,8 +181,7 @@ void Enemy::onRoadAction() {
 		setNextPosInDir(directions[index]);
 	}
 
-	changeToMoveAction();
-
+	changeToMoveSeq();
 }
 
 // =====================================================================================
@@ -158,9 +189,28 @@ void Enemy::onRoadAction() {
 // =====================================================================================
 void Enemy::onRoomAction() {
 
-	// ターゲットを見つけていた場合、その方向に向かう
-	if (is_target_pos_)	moveToTarget();
+	auto scene_play = scene_play_.lock();
+	if (scene_play == nullptr) return;
 
+	if (is_find_player_) {
+		if (checkAttackForPlayer()) {
+			changeToAttackSeq();
+			return;
+		}
+		else target_pos_ = scene_play->getPlayerPos();
+	}
+	else {
+		findPlayer();
+		if (is_find_player_) {
+			if (checkAttackForPlayer()) {
+				changeToAttackSeq();
+				return;
+			}
+		}
+	}
+
+	// ターゲットまたはプレイヤーを見つけていた場合、その方向に向かう
+	if (is_find_target_ || is_find_player_)	moveToTarget();
 	// ターゲットを探す
 	else findTargetInRoom();
 
@@ -201,7 +251,8 @@ void Enemy::moveToTarget() {
 	}
 
 	Node* next_node = getMinimunScoreNodeForEnabled();
-	next_pos_ = tnl::Vector3(next_node->pos_.x, next_node->pos_.y, 0);
+	if (next_node) next_pos_ = tnl::Vector3(next_node->pos_.x, next_node->pos_.y, 0);
+	else next_pos_ = pos_;
 
 	// 方向の設定
 	if((next_pos_.y - pos_.y) > 0 ) dir_ = eDir_4::DOWN;
@@ -209,8 +260,8 @@ void Enemy::moveToTarget() {
 	else if ((next_pos_.x - pos_.x) > 0) dir_ = eDir_4::RIGHT;
 	else if ((next_pos_.x - pos_.x) < 0) dir_ = eDir_4::LEFT;
 
-	if (scene_play->getPlace(next_pos_) == ePlace::ROAD) is_target_pos_ = false;
-	changeToMoveAction();
+	if (scene_play->getPlace(next_pos_) == ePlace::ROAD) is_find_target_ = false;
+	changeToMoveSeq();
 }
 
 // =====================================================================================
@@ -226,7 +277,6 @@ Node* Enemy::getMinimunScoreNodeForEnabled() {
 	}
 
 	return p;
-
 }
 
 // =====================================================================================
@@ -238,15 +288,12 @@ void Enemy::findTargetInRoom() {
 
 	if (scene_play == nullptr) return;
 
-	std::vector<Entrance> entrance;
-
 	int area_id = scene_play->getAreaId(pos_);
-
-	entrance = scene_play->getRoomEntrance(area_id);
+	std::vector<Entrance> entrance = scene_play->getRoomEntrance(area_id);
 
 	if (entrance.size() == 0) {
 		tnl::DebugTrace("vectorが空です\n");
-		changeToMoveAction();
+		changeToMoveSeq();
 		return;
 	}
 
@@ -255,7 +302,37 @@ void Enemy::findTargetInRoom() {
 	target_pos_ = entrance[target_pos_index].pos;
 	target_entrance_id_ = entrance[target_pos_index].id;
 
-	is_target_pos_ = true;
+	is_find_target_ = true;
 
 	moveToTarget();
+}
+
+// =====================================================================================
+// プレイヤーを探す
+// =====================================================================================
+void Enemy::findPlayer() {
+
+	if (is_find_player_) return;
+
+	auto scene_play = scene_play_.lock();
+	if (scene_play == nullptr) return;
+
+	int id = scene_play->getAreaId(pos_);
+
+	// 同じ部屋にいたとき
+	if (scene_play->isPlayerInRoom(id)) {
+		is_find_player_ = true;
+		target_pos_ = scene_play->getPlayer()->getPos();
+		return;
+	}
+	std::vector<Entrance> entrance = scene_play->getRoomEntrance(id);
+
+	// 現在いる部屋の入口にいたとき
+	for (int i = 0; i < entrance.size(); ++i) {
+		if (scene_play->getMapData(entrance[i].pos) == eMapData::PLAYER) {
+			is_find_player_ = true;
+			target_pos_ = scene_play->getPlayer()->getPos();
+			return;
+		}
+	}
 }
