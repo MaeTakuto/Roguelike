@@ -34,6 +34,8 @@ enum class eMapData {
 	ENEMY			// “G
 };
 
+
+// ƒZƒ‹‚ÌêŠ
 enum class ePlace {
 	WALL = 0,
 	ROAD,

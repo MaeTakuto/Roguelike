@@ -49,6 +49,8 @@ ScenePlay::ScenePlay() {
 			GameManager::CHIP_SIZE
 		);
 
+	fade_gpc_hdl_ = ResourceManager::getInstance()->loadGraph("graphics/black.bmp");
+
 	is_transition_process_ = false;
 
 	ui_mgr_->getHP_Bar()->setMaxHP(player_->getStatus().getMaxHP());
@@ -71,11 +73,11 @@ void ScenePlay::update(float delta_time) {
 
 	main_seq_.update(delta_time);
 
-	if (GameManager::GetInstance()->isTransition()) return;
+	/*if (GameManager::GetInstance()->isTransition()) return;
 	if (tnl::Input::IsKeyDownTrigger(eKeys::KB_RETURN)) {
 		is_transition_process_ = true;
 		GameManager::GetInstance()->changeScene( std::make_shared<SceneTitle>() );
-	}
+	}*/
 }
 
 void ScenePlay::draw() {
@@ -103,12 +105,11 @@ void ScenePlay::draw() {
 					draw_pos.y + GameManager::DRAW_CHIP_SIZE,
 					mapchip_gpc_hdl_[1], true);
 			}
-			/*else if (field_[y][x].terrain_data == eMapData::STAIR) {
+			else if (field_[y][x].terrain_data == eMapData::STAIR) {
 				DrawExtendGraph(draw_pos.x, draw_pos.y,
-					draw_pos.x + GameManager::DRAW_CHIP_SIZE,
-					draw_pos.y + GameManager::DRAW_CHIP_SIZE,
+					draw_pos.x + GameManager::DRAW_CHIP_SIZE, draw_pos.y + GameManager::DRAW_CHIP_SIZE,
 					mapchip_gpc_hdl_[2], true);
-			}*/
+			}
 		}
 	}
 
@@ -125,6 +126,10 @@ void ScenePlay::draw() {
 	player_->draw(camera_);
 	enemy_mgr_->draw(camera_);
 	ui_mgr_->draw(camera_);
+
+	SetDrawBlendMode(DX_BLENDMODE_ALPHA, alpha_);
+	DrawExtendGraph(0, 0, DXE_WINDOW_WIDTH, DXE_WINDOW_HEIGHT, fade_gpc_hdl_, true);
+	SetDrawBlendMode(DX_BLENDMODE_NOBLEND, 255);
 
 	// ======= デバッグ ========
 	 // DrawStringEx(100, 100, -1, "シーンプレイ");
@@ -179,6 +184,18 @@ bool ScenePlay::seqSceneStart(const float delta_time) {
 	return true;
 }
 
+// フェードイン
+bool ScenePlay::seqFadeIn(const float delta_time) {
+	
+	alpha_ = 255 - (main_seq_.getProgressTime() / fade_time_ * 255.0f);
+	
+	if (alpha_ <= 0) {
+		main_seq_.change(&ScenePlay::seqMain);
+	}
+
+	return true;
+}
+
 // ダンジョン生成シーケンス
 bool ScenePlay::seqGenerateDungeon(const float delta_time) {
 	
@@ -208,7 +225,7 @@ bool ScenePlay::seqGenerateDungeon(const float delta_time) {
 
 	camera_->setPos(player_->getPos());
 
-	main_seq_.change(&ScenePlay::seqMain);
+	main_seq_.change(&ScenePlay::seqFadeIn);
 
 	return true;
 }
@@ -229,7 +246,19 @@ bool ScenePlay::seqMain(const float delta_time) {
 	 ui_mgr_->update(delta_time);
 
 	return true;
-}	
+}
+
+// 
+bool ScenePlay::seqFadeOut(const float delta_time) {
+	
+	alpha_ = (main_seq_.getProgressTime() / fade_time_ * 255.0f);
+	if (alpha_ >= 255) {
+		main_seq_.change(&ScenePlay::seqGenerateDungeon);
+	}
+
+	return true;
+}
+
 
 // ==================================================================================
 //								ダンジョン探索シーケンス
@@ -375,7 +404,33 @@ bool ScenePlay::seqActEndProcess(const float delta_time) {
 	ui_mgr_->getHP_Bar()->setHP(player_->getStatus().getHP());
 	ui_mgr_->getHP_Bar()->updateHP_Text();
 	player_->beginAct();
+
+	if (getTerrainData(player_->getPos()) == eMapData::STAIR) {
+		in_dungeon_seq_.change(&ScenePlay::seqStairSelect);
+		ui_mgr_->executeStairSelect();
+		return true;
+	}
 	in_dungeon_seq_.change(&ScenePlay::seqPlayerAct);
+
+	return true;
+}
+
+// ====================================================
+// ターン終了後の処理シーケンス
+// ====================================================
+bool ScenePlay::seqStairSelect(const float delta_time) {
+
+	if (tnl::Input::IsKeyDownTrigger(eKeys::KB_RETURN)) {
+		if (ui_mgr_->selectStairResult()) {
+			main_seq_.change(&ScenePlay::seqFadeOut);
+			in_dungeon_seq_.change(&ScenePlay::seqPlayerAct);
+			ui_mgr_->executeStairSelectEnd();
+		}
+		else {
+			in_dungeon_seq_.change(&ScenePlay::seqPlayerAct);
+			ui_mgr_->executeStairSelectEnd();
+		}
+	}
 
 	return true;
 }

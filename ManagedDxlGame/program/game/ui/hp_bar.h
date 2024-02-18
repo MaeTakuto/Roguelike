@@ -24,6 +24,8 @@ private:
 	// HPÉoÅ[ÇÃïù
 	int width_ = HP_BAR_MAX_WIDTH;
 
+	int message_font_size_ = 30;
+
 public:
 	inline void setMaxHP(int max_hp) { max_hp_ = max_hp; }
 	inline void setHP(int hp) { hp_ = hp; }

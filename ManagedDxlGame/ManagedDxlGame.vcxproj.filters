@@ -260,6 +260,9 @@
     <ClCompile Include="program\game\ui\hp_bar.cpp">
       <Filter>program\[003] game\ui</Filter>
     </ClCompile>
+    <ClCompile Include="program\game\ui\select_window.cpp">
+      <Filter>program\[003] game\ui</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="ManagedDxlGame.rc">
@@ -513,6 +516,9 @@
       <Filter>program\[003] game\ui</Filter>
     </ClInclude>
     <ClInclude Include="program\game\ui\hp_bar.h">
+      <Filter>program\[003] game\ui</Filter>
+    </ClInclude>
+    <ClInclude Include="program\game\ui\select_window.h">
       <Filter>program\[003] game\ui</Filter>
     </ClInclude>
   </ItemGroup>
