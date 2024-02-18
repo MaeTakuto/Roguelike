@@ -22,9 +22,18 @@ public:
 	void draw() override;
 
 private:
+	const float DRAW_TIME_DUNGEON_TITLE = 2.0f;
+	const std::string DUNGEON_TITLE = "森のダンジョン";
+	const tnl::Vector3 DUNGEON_TITLE_POS = { 400, 100, 0 };
+	const int TITLE_FONT_SIZE = 60;
+
+	// シーン内のシーケンス
 	tnl::Sequence<ScenePlay> main_seq_ = tnl::Sequence<ScenePlay>(this, &ScenePlay::seqSceneStart);
+	
+	// ダンジョン中の状態制御シーケンス
 	tnl::Sequence<ScenePlay> in_dungeon_seq_ = tnl::Sequence<ScenePlay>(this, &ScenePlay::seqPlayerAct);
 
+	// シーンプレイ内で使用する各クラス
 	std::shared_ptr<Camera> camera_ = nullptr;
 	std::shared_ptr<Player> player_ = nullptr;
 	std::shared_ptr<DungeonManager> dungeon_mgr_ = nullptr;
@@ -55,8 +64,14 @@ private:
 	float fade_time_ = 0.5f;
 
 	// 現在の階数
-	int floor = 1;
+	int dungeon_floor_ = 1;
+
+	// ダンジョンを生成したか
+	bool is_created_dungeon_ = false;
 	
+	// ダンジョンを表示しているか
+	bool is_drawing_dng_title_ = true;
+
 	// ========= デバッグ ============
 	void debugMapData() {
 
@@ -89,6 +104,7 @@ private:
 	bool seqSceneStart(const float delta_time);
 	bool seqFadeIn(const float delta_time);
 	bool seqGenerateDungeon(const float delta_time);
+	bool seqDrawDungeonTitle(const float delta_time);
 	bool seqFadeOut(const float delta_time);
 	bool seqMain(const float delta_time);
 
@@ -111,6 +127,7 @@ public:
 	// ==============================================
 	std::shared_ptr<Enemy> findEnemy(const tnl::Vector3& pos);
 	void applyDamage(std::shared_ptr<Character> attacker, std::shared_ptr<Character> target);
+	void changeProcessNextFloor();
 
 	// ==============================================
 	//				インライン関数

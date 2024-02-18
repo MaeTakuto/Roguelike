@@ -16,6 +16,7 @@
 ScenePlay::ScenePlay() {
 
 	tnl::DebugTrace("ScenePlayのコンストラクタが実行されました\n");
+	// SetBackgroundColor(0, 0, 0);
 
 	// 各クラスの生成
 	player_ = std::make_shared<Player>();
@@ -53,9 +54,8 @@ ScenePlay::ScenePlay() {
 
 	is_transition_process_ = false;
 
-	ui_mgr_->getHP_Bar()->setMaxHP(player_->getStatus().getMaxHP());
-	ui_mgr_->getHP_Bar()->setHP(player_->getStatus().getHP());
-	ui_mgr_->getHP_Bar()->updateHP_Text();
+	ui_mgr_->setHP_BarStatus(player_->getStatus().getMaxHP(), player_->getStatus().getHP());
+	ui_mgr_->setFloor(dungeon_floor_);
 }
 
 ScenePlay::~ScenePlay() {
@@ -72,61 +72,55 @@ ScenePlay::~ScenePlay() {
 void ScenePlay::update(float delta_time) {
 
 	main_seq_.update(delta_time);
-
-	/*if (GameManager::GetInstance()->isTransition()) return;
-	if (tnl::Input::IsKeyDownTrigger(eKeys::KB_RETURN)) {
-		is_transition_process_ = true;
-		GameManager::GetInstance()->changeScene( std::make_shared<SceneTitle>() );
-	}*/
 }
 
 void ScenePlay::draw() {
 
-	/*for (int y = 0; y < terrain_data_.size(); y++) {
-		for (int x = 0; x < terrain_data_[y].size(); x++) {
-			tnl::Vector3 draw_pos = tnl::Vector3{ static_cast<float>(x * 20), static_cast<float>(y * 20), 0 } - camera_->getPos();
-			DrawStringEx(draw_pos.x, draw_pos.y, -1, "%d", terrain_data_[y][x]);
-		}
-	}*/
+	// ダンジョンタイトルを表示しているか
+	if (is_drawing_dng_title_) {
+		SetFontSize(TITLE_FONT_SIZE);
+		DrawStringEx(DUNGEON_TITLE_POS.x, DUNGEON_TITLE_POS.y, -1, DUNGEON_TITLE.c_str());
+		DrawStringEx(DUNGEON_TITLE_POS.x + 200, DUNGEON_TITLE_POS.y + 60, -1, "%dF", dungeon_floor_);
+	}
+	else {
+		// マップチップ描画
+		for (int y = 0; y < field_.size(); ++y) {
+			for (int x = 0; x < field_[y].size(); ++x) {
+				tnl::Vector3 draw_pos = tnl::Vector3{ static_cast<float>(x) * GameManager::DRAW_CHIP_SIZE, static_cast<float>(y) * GameManager::DRAW_CHIP_SIZE, 0 }
+				- camera_->getPos() + tnl::Vector3(DXE_WINDOW_WIDTH >> 1, DXE_WINDOW_HEIGHT >> 1, 0);
 
-	// マップチップ描画
-	for (int y = 0; y < field_.size(); ++y) {
-		for (int x = 0; x < field_[y].size(); ++x) {
-			tnl::Vector3 draw_pos = tnl::Vector3{ static_cast<float>(x) * GameManager::DRAW_CHIP_SIZE, static_cast<float>(y) * GameManager::DRAW_CHIP_SIZE, 0 }
-			- camera_->getPos() + tnl::Vector3(DXE_WINDOW_WIDTH >> 1, DXE_WINDOW_HEIGHT >> 1, 0);
-
-			DrawExtendGraph(draw_pos.x, draw_pos.y,
-				draw_pos.x + GameManager::DRAW_CHIP_SIZE,
-				draw_pos.y + GameManager::DRAW_CHIP_SIZE,
-				mapchip_gpc_hdl_[0], true);
-			if (field_[y][x].terrain_data == eMapData::WALL) {
 				DrawExtendGraph(draw_pos.x, draw_pos.y,
 					draw_pos.x + GameManager::DRAW_CHIP_SIZE,
 					draw_pos.y + GameManager::DRAW_CHIP_SIZE,
-					mapchip_gpc_hdl_[1], true);
-			}
-			else if (field_[y][x].terrain_data == eMapData::STAIR) {
-				DrawExtendGraph(draw_pos.x, draw_pos.y,
-					draw_pos.x + GameManager::DRAW_CHIP_SIZE, draw_pos.y + GameManager::DRAW_CHIP_SIZE,
-					mapchip_gpc_hdl_[2], true);
+					mapchip_gpc_hdl_[0], true);
+				if (field_[y][x].terrain_data == eMapData::WALL) {
+					DrawExtendGraph(draw_pos.x, draw_pos.y,
+						draw_pos.x + GameManager::DRAW_CHIP_SIZE,
+						draw_pos.y + GameManager::DRAW_CHIP_SIZE,
+						mapchip_gpc_hdl_[1], true);
+				}
+				else if (field_[y][x].terrain_data == eMapData::STAIR) {
+					DrawExtendGraph(draw_pos.x, draw_pos.y,
+						draw_pos.x + GameManager::DRAW_CHIP_SIZE, draw_pos.y + GameManager::DRAW_CHIP_SIZE,
+						mapchip_gpc_hdl_[2], true);
+				}
 			}
 		}
+
+
+		// デバッグ（ 部屋の入口を表示 ）
+		/*for (int i = 0; i < areas_.size(); i++) {
+			for (int j = 0; j < areas_[i].room.entrance.size(); j++) {
+				tnl::Vector3 draw_pos = areas_[i].room.entrance[j].pos * GameManager::DRAW_CHIP_SIZE - camera_->getPos() + tnl::Vector3(DXE_WINDOW_WIDTH >> 1, DXE_WINDOW_HEIGHT >> 1, 0);
+
+				DrawBox(draw_pos.x, draw_pos.y, draw_pos.x + GameManager::DRAW_CHIP_SIZE, draw_pos.y + GameManager::DRAW_CHIP_SIZE, -1, true);
+			}
+		}*/
+
+		player_->draw(camera_);
+		enemy_mgr_->draw(camera_);
+		ui_mgr_->draw(camera_);
 	}
-
-
-	// デバッグ（ 部屋の入口を表示 ）
-	/*for (int i = 0; i < areas_.size(); i++) {
-		for (int j = 0; j < areas_[i].room.entrance.size(); j++) {
-			tnl::Vector3 draw_pos = areas_[i].room.entrance[j].pos * GameManager::DRAW_CHIP_SIZE - camera_->getPos() + tnl::Vector3(DXE_WINDOW_WIDTH >> 1, DXE_WINDOW_HEIGHT >> 1, 0);
-
-			DrawBox(draw_pos.x, draw_pos.y, draw_pos.x + GameManager::DRAW_CHIP_SIZE, draw_pos.y + GameManager::DRAW_CHIP_SIZE, -1, true);
-		}
-	}*/
-
-	player_->draw(camera_);
-	enemy_mgr_->draw(camera_);
-	ui_mgr_->draw(camera_);
-
 	SetDrawBlendMode(DX_BLENDMODE_ALPHA, alpha_);
 	DrawExtendGraph(0, 0, DXE_WINDOW_WIDTH, DXE_WINDOW_HEIGHT, fade_gpc_hdl_, true);
 	SetDrawBlendMode(DX_BLENDMODE_NOBLEND, 255);
@@ -157,17 +151,26 @@ void ScenePlay::applyDamage(std::shared_ptr<Character> attacker, std::shared_ptr
 
 	std::string message = attacker->getName() + "は" + target->getName() + "に" + std::to_string(attacker->getStatus().getAtk()) + "ダメージを与えた。\n";
 
-	ui_mgr_->getMessageWindow()->setMessgae(message);
-	ui_mgr_->getMessageWindow()->setTimeLimit(3.0f);
+	ui_mgr_->setMessage(message, 3.0f);
 	tnl::DebugTrace("%dダメージを与えた。\n", attacker->getStatus().getAtk());
 
 	if (!target->isAlive()) {
+		attacker->getStatus().addExp(target->getStatus().getExp());
 		setMapData(target->getNextPos(), getTerrainData(target->getNextPos()));
 		message = target->getName() + "を倒した";
-		ui_mgr_->getMessageWindow()->setMessgae(message);
-		ui_mgr_->getMessageWindow()->setTimeLimit(3.0f);
+		ui_mgr_->setMessage(message, 3.0f);
 		tnl::DebugTrace("倒した\n");
 	}
+}
+
+// 次のフロアに変える処理
+void ScenePlay::changeProcessNextFloor() {
+	main_seq_.change(&ScenePlay::seqFadeOut);
+	in_dungeon_seq_.change(&ScenePlay::seqPlayerAct);
+	ui_mgr_->executeStairSelectEnd();
+	++dungeon_floor_;
+	ui_mgr_->setFloor(dungeon_floor_);
+	is_created_dungeon_ = false;
 }
 
 // ==================================================================================
@@ -184,21 +187,10 @@ bool ScenePlay::seqSceneStart(const float delta_time) {
 	return true;
 }
 
-// フェードイン
-bool ScenePlay::seqFadeIn(const float delta_time) {
-	
-	alpha_ = 255 - (main_seq_.getProgressTime() / fade_time_ * 255.0f);
-	
-	if (alpha_ <= 0) {
-		main_seq_.change(&ScenePlay::seqMain);
-	}
-
-	return true;
-}
-
 // ダンジョン生成シーケンス
 bool ScenePlay::seqGenerateDungeon(const float delta_time) {
 	
+	alpha_ = 0;
 	enemy_mgr_->deathAllEnemys();
 	dungeon_mgr_->generateDungeon();
 	field_ = dungeon_mgr_->getField();
@@ -225,7 +217,32 @@ bool ScenePlay::seqGenerateDungeon(const float delta_time) {
 
 	camera_->setPos(player_->getPos());
 
-	main_seq_.change(&ScenePlay::seqFadeIn);
+	is_created_dungeon_ = true;
+
+	main_seq_.change(&ScenePlay::seqDrawDungeonTitle);
+
+	return true;
+}
+
+bool ScenePlay::seqDrawDungeonTitle(const float delta_time) {
+
+	if (main_seq_.getProgressTime() > DRAW_TIME_DUNGEON_TITLE) {
+		main_seq_.change(&ScenePlay::seqFadeOut);
+	}
+
+	return true;
+}
+
+// フェードイン
+bool ScenePlay::seqFadeIn(const float delta_time) {
+
+	alpha_ = 255 - (main_seq_.getProgressTime() / fade_time_ * 255.0f);
+
+	if (alpha_ <= 0) {
+		// ダンジョンを生成した場合は、シーケンスをフェードイン。そうでない場合はダンジョンを生成。
+		if (is_created_dungeon_) main_seq_.change(&ScenePlay::seqMain);
+		else main_seq_.change(&ScenePlay::seqGenerateDungeon);
+	}
 
 	return true;
 }
@@ -248,12 +265,14 @@ bool ScenePlay::seqMain(const float delta_time) {
 	return true;
 }
 
-// 
+// フェードアウト
 bool ScenePlay::seqFadeOut(const float delta_time) {
 	
 	alpha_ = (main_seq_.getProgressTime() / fade_time_ * 255.0f);
 	if (alpha_ >= 255) {
-		main_seq_.change(&ScenePlay::seqGenerateDungeon);
+		if (is_created_dungeon_) is_drawing_dng_title_ = false;
+		else is_drawing_dng_title_ = true;
+		main_seq_.change(&ScenePlay::seqFadeIn);
 	}
 
 	return true;
@@ -320,9 +339,7 @@ bool ScenePlay::seqPlayerMove(const float delta_time) {
 	charaUpdate(delta_time);
 
 	if (player_->getActState() != eActState::END) return true;
-	ui_mgr_->getHP_Bar()->setMaxHP(player_->getStatus().getMaxHP());
-	ui_mgr_->getHP_Bar()->setHP(player_->getStatus().getHP());
-	ui_mgr_->getHP_Bar()->updateHP_Text();
+	ui_mgr_->setHP_BarStatus(player_->getStatus().getMaxHP(), player_->getStatus().getHP());
 	in_dungeon_seq_.change(&ScenePlay::seqEnemyAttack);
 	return true;
 }
@@ -363,9 +380,7 @@ bool ScenePlay::seqEnemyAttack(const float delta_time) {
 	if (atk_enemy_->getActState() != eActState::END) return true;
 
 	applyDamage(atk_enemy_, player_);
-	ui_mgr_->getHP_Bar()->setMaxHP(player_->getStatus().getMaxHP());
-	ui_mgr_->getHP_Bar()->setHP(player_->getStatus().getHP());
-	ui_mgr_->getHP_Bar()->updateHP_Text();
+	ui_mgr_->setHP_BarStatus(player_->getStatus().getMaxHP(), player_->getStatus().getHP());
 	atk_enemy_ = enemy_mgr_->getEnemyToAttackAction();
 
 	// 攻撃する敵がいない場合
@@ -400,18 +415,17 @@ bool ScenePlay::seqActEndProcess(const float delta_time) {
 
 	charaUpdate(delta_time);
 	// debugMapData();
-	ui_mgr_->getHP_Bar()->setMaxHP(player_->getStatus().getMaxHP());
-	ui_mgr_->getHP_Bar()->setHP(player_->getStatus().getHP());
-	ui_mgr_->getHP_Bar()->updateHP_Text();
+	ui_mgr_->setHP_BarStatus(player_->getStatus().getMaxHP(), player_->getStatus().getHP());
 	player_->beginAct();
 
+	// プレイヤーの位置が階段だった時
 	if (getTerrainData(player_->getPos()) == eMapData::STAIR) {
 		in_dungeon_seq_.change(&ScenePlay::seqStairSelect);
 		ui_mgr_->executeStairSelect();
 		return true;
 	}
-	in_dungeon_seq_.change(&ScenePlay::seqPlayerAct);
 
+	in_dungeon_seq_.change(&ScenePlay::seqPlayerAct);
 	return true;
 }
 
@@ -422,9 +436,7 @@ bool ScenePlay::seqStairSelect(const float delta_time) {
 
 	if (tnl::Input::IsKeyDownTrigger(eKeys::KB_RETURN)) {
 		if (ui_mgr_->selectStairResult()) {
-			main_seq_.change(&ScenePlay::seqFadeOut);
-			in_dungeon_seq_.change(&ScenePlay::seqPlayerAct);
-			ui_mgr_->executeStairSelectEnd();
+			changeProcessNextFloor();
 		}
 		else {
 			in_dungeon_seq_.change(&ScenePlay::seqPlayerAct);
