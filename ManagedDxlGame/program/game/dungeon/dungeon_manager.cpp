@@ -60,8 +60,8 @@ void DungeonManager::generateDungeon() {
 		tnl::DebugTrace("order_index + 1 = %d\n", order_index_ + 1);
 	}
 
-	//// 階段を生成
-	//createStair();
+	// 階段を生成
+	createStair();
 
 	// プレイヤーの生成位置を決める
 	spawnPlayer();
@@ -593,18 +593,18 @@ void DungeonManager::displayAreaNumber(const std::shared_ptr<Camera> camera) {
 	}
 }
 
-//// 階段の生成
-//void DungeonManager::createStair() {
-//
-//	int area_index = rand() % area_count_;
-//
-//	int create_x = rand() % areas_[area_index].room.width + areas_[area_index].room.x;
-//	int create_y = rand() % areas_[area_index].room.height + areas_[area_index].room.y;
-//
-//	tnl::DebugTrace("player x = %d, y = %d\n", create_x, create_y);
-//	field_[create_y][create_x].terrain_data = eMapData::STAIR;
-//	field_[create_y][create_x].map_data = eMapData::STAIR;
-//}
+// 階段の生成
+void DungeonManager::createStair() {
+
+	int area_index = rand() % area_count_;
+
+	int create_x = rand() % areas_[area_index].room.width + areas_[area_index].room.x;
+	int create_y = rand() % areas_[area_index].room.height + areas_[area_index].room.y;
+
+	tnl::DebugTrace("player x = %d, y = %d\n", create_x, create_y);
+	field_[create_y][create_x].terrain_data = eMapData::STAIR;
+	field_[create_y][create_x].map_data = eMapData::STAIR;
+}
 
 // プレイヤーの生成位置を決める
 void DungeonManager::spawnPlayer() {

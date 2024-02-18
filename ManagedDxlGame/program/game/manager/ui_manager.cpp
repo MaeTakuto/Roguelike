@@ -6,6 +6,7 @@
 UI_Manager::UI_Manager() {
 
 	message_window_ = std::make_shared<MessageWindow>();
+	select_window_ = std::make_shared<SelectWindow>();
 	hp_bar_ = std::make_shared<HP_Bar>();
 }
 
@@ -16,11 +17,34 @@ UI_Manager::~UI_Manager() {
 
 void UI_Manager::update(float delta_time) {
 
-	if (message_window_->isDisplay()) message_window_->update(delta_time);
+	if (message_window_->isEnable()) message_window_->update(delta_time);
+	if (select_window_->isEnable()) select_window_->update(delta_time);
 }
 
 void UI_Manager::draw(const std::shared_ptr<Camera> camera) {
 
-	if (message_window_->isDisplay()) message_window_->draw(camera);
+	if (message_window_->isEnable()) message_window_->draw(camera);
+	if (select_window_->isEnable()) select_window_->draw(camera);
 	hp_bar_->draw(camera);
+}
+
+// 階段での選択処理の実行
+void UI_Manager::executeStairSelect() {
+	select_window_->setEnable(true);
+	message_window_->cancelTimeLimit();
+	message_window_->clearMessage();
+	message_window_->setWindowPos(STAIR_SEL_MESS_WINDOW_POS);
+	message_window_->setWindowSize(STAIR_SEL_MESS_WINDOW_SIZE);
+	message_window_->setMessgae(STAIR_SEL_MESSAGE);
+	message_window_->setEneble(true);
+}
+
+// 階段での選択終了の処理の実行
+void UI_Manager::executeStairSelectEnd() {
+	select_window_->setEnable(false);
+	select_window_->init();
+	message_window_->setWindowPos(DEFAULT_MESS_WINDOW_POS);
+	message_window_->setWindowSize(DEFAULT_MESS_WINDOW_SIZE);
+	message_window_->clearMessage();
+	message_window_->setEneble(false);
 }

@@ -18,6 +18,7 @@ void HP_Bar::update(float delta_time) {
 
 void HP_Bar::draw(const std::shared_ptr<Camera> camera) {
 
+	SetFontSize(message_font_size_);
 	DrawStringEx(hp_text_pos_.x, hp_text_pos_.y, -1, hp_text_.c_str());
 
 	DrawBox(hp_bar_pos_.x, hp_bar_pos_.y, hp_bar_pos_.x + HP_BAR_MAX_WIDTH, hp_bar_pos_.y + HP_BAR_MAX_HEIGHT, GetColor(50, 50, 50), true);

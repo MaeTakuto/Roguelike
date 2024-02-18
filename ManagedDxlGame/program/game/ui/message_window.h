@@ -6,77 +6,101 @@ class Camera;
 class MessageWindow {
 public:
 	MessageWindow();
+	/*MessageWindow(int line);*/
 	~MessageWindow();
 
 	void update(float delta_time);
 	void draw(const std::shared_ptr<Camera> camera);
 
 private:
-	const int MESSAGE_WINDOW_WIDTH = 800;
-	const int MESSAGE_WINDOW_HEIGHT = 200;
-	const int MAX_MESSAGE_LINE = 4;
-	const int MESSAGE_STR_SIZE = 30;
-	const int MESSAGE_SPACE = 40;
+	const tnl::Vector2i MESS_STR_POS = { 30, 20 };
+	// メッセージウィンドウの位置
+	tnl::Vector2i window_pos_ = { 250, 450 };
+	tnl::Vector2i window_size_ = { 800, 200 };
+
+	// メッセージの位置
+	tnl::Vector2i mess_str_pos_ = window_pos_ + MESS_STR_POS;
 
 	// 表示しているか判定
-	bool is_display_ = true;
+	bool is_enable_ = false;
 
 	// 時間制限指定しているか判定
-	bool is_time_limit_ = true;
-	
-	// メッセージウィンドウの画像
-	int mess_window_gpc_hdl_ = 0;
+	bool is_time_limit_ = false;
 
 	// 制限時間
 	float time_limit_ = 0.0f;
 
-	// メッセージウィンドウの位置
-	tnl::Vector2i window_pos_ = { 250, 450 };
-
-	// メッセージの位置
-	tnl::Vector2i mess_str_pos_ = window_pos_ + tnl::Vector2i(30, 20);
-
 	// 表示するメッセージ
-	std::string* mess_str_ = nullptr;
+	std::vector<std::string> message_;
 
 	// 表示しているメッセージ数
 	int display_message_count_ = 0;
 
+	// 文字のサイズ
+	int message_font_size_ = 30;
+
+	// メッセージウィンドウに出せる文字の最大行数
+	int message_line_ = 4;
+	
+	// 行と行の間隔
+	int message_space_ = 40;
+
 public:
 	// ゲッター
-	inline bool isDisplay() { return is_display_; }
+	inline bool isEnable() { return is_enable_; }
+
+	// ウィンドウの位置を設定
+	inline void setWindowPos(const tnl::Vector2i& pos) { 
+		window_pos_ = pos;
+		mess_str_pos_ = window_pos_ + MESS_STR_POS;
+	}
+
+	// ウィンドウのサイズを設定
+	inline void setWindowSize(const tnl::Vector2i& size) { window_size_ = size; }
+
+	// メッセージのフォントサイズを設定
+	inline void setFontSize(int size) { message_font_size_ = size; }
+
+	// メッセージの最大行数を変更
+	inline void setMessageLine(int line) {
+		message_line_ = line;
+		message_.resize(message_line_);
+	}
 
 	// 表示時間を設定する
 	inline void setTimeLimit(float time_limit) { 
-		is_display_ = true;
+		is_enable_ = true;
 		time_limit_ = time_limit;
 		is_time_limit_ = true;
 	}
 
-	// メッセージウィンドウを表示する。
-	inline void displayWindow() { is_display_ = true; }
+	// 表示時間の設定を取り消し
+	inline void cancelTimeLimit() {
+		time_limit_ = 0.0f;
+		is_time_limit_ = false;
+	}
 
-	// メッセージウィンドウを非表示にする。
-	inline void hideWindow() { is_display_ = false; }
+	// メッセージウィンドウを表示、非表示の設定をする。
+	inline void setEneble(bool enable) { is_enable_ = enable; }
 
 	// メッセージを全削除
 	inline void clearMessage() {
 		display_message_count_ = 0;
-		for (int line = 0; line < MAX_MESSAGE_LINE; ++line) {
-			mess_str_[line] = "";
+		for (int line = 0; line < message_line_; ++line) {
+			message_[line] = "";
 		}
 	};
 
 	// メッセージをセットする
 	inline void setMessgae(std::string& message) {
-		if (display_message_count_ >= MAX_MESSAGE_LINE) {
-			for (int line = 0; line < MAX_MESSAGE_LINE - 1; ++line) {
-				mess_str_[line] = mess_str_[line + 1];
+		if (display_message_count_ >= message_line_) {
+			for (int line = 0; line < message_line_ - 1; ++line) {
+				message_[line] = message_[line + 1];
 			}
-			mess_str_[3] = message;
+			message_[message_.size() - 1] = message;
 			return;
 		}
-		mess_str_[display_message_count_] = message;
+		message_[display_message_count_] = message;
 		++display_message_count_;
 	}
 

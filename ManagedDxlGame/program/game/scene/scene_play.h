@@ -44,6 +44,18 @@ private:
 	
 	// マップチップの画像格納
 	std::vector<int> mapchip_gpc_hdl_;
+
+	// フェード演出の画像
+	int fade_gpc_hdl_ = 0;
+
+	// 透明度
+	int alpha_ = 0;
+
+	// フェード演出時間
+	float fade_time_ = 0.5f;
+
+	// 現在の階数
+	int floor = 1;
 	
 	// ========= デバッグ ============
 	void debugMapData() {
@@ -75,9 +87,9 @@ private:
 
 	// =========== メインシーケンス ===========
 	bool seqSceneStart(const float delta_time);
-	// bool seqFadeIn(const float delta_time);
+	bool seqFadeIn(const float delta_time);
 	bool seqGenerateDungeon(const float delta_time);
-	// bool seqFadeOut(const float delta_time);
+	bool seqFadeOut(const float delta_time);
 	bool seqMain(const float delta_time);
 
 	// =========== ダンジョン探索中のシーケンス ===========
@@ -88,6 +100,7 @@ private:
 	bool seqEnemyAttack(const float delta_time);
 	bool seqCharaMove(const float delta_time);
 	bool seqActEndProcess(const float delta_time);
+	bool seqStairSelect(const float delta_time);
 
 	// void charaAnimUpdate(float delta_time);
 

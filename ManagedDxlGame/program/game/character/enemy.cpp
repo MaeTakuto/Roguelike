@@ -192,6 +192,7 @@ void Enemy::onRoomAction() {
 	auto scene_play = scene_play_.lock();
 	if (scene_play == nullptr) return;
 
+	// プレイヤーを見つけた場合、攻撃でいるか確認する
 	if (is_find_player_) {
 		if (checkAttackForPlayer()) {
 			changeToAttackSeq();

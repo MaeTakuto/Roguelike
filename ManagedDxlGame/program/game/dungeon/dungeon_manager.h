@@ -155,7 +155,7 @@ private:
 	void connectLeftAndRightRooms(int left_x, int left_y, int right_x, int right_y);
 
 	// 階段を生成
-	// void createStair();
+	void createStair();
 
 	// プレイヤーの生成位置を決める
 	void spawnPlayer();
