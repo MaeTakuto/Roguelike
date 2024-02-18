@@ -45,6 +45,8 @@ public:
 	}
 
 private:
+	const int MAX_LEVEL = 6;
+	const int LEVEL_TABLE[5] = { 12, 30, 55, 80, 110 };
 
 	tnl::Sequence<Player> sequence_ = tnl::Sequence<Player>(this, &Player::seqIdle);
 
