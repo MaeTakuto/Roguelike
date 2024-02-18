@@ -26,6 +26,8 @@ void UI_Manager::draw(const std::shared_ptr<Camera> camera) {
 	if (message_window_->isEnable()) message_window_->draw(camera);
 	if (select_window_->isEnable()) select_window_->draw(camera);
 	hp_bar_->draw(camera);
+	SetFontSize(FLOOR_STR_FONT_SIZE);
+	DrawStringEx(FLOOR_STR_POS.x, FLOOR_STR_POS.y, -1, "%dF", floor_);
 }
 
 // 階段での選択処理の実行
@@ -47,4 +49,26 @@ void UI_Manager::executeStairSelectEnd() {
 	message_window_->setWindowSize(DEFAULT_MESS_WINDOW_SIZE);
 	message_window_->clearMessage();
 	message_window_->setEneble(false);
+}
+
+// メッセージウィンドウにメッセージをセット
+void UI_Manager::setMessage(const std::string& message, float draw_time = -1.0f) {
+
+	// 表示時間を制限する場合
+	if (draw_time > 0.0f) {
+		message_window_->setMessgae(message);
+		message_window_->setTimeLimit(draw_time);
+		return;
+	}
+	// 通常の場合
+	message_window_->setMessgae(message);
+	message_window_->setEneble(true);
+}
+
+// HPバーにステータスをセット
+void UI_Manager::setHP_BarStatus(int max_hp, int hp) {
+
+	hp_bar_->setMaxHP(max_hp);
+	hp_bar_->setHP(hp);
+	hp_bar_->updateHP_Text();
 }

@@ -7,6 +7,7 @@
 SceneTitle::SceneTitle() {
 
 	tnl::DebugTrace("SceneTitleのコンストラクタが実行されました\n");
+	SetBackgroundColor(32, 32, 32);
 	is_transition_process_ = false;
 }
 

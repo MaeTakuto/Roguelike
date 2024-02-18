@@ -92,7 +92,7 @@ public:
 	};
 
 	// メッセージをセットする
-	inline void setMessgae(std::string& message) {
+	inline void setMessgae(const std::string& message) {
 		if (display_message_count_ >= message_line_) {
 			for (int line = 0; line < message_line_ - 1; ++line) {
 				message_[line] = message_[line + 1];
