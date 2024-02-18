@@ -8,8 +8,6 @@
 #include "../common/camera.h"
 #include "../base/character_base.h"
 #include "../character/player.h"
-#include "../ui/message_window.h"
-#include "../ui/hp_bar.h"
 #include "scene_play.h"
 
 
@@ -78,9 +76,9 @@ void ScenePlay::draw() {
 
 	// ダンジョンタイトルを表示しているか
 	if (is_drawing_dng_title_) {
-		SetFontSize(TITLE_FONT_SIZE);
-		DrawStringEx(DUNGEON_TITLE_POS.x, DUNGEON_TITLE_POS.y, -1, DUNGEON_TITLE.c_str());
-		DrawStringEx(DUNGEON_TITLE_POS.x + 200, DUNGEON_TITLE_POS.y + 60, -1, "%dF", dungeon_floor_);
+		SetFontSize(DUNGEON_NAME_FONT_SIZE);
+		DrawStringEx(DUNGEON_NAME_POS.x, DUNGEON_NAME_POS.y, -1, DUNGEON_NAME.c_str());
+		DrawStringEx(DUNGEON_NAME_POS.x + 200, DUNGEON_NAME_POS.y + 60, -1, "%dF", dungeon_floor_);
 	}
 	else {
 		// マップチップ描画
@@ -151,14 +149,14 @@ void ScenePlay::applyDamage(std::shared_ptr<Character> attacker, std::shared_ptr
 
 	std::string message = attacker->getName() + "は" + target->getName() + "に" + std::to_string(attacker->getStatus().getAtk()) + "ダメージを与えた。\n";
 
-	ui_mgr_->setMessage(message, 3.0f);
+	ui_mgr_->setMessage(message, MESSAGE_DRAW_TIME);
 	tnl::DebugTrace("%dダメージを与えた。\n", attacker->getStatus().getAtk());
 
 	if (!target->isAlive()) {
 		attacker->getStatus().addExp(target->getStatus().getExp());
 		setMapData(target->getNextPos(), getTerrainData(target->getNextPos()));
 		message = target->getName() + "を倒した";
-		ui_mgr_->setMessage(message, 3.0f);
+		ui_mgr_->setMessage(message, MESSAGE_DRAW_TIME);
 		tnl::DebugTrace("倒した\n");
 	}
 }
@@ -169,8 +167,17 @@ void ScenePlay::changeProcessNextFloor() {
 	in_dungeon_seq_.change(&ScenePlay::seqPlayerAct);
 	ui_mgr_->executeStairSelectEnd();
 	++dungeon_floor_;
-	ui_mgr_->setFloor(dungeon_floor_);
 	is_created_dungeon_ = false;
+}
+
+// キャラのレベルが上がった時の処理
+void ScenePlay::charaLevelUpProcess(std::shared_ptr<Character> chara) {
+	std::string message = chara->getName() + "はレベルが" + std::to_string(chara->getStatus().getLevel()) + "になった";
+	ui_mgr_->setMessage(message, MESSAGE_DRAW_TIME);
+
+	std::shared_ptr<Player> player = std::dynamic_pointer_cast<Player>(chara);
+	if (player == nullptr) return;
+	ui_mgr_->setHP_BarStatus(player->getStatus().getHP(), player->getStatus().getMaxHP());
 }
 
 // ==================================================================================
@@ -194,9 +201,11 @@ bool ScenePlay::seqGenerateDungeon(const float delta_time) {
 	enemy_mgr_->deathAllEnemys();
 	dungeon_mgr_->generateDungeon();
 	field_ = dungeon_mgr_->getField();
+	ui_mgr_->setFloor(dungeon_floor_);
 	// map_data_ = dungeon_mgr_->getMapData();
 	areas_ = dungeon_mgr_->getAreas();
 
+	// プレイヤー、敵をスポーン
 	for (int y = 0; y < field_.size(); y++) {
 		for (int x = 0; x < field_[y].size(); x++) {
 			if (field_[y][x].map_data == eMapData::PLAYER ) {
@@ -226,7 +235,7 @@ bool ScenePlay::seqGenerateDungeon(const float delta_time) {
 
 bool ScenePlay::seqDrawDungeonTitle(const float delta_time) {
 
-	if (main_seq_.getProgressTime() > DRAW_TIME_DUNGEON_TITLE) {
+	if (main_seq_.getProgressTime() > DRAW_TIME_DUNGEON_NAME) {
 		main_seq_.change(&ScenePlay::seqFadeOut);
 	}
 

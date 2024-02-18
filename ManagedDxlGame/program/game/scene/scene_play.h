@@ -22,10 +22,20 @@ public:
 	void draw() override;
 
 private:
-	const float DRAW_TIME_DUNGEON_TITLE = 2.0f;
-	const std::string DUNGEON_TITLE = "森のダンジョン";
-	const tnl::Vector3 DUNGEON_TITLE_POS = { 400, 100, 0 };
-	const int TITLE_FONT_SIZE = 60;
+	// 階層移動時のダンジョン名の表示時間
+	const float DRAW_TIME_DUNGEON_NAME = 2.0f;
+
+	// ダンジョンの名前
+	const std::string DUNGEON_NAME = "森のダンジョン";
+	
+	// ダンジョンタイトルの位置
+	const tnl::Vector3 DUNGEON_NAME_POS = { 400, 100, 0 };
+	
+	// タイトルのフォントサイズ
+	const int DUNGEON_NAME_FONT_SIZE = 60;
+	
+	// メッセージの表示時間
+	const float MESSAGE_DRAW_TIME = 3.0f;
 
 	// シーン内のシーケンス
 	tnl::Sequence<ScenePlay> main_seq_ = tnl::Sequence<ScenePlay>(this, &ScenePlay::seqSceneStart);
@@ -127,6 +137,7 @@ public:
 	// ==============================================
 	std::shared_ptr<Enemy> findEnemy(const tnl::Vector3& pos);
 	void applyDamage(std::shared_ptr<Character> attacker, std::shared_ptr<Character> target);
+	void charaLevelUpProcess(std::shared_ptr<Character> chara);
 	void changeProcessNextFloor();
 
 	// ==============================================

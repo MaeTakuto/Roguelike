@@ -247,6 +247,12 @@ bool Player::seqAttack(const float delta_time) {
 		std::shared_ptr<Enemy> target = scene_play->findEnemy(attack_dir_);
 
 		if (target) scene_play->applyDamage(player, target);
+		if (status_.getLevel() < MAX_LEVEL) {
+			if (status_.getExp() >= LEVEL_TABLE[status_.getLevel() - 1]) {
+				status_.levelUP();
+				scene_play->charaLevelUpProcess(player);
+			}
+		}
 	}
 	act_state_ = eActState::END;
 	sequence_.change(&Player::seqIdle);

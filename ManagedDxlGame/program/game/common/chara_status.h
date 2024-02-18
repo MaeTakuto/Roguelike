@@ -48,6 +48,14 @@ public:
 		return heal_amount;
 	}
 
+	inline void levelUP() {
+		++level_;
+		max_hp_ += 4;
+		hp_ = max_hp_;
+		atk_ += 3;
+		def_ += 3;
+	}
+
 private:
 	// ƒŒƒxƒ‹
 	int level_;
