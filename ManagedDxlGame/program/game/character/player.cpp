@@ -72,7 +72,7 @@ void Player::draw(std::shared_ptr<Camera> camera) {
 		}
 	}
 	// ---------------- Î‚ßˆÚ“®‚Å‚«‚é•ûŒü‚ÌƒZƒ‹•`‰æ ----------------
-	else if (tnl::Input::IsMouseDown(eMouse::RIGHT)) {
+	else if (tnl::Input::IsKeyDown(eKeys::KB_RSHIFT)) {
 		for (int i = static_cast<int>(eDir_8::UP_LEFT); i < static_cast<int>(eDir_8::MAX); ++i) {
 			eDir_8 dir = static_cast<eDir_8>(i);
 			if (isEnableDir(dir) && !checkMapDataFromPos(pos_ + getPosFromDir(dir), eMapData::ENEMY)) {
@@ -135,7 +135,7 @@ bool Player::seqIdle(const float delta_time) {
 		}
 	}
 	// ======== Î‚ßˆÚ“® ========
-	else if (tnl::Input::IsMouseDown(eMouse::RIGHT)) {
+	else if (tnl::Input::IsKeyDown(eKeys::KB_RSHIFT)) {
 		// •ûŒü“]Š·
 		if (tnl::Input::IsKeyDown(eKeys::KB_W) && tnl::Input::IsKeyDown(eKeys::KB_A)) {
 			if (isEnableDir(eDir_8::UP_LEFT)) {
@@ -206,7 +206,7 @@ bool Player::seqIdle(const float delta_time) {
 	}
 
 	// ======== UŒ‚“ü—Í ========
-	if (tnl::Input::IsMouseTrigger(eMouseTrigger::IN_LEFT)) {
+	if (tnl::Input::IsKeyDownTrigger(eKeys::KB_RETURN)) {
 		act_state_ = eActState::ATTACK;
 		sequence_.change(&Player::seqAttack);
 		attack_dir_ = pos_ + getPosFromDir(looking_dir_);

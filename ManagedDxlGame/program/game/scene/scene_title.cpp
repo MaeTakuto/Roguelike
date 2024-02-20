@@ -1,5 +1,6 @@
 #include "../../dxlib_ext/dxlib_ext.h"
 #include "../manager/gm_manager.h"
+#include "../manager/resource_manager.h"
 #include "scene_play.h"
 #include "scene_title.h"
 
@@ -9,6 +10,7 @@ SceneTitle::SceneTitle() {
 	tnl::DebugTrace("SceneTitleのコンストラクタが実行されました\n");
 	SetBackgroundColor(32, 32, 32);
 	is_transition_process_ = false;
+	back_ground_gpc_hdl_ = ResourceManager::getInstance()->loadGraph("graphics/title_background.jpg");
 }
 
 SceneTitle::~SceneTitle() {
@@ -27,5 +29,6 @@ void SceneTitle::update(float delta_time) {
 void SceneTitle::draw() {
 
 	SetFontSize(80);
-	DrawStringEx(100, 100, -1, "タイトルシーン");
+	DrawExtendGraph(BACKGROUND_POS.x, BACKGROUND_POS.y, BACKGROUND_POS.x + DXE_WINDOW_WIDTH, BACKGROUND_POS.y + DXE_WINDOW_HEIGHT, back_ground_gpc_hdl_, true);
+	DrawStringEx(TITLE_POS.x, TITLE_POS.y, -1, TITLE.c_str());
 }
