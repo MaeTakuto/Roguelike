@@ -26,10 +26,10 @@ private:
 	const float DRAW_TIME_DUNGEON_NAME = 2.0f;
 
 	// ダンジョンの名前
-	const std::string DUNGEON_NAME = "森のダンジョン";
+	const std::string DUNGEON_NAME = "不思議な森";
 	
 	// ダンジョンタイトルの位置
-	const tnl::Vector3 DUNGEON_NAME_POS = { 400, 100, 0 };
+	const tnl::Vector3 DUNGEON_NAME_POS = { 450, 100, 0 };
 	
 	// タイトルのフォントサイズ
 	const int DUNGEON_NAME_FONT_SIZE = 60;
@@ -82,6 +82,11 @@ private:
 	// ダンジョンを表示しているか
 	bool is_drawing_dng_title_ = true;
 
+	// ダンジョンのBGM
+	int dungeon_bgm_hdl_ = 0;
+
+	int loop_end_ = 2105775;
+
 	// ========= デバッグ ============
 	void debugMapData() {
 
@@ -127,6 +132,7 @@ private:
 	bool seqCharaMove(const float delta_time);
 	bool seqActEndProcess(const float delta_time);
 	bool seqStairSelect(const float delta_time);
+	bool seqGameOver(const float delta_time);
 
 	// void charaAnimUpdate(float delta_time);
 
@@ -139,6 +145,7 @@ public:
 	void applyDamage(std::shared_ptr<Character> attacker, std::shared_ptr<Character> target);
 	void charaLevelUpProcess(std::shared_ptr<Character> chara);
 	void changeProcessNextFloor();
+	void gameOverProcess();
 
 	// ==============================================
 	//				インライン関数

@@ -89,6 +89,8 @@ public:
 		for (int line = 0; line < message_line_; ++line) {
 			message_[line] = "";
 		}
+		cancelTimeLimit();
+		setEneble(false);
 	};
 
 	// メッセージをセットする

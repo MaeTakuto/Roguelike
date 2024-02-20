@@ -22,7 +22,9 @@ public:
 	void executeStairSelectEnd();
 
 	// メッセージをセット
-	void setMessage(const std::string& message, float draw_time);
+	void setMessage(const std::string& message, float draw_time = -1.0f);
+
+	void clearMessage();
 
 	// HPバーにステータスをセット
 	void setHP_BarStatus(int max_hp, int hp);

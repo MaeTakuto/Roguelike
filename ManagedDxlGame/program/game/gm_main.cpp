@@ -26,7 +26,7 @@ void gameMain(float delta_time) {
 
 	GameManager::GetInstance()->update(delta_time);
 
-	DrawFpsIndicator({ 10, DXE_WINDOW_HEIGHT - 10, 0 }, delta_time);
+	// DrawFpsIndicator({ 10, DXE_WINDOW_HEIGHT - 10, 0 }, delta_time);
 
 }
 

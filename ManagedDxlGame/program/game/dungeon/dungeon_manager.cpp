@@ -598,8 +598,8 @@ void DungeonManager::createStair() {
 
 	int area_index = rand() % area_count_;
 
-	int create_x = rand() % areas_[area_index].room.width + areas_[area_index].room.x;
-	int create_y = rand() % areas_[area_index].room.height + areas_[area_index].room.y;
+	int create_x = ( rand() % ( areas_[area_index].room.width - 2 ) ) + areas_[area_index].room.x + 1;
+	int create_y = ( rand() % ( areas_[area_index].room.height - 2 ) ) + areas_[area_index].room.y + 1;
 
 	tnl::DebugTrace("player x = %d, y = %d\n", create_x, create_y);
 	field_[create_y][create_x].terrain_data = eMapData::STAIR;

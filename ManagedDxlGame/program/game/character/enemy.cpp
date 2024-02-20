@@ -144,7 +144,7 @@ void Enemy::onRoadAction() {
 			return;
 		}
 		else {
-			target_pos_ = scene_play->getPlayerPos();
+			target_pos_ = scene_play->getPlayer()->getNextPos();
 			moveToTarget();
 			return;
 		}
@@ -152,14 +152,16 @@ void Enemy::onRoadAction() {
 
 	 eDir_8 dir = findPlayerDir_8();
 
+	 // 周りにプレイヤーがいたら
 	if (dir != eDir_8::NONE) {
 		is_find_player_ = true;
+		// プレイヤーの方向は攻撃可能か
 		if (isEnableDir(dir)) {
 			changeToAttackSeq();
 			return;
 		}
 		else {
-			target_pos_ = scene_play->getPlayerPos();
+			target_pos_ = scene_play->getPlayer()->getNextPos();
 			moveToTarget();
 			return;
 		}
@@ -198,7 +200,7 @@ void Enemy::onRoomAction() {
 			changeToAttackSeq();
 			return;
 		}
-		else target_pos_ = scene_play->getPlayerPos();
+		else target_pos_ = scene_play->getPlayer()->getNextPos();
 	}
 	else {
 		findPlayer();
@@ -323,7 +325,7 @@ void Enemy::findPlayer() {
 	// 同じ部屋にいたとき
 	if (scene_play->isPlayerInRoom(id)) {
 		is_find_player_ = true;
-		target_pos_ = scene_play->getPlayer()->getPos();
+		target_pos_ = scene_play->getPlayer()->getNextPos();
 		return;
 	}
 	std::vector<Entrance> entrance = scene_play->getRoomEntrance(id);
@@ -332,7 +334,7 @@ void Enemy::findPlayer() {
 	for (int i = 0; i < entrance.size(); ++i) {
 		if (scene_play->getMapData(entrance[i].pos) == eMapData::PLAYER) {
 			is_find_player_ = true;
-			target_pos_ = scene_play->getPlayer()->getPos();
+			target_pos_ = scene_play->getPlayer()->getNextPos();
 			return;
 		}
 	}

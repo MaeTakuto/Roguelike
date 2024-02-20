@@ -52,7 +52,7 @@ void UI_Manager::executeStairSelectEnd() {
 }
 
 // メッセージウィンドウにメッセージをセット
-void UI_Manager::setMessage(const std::string& message, float draw_time = -1.0f) {
+void UI_Manager::setMessage(const std::string& message, float draw_time) {
 
 	// 表示時間を制限する場合
 	if (draw_time > 0.0f) {
@@ -63,6 +63,10 @@ void UI_Manager::setMessage(const std::string& message, float draw_time = -1.0f)
 	// 通常の場合
 	message_window_->setMessgae(message);
 	message_window_->setEneble(true);
+}
+
+void UI_Manager::clearMessage() {
+	message_window_->clearMessage();
 }
 
 // HPバーにステータスをセット
