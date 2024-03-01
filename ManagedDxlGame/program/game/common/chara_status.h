@@ -7,12 +7,12 @@ public:
 	~CharaStatus();
 
 	// ゲッター
-	inline int getLevel() { return level_; }
-	inline int getMaxHP() { return max_hp_; }
-	inline int getHP() { return hp_; }
-	inline int getAtk() { return atk_; }
-	inline int getDef() { return def_; }
-	inline int getExp() { return exp_; }
+	inline int getLevel() const { return level_; }
+	inline int getMaxHP() const { return max_hp_; }
+	inline int getHP() const { return hp_; }
+	inline int getAtk() const { return atk_; }
+	inline int getDef() const { return def_; }
+	inline int getExp() const { return exp_; }
 
 	// ステータスをセット	
 	inline void setStatus(int level, int max_hp, int atk, int def, int exp) {
@@ -48,12 +48,13 @@ public:
 		return heal_amount;
 	}
 
-	inline void levelUP() {
+	// レベルアップ関数
+	inline void levelUP(int max_hp, int atk, int def) {
 		++level_;
-		max_hp_ += 4;
+		max_hp_ += max_hp;
 		hp_ = max_hp_;
-		atk_ += 3;
-		def_ += 3;
+		atk_ += atk;
+		def_ += def;
 	}
 
 private:

@@ -26,9 +26,9 @@ Enemy::Enemy() {
 
 	name_ = "おばけかぼちゃ";
 	status_.setStatus(1, 8, 5, 0, 5);
-	dir_ = eDir_4::DOWN;
+	anim_dir_ = eDir_4::DOWN;
 	act_state_ = eActState::IDLE;
-	nodes_ = new Node[8];
+	nodes_ = new Node[static_cast<int>(eDir_8::MAX)];
 
 	is_alive_ = true;
 	is_collision_ = false;
@@ -36,11 +36,12 @@ Enemy::Enemy() {
 }
 
 // =====================================================================================
-// 
+// デストラクタ
 // =====================================================================================
 Enemy::~Enemy() {
 
 	tnl::DebugTrace("Enemyのデストラクタが実行されました。\n");
+	delete[] nodes_;
 }
 
 // =====================================================================================
@@ -72,7 +73,78 @@ void Enemy::draw(const std::shared_ptr<Camera> camera) {
 		- camera->getPos() + tnl::Vector3(DXE_WINDOW_WIDTH >> 1, DXE_WINDOW_HEIGHT >> 1, 0);
 
 	DrawExtendGraph(draw_pos.x, draw_pos.y, draw_pos.x + GameManager::DRAW_CHIP_SIZE, draw_pos.y + GameManager::DRAW_CHIP_SIZE,
-		chara_gpc_hdl_[static_cast<int>(dir_)][0], true);
+		chara_gpc_hdl_[static_cast<int>(anim_dir_)][0], true);
+}
+
+// =====================================================================================
+// 描画
+// =====================================================================================
+void Enemy::addExp(int exp) {
+
+}
+
+// =====================================================================================
+// ダメージを受ける
+// =====================================================================================
+inline void Enemy::takeDamage(int damage) {
+	status_.takeDamage(damage);
+
+	if (status_.getHP() <= 0) {
+		is_alive_ = false;
+	}
+}
+
+// =====================================================================================
+// 死亡判定にする
+// =====================================================================================
+void Enemy::death() {
+	is_alive_ = false;
+	is_find_target_ = false;
+	is_find_player_ = false;
+	action_error_ = 0;
+
+}
+
+// =====================================================================================
+// 行動を決める
+// =====================================================================================
+void Enemy::desideAction() {
+
+	auto scene_play = scene_play_.lock();
+	if (scene_play == nullptr) return;
+
+	if (scene_play->getPlace(pos_) == ePlace::ROAD) onRoadAction();
+	else onRoomAction();
+}
+
+// =====================================================================================
+// 行動を開始する
+// =====================================================================================
+void Enemy::beginAction() {
+
+	// シーケンスが ActionStandby でない場合、関数を抜ける
+	if (!sequence_.isComparable(&Enemy::seqIdle)) return;
+	if (act_state_ == eActState::MOVE) {
+		sequence_.immediatelyChange(&Enemy::seqMove);
+		return;
+	}
+	if (act_state_ == eActState::ATTACK) {
+		sequence_.immediatelyChange(&Enemy::seqAttack);
+	}
+}
+
+// =====================================================================================
+// 自身をスポーンさせる
+// =====================================================================================
+void Enemy::spawn(const tnl::Vector3& pos) {
+
+	is_alive_ = true;
+	pos_ = pos;
+	next_pos_ = pos;
+
+	status_.setStatus(1, 8, 5, 0, 5);
+	anim_dir_ = eDir_4::DOWN;
+	act_state_ = eActState::IDLE;
 }
 
 // =====================================================================================
@@ -108,14 +180,17 @@ bool Enemy::seqMove(const float delta_time) {
 	return true;
 }
 
+// ====================================================
+// 攻撃シーケンス
+// ====================================================
 bool Enemy::seqAttack(const float delta_time) {
 
 	auto scene_play = scene_play_.lock();
 	if (scene_play == nullptr) return true;
-	count_ += delta_time;
+	attack_time_ += delta_time;
 
-	if (count_ > 0.5f) {
-		count_ = 0.0f;
+	if (attack_time_ > 0.5f) {
+		attack_time_ = 0.0f;
 		act_state_ = eActState::END;
 		sequence_.change(&Enemy::seqIdle);
 	}
@@ -132,7 +207,7 @@ void Enemy::onRoadAction() {
 
 	// 行動エラーのカウント回数が3回以上の場合、来た道に方向を向ける
 	if (action_error_ >= ACTION_ERROR_MAX) {
-		dir_ = getOppositeDir(dir_);
+		anim_dir_ = getOppositeDir(anim_dir_);
 		action_error_ = 0;
 	}
 
@@ -171,7 +246,7 @@ void Enemy::onRoadAction() {
 	std::vector<eDir_4> directions = getNearbyMapData( pos_, eMapData::GROUND );
 
 	// 来た方向の要素だけ削除する
-	auto it = std::find(directions.begin(), directions.end(), getOppositeDir(dir_));
+	auto it = std::find(directions.begin(), directions.end(), getOppositeDir(anim_dir_));
 	if (it != directions.end()) directions.erase(it);
 
 	// 移動できる方向がない場合、行動エラーをカウントする
@@ -258,10 +333,10 @@ void Enemy::moveToTarget() {
 	else next_pos_ = pos_;
 
 	// 方向の設定
-	if((next_pos_.y - pos_.y) > 0 ) dir_ = eDir_4::DOWN;
-	else if ((next_pos_.y - pos_.y) < 0) dir_ = eDir_4::UP;
-	else if ((next_pos_.x - pos_.x) > 0) dir_ = eDir_4::RIGHT;
-	else if ((next_pos_.x - pos_.x) < 0) dir_ = eDir_4::LEFT;
+	if((next_pos_.y - pos_.y) > 0 ) anim_dir_ = eDir_4::DOWN;
+	else if ((next_pos_.y - pos_.y) < 0) anim_dir_ = eDir_4::UP;
+	else if ((next_pos_.x - pos_.x) > 0) anim_dir_ = eDir_4::RIGHT;
+	else if ((next_pos_.x - pos_.x) < 0) anim_dir_ = eDir_4::LEFT;
 
 	if (scene_play->getPlace(next_pos_) == ePlace::ROAD) is_find_target_ = false;
 	changeToMoveSeq();
@@ -274,7 +349,7 @@ Node* Enemy::getMinimunScoreNodeForEnabled() {
 	Node* p = nullptr;
 
 	for (int i = 0; i < DIR_MAX; ++i) {
-		if (nodes_[i].is_enable_ == false) continue;
+		if (!nodes_[i].is_enable_) continue;
 		if (nullptr == p) p = &nodes_[i];
 		if (p->cost_ > nodes_[i].cost_) p = &nodes_[i];
 	}
@@ -338,4 +413,26 @@ void Enemy::findPlayer() {
 			return;
 		}
 	}
+}
+
+// =====================================================================================
+// 
+// =====================================================================================
+bool Enemy::isEnableMapPosition(const tnl::Vector2i& pos) {
+
+	if (pos.x < 0) return false;
+	if (pos.y < 0) return false;
+	if (pos.x > GameManager::FIELD_WIDTH) return false;
+	if (pos.y > GameManager::FIELD_HEIGHT) return false;
+	return true;
+}
+
+// =====================================================================================
+// 向いている方向を反対を取得する
+// =====================================================================================
+eDir_4 Enemy::getOppositeDir(eDir_4 dir) {
+	if (dir == eDir_4::UP)			return eDir_4::DOWN;
+	else if (dir == eDir_4::DOWN)	return eDir_4::UP;
+	else if (dir == eDir_4::LEFT)	return eDir_4::RIGHT;
+	else if (dir == eDir_4::RIGHT)	return eDir_4::LEFT;
 }

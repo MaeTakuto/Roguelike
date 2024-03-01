@@ -3,7 +3,7 @@
 #include "../common/camera.h"
 #include "../manager/resource_manager.h"
 #include "../scene/scene_play.h"
-#include "../character/enemy.h"
+#include "enemy.h"
 #include "player.h"
 
 
@@ -32,14 +32,14 @@ Player::Player() {
 
 	name_ = "プレイヤー";
 	status_.setStatus(1, 15, 5, 0, 0);
-	dir_ = eDir_4::DOWN;
+	anim_dir_ = eDir_4::DOWN;
 	act_state_ = eActState::IDLE;
 	is_collision_ = false;
 
 }
 
 Player::~Player() {
-
+	tnl::DebugTrace("Playerのデストラクタが実行されました\n");
 }
 
 void Player::update(float delta_time) {
@@ -47,20 +47,23 @@ void Player::update(float delta_time) {
 	sequence_.update(delta_time);
 }
 
+// ====================================================
+// プレイヤー関連の描画
+// ====================================================
 void Player::draw(std::shared_ptr<Camera> camera) {
 
 	// 描画位置調整
 	tnl::Vector3 player_draw_pos = pos_ * GameManager::DRAW_CHIP_SIZE - camera->getPos() + tnl::Vector3(DXE_WINDOW_WIDTH >> 1, DXE_WINDOW_HEIGHT >> 1, 0);
 
 	DrawExtendGraph(player_draw_pos.x, player_draw_pos.y, player_draw_pos.x + GameManager::DRAW_CHIP_SIZE, player_draw_pos.y + GameManager::DRAW_CHIP_SIZE,
-		chara_gpc_hdl_[static_cast<int>(dir_)][0], true);
+		chara_gpc_hdl_[static_cast<int>(anim_dir_)][0], true);
 
 	if (act_state_ != eActState::IDLE) return;
 
 	SetDrawBlendMode(DX_BLENDMODE_ALPHA, 128);
 	// ---------------- 指定しているセルの描画 ----------------
 	if (tnl::Input::IsKeyDown(eKeys::KB_LSHIFT)) {
-		tnl::Vector3 select_cell_draw_pos = (pos_ + getPosFromDir(looking_dir_)) * GameManager::DRAW_CHIP_SIZE 
+		tnl::Vector3 select_cell_draw_pos = (pos_ + DIR_POS[static_cast<int>(looking_dir_)]) * GameManager::DRAW_CHIP_SIZE
 			- camera->getPos() + tnl::Vector3(DXE_WINDOW_WIDTH >> 1, DXE_WINDOW_HEIGHT >> 1, 0);
 		if (isEnableDir(looking_dir_)) {
 			DrawExtendGraph(select_cell_draw_pos.x, select_cell_draw_pos.y, select_cell_draw_pos.x + GameManager::DRAW_CHIP_SIZE, select_cell_draw_pos.y + GameManager::DRAW_CHIP_SIZE,
@@ -75,8 +78,8 @@ void Player::draw(std::shared_ptr<Camera> camera) {
 	else if (tnl::Input::IsKeyDown(eKeys::KB_RSHIFT)) {
 		for (int i = static_cast<int>(eDir_8::UP_LEFT); i < static_cast<int>(eDir_8::MAX); ++i) {
 			eDir_8 dir = static_cast<eDir_8>(i);
-			if (isEnableDir(dir) && !checkMapDataFromPos(pos_ + getPosFromDir(dir), eMapData::ENEMY)) {
-				tnl::Vector3 select_cell_draw_pos = ( pos_ + getPosFromDir( dir ) ) * GameManager::DRAW_CHIP_SIZE
+			if (isEnableDir(dir) && !checkMapDataFromPos(pos_ + DIR_POS[static_cast<int>(dir)], eMapData::ENEMY)) {
+				tnl::Vector3 select_cell_draw_pos = ( pos_ + DIR_POS[static_cast<int>(dir)]) * GameManager::DRAW_CHIP_SIZE
 					- camera->getPos() + tnl::Vector3(DXE_WINDOW_WIDTH >> 1, DXE_WINDOW_HEIGHT >> 1, 0);
 				DrawExtendGraph(select_cell_draw_pos.x, select_cell_draw_pos.y, select_cell_draw_pos.x + GameManager::DRAW_CHIP_SIZE, select_cell_draw_pos.y + GameManager::DRAW_CHIP_SIZE,
 					select_cell_blue_gpc_hdl_, true);
@@ -86,7 +89,9 @@ void Player::draw(std::shared_ptr<Camera> camera) {
 	SetDrawBlendMode(DX_BLENDMODE_ALPHA, 255);
 }
 
+// ====================================================
 // 指定した位置のセルが壁か判定
+// ====================================================
 bool Player::checkMapDataFromPos(const tnl::Vector3& pos, eMapData map_data) {
 
 	std::shared_ptr<ScenePlay> scene_play = std::dynamic_pointer_cast<ScenePlay>(GameManager::GetInstance()->getSceneInstance());
@@ -95,6 +100,9 @@ bool Player::checkMapDataFromPos(const tnl::Vector3& pos, eMapData map_data) {
 	return scene_play->getMapData(pos) == map_data;
 }
 
+// ====================================================
+// 待機、入力待ちシーケンス
+// ====================================================
 bool Player::seqIdle(const float delta_time) {
 
 	if (act_state_ != eActState::IDLE) return true;
@@ -103,35 +111,35 @@ bool Player::seqIdle(const float delta_time) {
 	if (tnl::Input::IsKeyDown(eKeys::KB_LSHIFT)) {
 		if (tnl::Input::IsKeyDown(eKeys::KB_W) && tnl::Input::IsKeyDown(eKeys::KB_A)) {
 			looking_dir_ = eDir_8::UP_LEFT;
-			dir_ = eDir_4::UP;
+			anim_dir_ = eDir_4::UP;
 		}
 		else if (tnl::Input::IsKeyDown(eKeys::KB_W) && tnl::Input::IsKeyDown(eKeys::KB_D)) {
 			looking_dir_ = eDir_8::UP_RIGHT;
-			dir_ = eDir_4::UP;
+			anim_dir_ = eDir_4::UP;
 		}
 		else if (tnl::Input::IsKeyDown(eKeys::KB_S) && tnl::Input::IsKeyDown(eKeys::KB_A)) {
 			looking_dir_ = eDir_8::DOWN_LEFT;
-			dir_ = eDir_4::DOWN;
+			anim_dir_ = eDir_4::DOWN;
 		}
 		else if (tnl::Input::IsKeyDown(eKeys::KB_S) && tnl::Input::IsKeyDown(eKeys::KB_D)) {
 			looking_dir_ = eDir_8::DOWN_RIGHT;
-			dir_ = eDir_4::DOWN;
+			anim_dir_ = eDir_4::DOWN;
 		}
 		else if (tnl::Input::IsKeyDown(eKeys::KB_W)) {
 			looking_dir_ = eDir_8::UP;
-			dir_ = eDir_4::UP;
+			anim_dir_ = eDir_4::UP;
 		}
 		else if (tnl::Input::IsKeyDown(eKeys::KB_S)) {
 			looking_dir_ = eDir_8::DOWN;
-				dir_ = eDir_4::DOWN;
+				anim_dir_ = eDir_4::DOWN;
 		}
 		else if (tnl::Input::IsKeyDown(eKeys::KB_A)) {
 			looking_dir_ = eDir_8::LEFT;
-			dir_ = eDir_4::LEFT;
+			anim_dir_ = eDir_4::LEFT;
 		}
 		else if (tnl::Input::IsKeyDown(eKeys::KB_D)) {
 			looking_dir_ = eDir_8::RIGHT;
-			dir_ = eDir_4::RIGHT;
+			anim_dir_ = eDir_4::RIGHT;
 		}
 	}
 	// ======== 斜め移動 ========
@@ -209,20 +217,22 @@ bool Player::seqIdle(const float delta_time) {
 	if (tnl::Input::IsKeyDownTrigger(eKeys::KB_RETURN)) {
 		act_state_ = eActState::ATTACK;
 		sequence_.change(&Player::seqAttack);
-		attack_dir_ = pos_ + getPosFromDir(looking_dir_);
+		attack_dir_ = pos_ + DIR_POS[static_cast<int>(looking_dir_)];
 	}
 
 	return true;
 }
 
+// ====================================================
 // 移動シーケンス
+// ====================================================
 bool Player::seqMove(const float delta_time) {
 
 	if (abs(next_pos_.y - pos_.y) > 0.1f || abs(next_pos_.x - pos_.x) > 0.1f) {
 		pos_ += (next_pos_ - pos_ ) * MOVE_SPEED;
 	}
 	else {
-		status_.healHP(1);
+		status_.healHP(regenerating_hp_);
 		pos_ = next_pos_;
 		act_state_ = eActState::END;
 		sequence_.change(&Player::seqIdle);
@@ -234,7 +244,9 @@ bool Player::seqMove(const float delta_time) {
 	return true;
 }
 
+// ====================================================
 // 攻撃シーケンス
+// ====================================================
 bool Player::seqAttack(const float delta_time) {
 
 	// 攻撃方向が有効だった場合
@@ -247,9 +259,11 @@ bool Player::seqAttack(const float delta_time) {
 		std::shared_ptr<Enemy> target = scene_play->findEnemy(attack_dir_);
 
 		if (target) scene_play->applyDamage(player, target);
+
+		// レベルアップ処理
 		if (status_.getLevel() < MAX_LEVEL) {
 			if (status_.getExp() >= LEVEL_TABLE[status_.getLevel() - 1]) {
-				status_.levelUP();
+				status_.levelUP(4, 3, 3);
 				scene_play->charaLevelUpProcess(player);
 			}
 		}

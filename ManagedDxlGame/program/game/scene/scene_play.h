@@ -85,9 +85,12 @@ private:
 	// ダンジョンのBGM
 	int dungeon_bgm_hdl_ = 0;
 
-	int loop_end_ = 2105775;
+	// BGM 終了地点のサンプリング周波数
+	int bgm_end_freqency_ = 2105775;
 
 	// ========= デバッグ ============
+
+	//  
 	void debugMapData() {
 
 		tnl::DebugTrace("============== map_data_ ===============\n");

@@ -23,12 +23,12 @@ SelectWindow::~SelectWindow() {
 
 void SelectWindow::update(float delta_time) {
 
-	if (tnl::Input::IsKeyDownTrigger(eKeys::KB_UP)) {
+	if (tnl::Input::IsKeyDownTrigger(eKeys::KB_W, eKeys::KB_UP)) {
 		is_yes_ = !is_yes_;
 		selected_cmd_index_--;
 		if (selected_cmd_index_ < 0) selected_cmd_index_ = message_line_ - 1;
 	}
-	if (tnl::Input::IsKeyDownTrigger(eKeys::KB_DOWN)) {
+	if (tnl::Input::IsKeyDownTrigger(eKeys::KB_S, eKeys::KB_DOWN)) {
 		is_yes_ = !is_yes_;
 		selected_cmd_index_++;
 		if (selected_cmd_index_ >= message_line_) selected_cmd_index_ = 0;

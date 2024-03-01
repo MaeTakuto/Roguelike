@@ -69,12 +69,15 @@ ScenePlay::~ScenePlay() {
 	);
 }
 
+// ====================================================
+// アップデート
+// ====================================================
 void ScenePlay::update(float delta_time) {
 
 	main_seq_.update(delta_time);
 
 	int freqency = GetCurrentPositionSoundMem(dungeon_bgm_hdl_);
-	if (freqency > loop_end_)
+	if (freqency > bgm_end_freqency_)
 	{
 		StopSoundMem(dungeon_bgm_hdl_);
 		SetCurrentPositionSoundMem(0, dungeon_bgm_hdl_);
@@ -82,6 +85,9 @@ void ScenePlay::update(float delta_time) {
 	}
 }
 
+// ====================================================
+// 描画
+// ====================================================
 void ScenePlay::draw() {
 
 	// ダンジョンタイトルを表示しているか
@@ -138,7 +144,9 @@ void ScenePlay::draw() {
 	 //dungeon_mgr_->displayAreaNumber(camera_);
 }
 
-// 
+// ====================================================
+// キャラクターアップデート
+// ====================================================
 void ScenePlay::charaUpdate(float delta_time) {
 
 	player_->update(delta_time);
@@ -152,7 +160,9 @@ std::shared_ptr<Enemy> ScenePlay::findEnemy(const tnl::Vector3& pos) {
 	return enemy;
 }
 
+// ====================================================
 // attaker が target にダメージを与える。
+// ====================================================
 void ScenePlay::applyDamage(std::shared_ptr<Character> attacker, std::shared_ptr<Character> target) {
 
 	target->takeDamage(attacker->getStatus().getAtk());
@@ -162,15 +172,8 @@ void ScenePlay::applyDamage(std::shared_ptr<Character> attacker, std::shared_ptr
 	ui_mgr_->setMessage(message, MESSAGE_DRAW_TIME);
 	tnl::DebugTrace("%dダメージを与えた。\n", attacker->getStatus().getAtk());
 
-	std::shared_ptr<Player> player = std::dynamic_pointer_cast<Player>(target);
-
-	if (player) {
-		if (!player->isAlive()) {
-			gameOverProcess();
-		}
-	}
-	else if (!target->isAlive()) {
-		attacker->getStatus().addExp(target->getStatus().getExp());
+	if (!target->isAlive()) {
+		attacker->addExp(target->getStatus().getExp());
 		setMapData(target->getNextPos(), getTerrainData(target->getNextPos()));
 		message = target->getName() + "を倒した";
 		ui_mgr_->setMessage(message, MESSAGE_DRAW_TIME);
@@ -178,7 +181,9 @@ void ScenePlay::applyDamage(std::shared_ptr<Character> attacker, std::shared_ptr
 	}
 }
 
+// ====================================================
 // 次のフロアに変える処理
+// ====================================================
 void ScenePlay::changeProcessNextFloor() {
 	main_seq_.change(&ScenePlay::seqFadeOut);
 	in_dungeon_seq_.change(&ScenePlay::seqPlayerAct);
@@ -187,7 +192,9 @@ void ScenePlay::changeProcessNextFloor() {
 	is_created_dungeon_ = false;
 }
 
+// ====================================================
 // キャラのレベルが上がった時の処理
+// ====================================================
 void ScenePlay::charaLevelUpProcess(std::shared_ptr<Character> chara) {
 	std::string message = chara->getName() + "はレベルが" + std::to_string(chara->getStatus().getLevel()) + "になった";
 	ui_mgr_->setMessage(message, MESSAGE_DRAW_TIME);
@@ -197,7 +204,9 @@ void ScenePlay::charaLevelUpProcess(std::shared_ptr<Character> chara) {
 	ui_mgr_->setHP_BarStatus(player->getStatus().getHP(), player->getStatus().getMaxHP());
 }
 
+// ====================================================
 // ゲームオーバー時の処理 
+// ====================================================
 void ScenePlay::gameOverProcess() {
 	ui_mgr_->clearMessage();
 	std::string message = player_->getName() + "はやられてしまった";
@@ -209,7 +218,9 @@ void ScenePlay::gameOverProcess() {
 //								メインシーケンス
 // ==================================================================================
 
-// 
+// ====================================================
+// シーンプレイ開始時実行（ 一度だけ ）
+// ====================================================
 bool ScenePlay::seqSceneStart(const float delta_time) {
 
 	enemy_mgr_->init();
@@ -219,7 +230,9 @@ bool ScenePlay::seqSceneStart(const float delta_time) {
 	return true;
 }
 
+// ====================================================
 // ダンジョン生成シーケンス
+// ====================================================
 bool ScenePlay::seqGenerateDungeon(const float delta_time) {
 	
 	alpha_ = 0;
@@ -258,6 +271,9 @@ bool ScenePlay::seqGenerateDungeon(const float delta_time) {
 	return true;
 }
 
+// ====================================================
+// ダンジョン名を表示するシーケンス
+// ====================================================
 bool ScenePlay::seqDrawDungeonTitle(const float delta_time) {
 
 	if (main_seq_.getProgressTime() > DRAW_TIME_DUNGEON_NAME) {
@@ -267,7 +283,9 @@ bool ScenePlay::seqDrawDungeonTitle(const float delta_time) {
 	return true;
 }
 
+// ====================================================
 // フェードイン
+// ====================================================
 bool ScenePlay::seqFadeIn(const float delta_time) {
 
 	alpha_ = 255 - (main_seq_.getProgressTime() / fade_time_ * 255.0f);
@@ -281,7 +299,9 @@ bool ScenePlay::seqFadeIn(const float delta_time) {
 	return true;
 }
 
+// ====================================================
 // ダンジョン探索シーケンス
+// ====================================================
 bool ScenePlay::seqMain(const float delta_time) {
 	if (in_dungeon_seq_.isStart()) {
 		if(!CheckSoundMem(dungeon_bgm_hdl_))PlaySoundMem(dungeon_bgm_hdl_, DX_PLAYTYPE_LOOP, true);
@@ -296,7 +316,9 @@ bool ScenePlay::seqMain(const float delta_time) {
 	return true;
 }
 
+// ====================================================
 // フェードアウト
+// ====================================================
 bool ScenePlay::seqFadeOut(const float delta_time) {
 	
 	alpha_ = (main_seq_.getProgressTime() / fade_time_ * 255.0f);
@@ -413,7 +435,12 @@ bool ScenePlay::seqEnemyAttack(const float delta_time) {
 	applyDamage(atk_enemy_, player_);
 	ui_mgr_->setHP_BarStatus(player_->getStatus().getMaxHP(), player_->getStatus().getHP());
 
-	if (!player_->isAlive()) return true;
+	// プレイヤー死亡時
+	if (!player_->isAlive()) {
+		gameOverProcess();
+		return true;
+	}
+	
 	atk_enemy_ = enemy_mgr_->getEnemyToAttackAction();
 
 	// 攻撃する敵がいない場合
@@ -449,7 +476,7 @@ bool ScenePlay::seqActEndProcess(const float delta_time) {
 	charaUpdate(delta_time);
 	// debugMapData();
 	ui_mgr_->setHP_BarStatus(player_->getStatus().getMaxHP(), player_->getStatus().getHP());
-	player_->beginAct();
+	player_->beginAction();
 
 	// プレイヤーの位置が階段だった時
 	if (getTerrainData(player_->getPos()) == eMapData::STAIR) {
@@ -491,3 +518,5 @@ bool ScenePlay::seqGameOver(const float delta_time) {
 	}
 	return true;
 }
+
+// 
