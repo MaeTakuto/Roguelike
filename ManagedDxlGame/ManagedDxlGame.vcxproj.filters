@@ -227,9 +227,6 @@
     <ClCompile Include="program\game\manager\resource_manager.cpp">
       <Filter>program\[003] game\manager</Filter>
     </ClCompile>
-    <ClCompile Include="program\game\character\enemy.cpp">
-      <Filter>program\[003] game\character</Filter>
-    </ClCompile>
     <ClCompile Include="program\game\character\player.cpp">
       <Filter>program\[003] game\character</Filter>
     </ClCompile>
@@ -262,6 +259,9 @@
     </ClCompile>
     <ClCompile Include="program\game\ui\select_window.cpp">
       <Filter>program\[003] game\ui</Filter>
+    </ClCompile>
+    <ClCompile Include="program\game\character\enemy.cpp">
+      <Filter>program\[003] game\character</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -479,9 +479,6 @@
     <ClInclude Include="program\game\manager\resource_manager.h">
       <Filter>program\[003] game\manager</Filter>
     </ClInclude>
-    <ClInclude Include="program\game\character\enemy.h">
-      <Filter>program\[003] game\character</Filter>
-    </ClInclude>
     <ClInclude Include="program\game\character\player.h">
       <Filter>program\[003] game\character</Filter>
     </ClInclude>
@@ -520,6 +517,9 @@
     </ClInclude>
     <ClInclude Include="program\game\ui\select_window.h">
       <Filter>program\[003] game\ui</Filter>
+    </ClInclude>
+    <ClInclude Include="program\game\character\enemy.h">
+      <Filter>program\[003] game\character</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

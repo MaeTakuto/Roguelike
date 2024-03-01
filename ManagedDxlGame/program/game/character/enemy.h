@@ -4,32 +4,41 @@
 #include "../scene/scene_play.h"
 
 
-class Node {
-public:
+// =====================================================================================
+// 移動マスのコスト、位置を管理するデータ
+// =====================================================================================
+struct Node {
 	tnl::Vector2i pos_ = { 0, 0 };
 	int cost_ = 0;
 	bool is_enable_ = true;
 
 };
 
+// =====================================================================================
+// 敵のベースとなるクラス
+// =====================================================================================
 class Enemy : public Character {
 public:
 	Enemy();
-	~Enemy();
+	virtual ~Enemy();
 
 	void update(float delta_time) override;
 	void draw(const std::shared_ptr<Camera> camera) override;
 
 private:
+	// 行動エラーの最大カウント（ 行動エラー時の対応を行う ）
 	const int ACTION_ERROR_MAX = 3;
 
-	// ScenePlayのインスタンス
+	// ScenePlayのインスタンス（ マップデータの取得や攻撃処理用に使うが、設計ミスによりあまり良くないと思っています。 ）
 	std::weak_ptr<ScenePlay> scene_play_;
 
+	// 敵の行動シーケンスの管理
 	tnl::Sequence<Enemy> sequence_ = tnl::Sequence<Enemy>(this, &Enemy::seqIdle);
 
+	// 目標の位置
 	tnl::Vector3 target_pos_ = { 0, 0, 0 };
 
+	// 周りのマスの最適コストを探す用
 	Node* nodes_ = nullptr;
 
 	// 目標位置を見つけたか判定
@@ -38,83 +47,52 @@ private:
 	// プレイヤーを見つけたか判定
 	bool is_find_player_ = false;
 
+	// 行動出来なかった回数
 	int action_error_ = 0;
+
+	// 目標の入口番号
 	int target_entrance_id_ = 0;
 
-	float count_ = 0.0f;
-
-	bool seqIdle(const float delta_time);
-	bool seqActionStundby(const float delta_time);
-	bool seqMove(const float delta_time);
-	bool seqAttack(const float delta_time);
+	float attack_time_ = 0.0f;
 
 public:
 
 	void init();
 
 	// ゲッター、セッター
-	inline const tnl::Vector3& getPos() override { return pos_; }
+	inline const tnl::Vector3& getPos() const override { return pos_; }
 	inline void setPos(const tnl::Vector3& pos) { pos_ = pos; }
-	inline const tnl::Vector3& getNextPos() override { return next_pos_; }
-	inline bool isAlive() override { return is_alive_; }
-	inline const eActState& getActState() override { return act_state_; }
-	inline const std::string& getName() override { return name_; };
-	inline CharaStatus& getStatus() override { return status_; }
+	inline const tnl::Vector3& getNextPos() const override { return next_pos_; }
+	inline bool isAlive() const override { return is_alive_; }
+	inline const eActState& getActState() const override { return act_state_; }
+	inline const std::string& getName() const override { return name_; };
+	inline const CharaStatus& getStatus() const override { return status_; }
 
-	// ダメージを受ける
-	inline void takeDamage(int damage) override {
-		status_.takeDamage(damage);
-
-		if (status_.getHP() == 0) {
-			is_alive_ = false;
-		}
-	}
-
-	// 死亡判定にする
-	inline void death() { 
-		is_alive_ = false;
-		is_find_target_ = false;
-		is_find_player_ = false;
-		action_error_ = 0;
-	}
-
-	// 行動を決める
-	inline void desideAction() {
-
-		auto scene_play = scene_play_.lock();
-		if (scene_play == nullptr) return;
-
-		if (scene_play->getPlace(pos_) == ePlace::ROAD) onRoadAction();
-		else onRoomAction();
-	}
+	// 経験値を取得
+	void addExp(int exp) override;
 
 	// 行動を開始する
-	inline void beginAction() { 
+	void beginAction() override;
 
-		// シーケンスが ActionStandby でない場合、関数を抜ける
-		if (!sequence_.isComparable(&Enemy::seqIdle)) return;
-		if (act_state_ == eActState::MOVE) {
-			sequence_.immediatelyChange(&Enemy::seqMove);
-			return;
-		}
-		if (act_state_ == eActState::ATTACK) {
-			sequence_.immediatelyChange(&Enemy::seqAttack);
-		}
-	}
+	// ダメージを受ける
+	void takeDamage(int damage) override;
+
+	// 死亡判定にする
+	void death();
+
+	// 行動を決める
+	void desideAction();
 
 	// 自身をスポーンさせる
-	inline void spawn(const tnl::Vector3& pos) {
-
-		is_alive_ = true;
-		pos_ = pos;
-		next_pos_ = pos;
-
-		status_.setStatus(1, 8, 5, 0, 5);
-		dir_ = eDir_4::DOWN;
-		act_state_ = eActState::IDLE;
-	}
+	void spawn(const tnl::Vector3& pos);
 
 private:
+	// 行動シーケンス
+	bool seqIdle(const float delta_time);
+	bool seqActionStundby(const float delta_time);
+	bool seqMove(const float delta_time);
+	bool seqAttack(const float delta_time);
+
 	// 通路での行動処理
 	void onRoadAction();
 
@@ -126,25 +104,12 @@ private:
 	void findPlayer();
 	Node* getMinimunScoreNodeForEnabled();
 
-	bool isEnableMapPosition(const tnl::Vector2i& pos) {
-
-		if ( pos.x < 0 ) return false;
-		if ( pos.y < 0 ) return false;
-		if ( pos.x > GameManager::FIELD_WIDTH ) return false;
-		if ( pos.y > GameManager::FIELD_HEIGHT ) return false;
-		return true;
-	}
+	bool isEnableMapPosition(const tnl::Vector2i& pos);
 
 	// =====================================================================================
 	// 向いている方向を反対を取得する
 	// =====================================================================================
-	inline eDir_4 getOppositeDir(eDir_4 dir) {
-
-		if (dir == eDir_4::UP)			return eDir_4::DOWN;
-		else if (dir == eDir_4::DOWN)	return eDir_4::UP;
-		else if (dir == eDir_4::LEFT)	return eDir_4::RIGHT;
-		else if (dir == eDir_4::RIGHT)	return eDir_4::LEFT;
-	}
+	eDir_4 getOppositeDir(eDir_4 dir);
 
 	// =====================================================================================
 	// 指定した方向の１マス先を next_pos_ にセット
@@ -154,19 +119,19 @@ private:
 		switch (dir) {
 		case eDir_4::UP:
 			next_pos_.y -= 1;
-			dir_ = dir;
+			anim_dir_ = dir;
 			break;
 		case eDir_4::DOWN:
 			next_pos_.y += 1;
-			dir_ = dir;
+			anim_dir_ = dir;
 			break;
 		case eDir_4::LEFT:
 			next_pos_.x -= 1;
-			dir_ = dir;
+			anim_dir_ = dir;
 			break;
 		case eDir_4::RIGHT:
 			next_pos_.x += 1;
-			dir_ = dir;
+			anim_dir_ = dir;
 			break;
 		default:
 			return;
@@ -222,14 +187,17 @@ private:
 		auto scene_play = scene_play_.lock();
 		if (scene_play == nullptr) return eDir_8::NONE;
 
-		if (scene_play->getMapData(pos_ + getPosFromDir(eDir_8::UP)) == eMapData::PLAYER)				return eDir_8::UP;
-		else if (scene_play->getMapData(pos_ + getPosFromDir(eDir_8::DOWN)) == eMapData::PLAYER)		return eDir_8::DOWN;
-		else if (scene_play->getMapData(pos_ + getPosFromDir(eDir_8::LEFT)) == eMapData::PLAYER)		return eDir_8::LEFT;
-		else if (scene_play->getMapData(pos_ + getPosFromDir(eDir_8::RIGHT)) == eMapData::PLAYER)		return eDir_8::RIGHT;
-		else if (scene_play->getMapData(pos_ + getPosFromDir(eDir_8::UP_LEFT)) == eMapData::PLAYER)		return eDir_8::UP_LEFT;
-		else if (scene_play->getMapData(pos_ + getPosFromDir(eDir_8::UP_RIGHT)) == eMapData::PLAYER)	return eDir_8::UP_RIGHT;
-		else if (scene_play->getMapData(pos_ + getPosFromDir(eDir_8::DOWN_LEFT)) == eMapData::PLAYER)	return eDir_8::DOWN_LEFT;
-		else if (scene_play->getMapData(pos_ + getPosFromDir(eDir_8::DOWN_RIGHT)) == eMapData::PLAYER)	return eDir_8::DOWN_RIGHT;
+		for (int i = static_cast<int>(eDir_8::UP); i < static_cast<int>(eDir_8::MAX); ++i) {
+			if (scene_play->getMapData(pos_ + DIR_POS[i]) == eMapData::PLAYER) return static_cast<eDir_8>(i);
+		}
+		//if (scene_play->getMapData(pos_ + DIR_POS[static_cast<int>(eDir_8::UP)]) == eMapData::PLAYER)				return eDir_8::UP;
+		//else if (scene_play->getMapData(pos_ + DIR_POS[static_cast<int>(eDir_8::DOWN)]) == eMapData::PLAYER)		return eDir_8::DOWN;
+		//else if (scene_play->getMapData(pos_ + DIR_POS[static_cast<int>(eDir_8::LEFT)]) == eMapData::PLAYER)		return eDir_8::LEFT;
+		//else if (scene_play->getMapData(pos_ + DIR_POS[static_cast<int>(eDir_8::RIGHT)]) == eMapData::PLAYER)		return eDir_8::RIGHT;
+		//else if (scene_play->getMapData(pos_ + DIR_POS[static_cast<int>(eDir_8::UP_LEFT)]) == eMapData::PLAYER)		return eDir_8::UP_LEFT;
+		//else if (scene_play->getMapData(pos_ + DIR_POS[static_cast<int>(eDir_8::UP_RIGHT)]) == eMapData::PLAYER)	return eDir_8::UP_RIGHT;
+		//else if (scene_play->getMapData(pos_ + DIR_POS[static_cast<int>(eDir_8::DOWN_LEFT)]) == eMapData::PLAYER)	return eDir_8::DOWN_LEFT;
+		//else if (scene_play->getMapData(pos_ + DIR_POS[static_cast<int>(eDir_8::DOWN_RIGHT)]) == eMapData::PLAYER)	return eDir_8::DOWN_RIGHT;
 
 		return eDir_8::NONE;
 	}
@@ -250,31 +218,32 @@ private:
 	// =====================================================================================
 	inline bool isEnableDir(eDir_8 dir) {
 		
+
 		if (dir == eDir_8::UP_LEFT) {
-			if (checkMapDataFromPos(pos_ + getPosFromDir(dir), eMapData::WALL)) return false;
-			if (checkMapDataFromPos(pos_ + getPosFromDir(eDir_8::UP), eMapData::WALL)) return false;
-			if (checkMapDataFromPos(pos_ + getPosFromDir(eDir_8::LEFT), eMapData::WALL)) return false;
+			if (checkMapDataFromPos(pos_ + DIR_POS[static_cast<int>(dir)], eMapData::WALL)) return false;
+			if (checkMapDataFromPos(pos_ + DIR_POS[static_cast<int>(eDir_8::UP)], eMapData::WALL)) return false;
+			if (checkMapDataFromPos(pos_ + DIR_POS[static_cast<int>(eDir_8::LEFT)], eMapData::WALL)) return false;
 			return true;
 		}
 		else if (dir == eDir_8::UP_RIGHT) {
-			if (checkMapDataFromPos(pos_ + getPosFromDir(dir), eMapData::WALL)) return false;
-			if (checkMapDataFromPos(pos_ + getPosFromDir(eDir_8::UP), eMapData::WALL)) return false;
-			if (checkMapDataFromPos(pos_ + getPosFromDir(eDir_8::RIGHT), eMapData::WALL)) return false;
+			if (checkMapDataFromPos(pos_ + DIR_POS[static_cast<int>(dir)], eMapData::WALL)) return false;
+			if (checkMapDataFromPos(pos_ + DIR_POS[static_cast<int>(eDir_8::UP)], eMapData::WALL)) return false;
+			if (checkMapDataFromPos(pos_ + DIR_POS[static_cast<int>(eDir_8::RIGHT)], eMapData::WALL)) return false;
 			return true;
 		}
 		else if (dir == eDir_8::DOWN_LEFT) {
-			if (checkMapDataFromPos(pos_ + getPosFromDir(dir), eMapData::WALL)) return false;
-			if (checkMapDataFromPos(pos_ + getPosFromDir(eDir_8::DOWN), eMapData::WALL)) return false;
-			if (checkMapDataFromPos(pos_ + getPosFromDir(eDir_8::LEFT), eMapData::WALL)) return false;
+			if (checkMapDataFromPos(pos_ + DIR_POS[static_cast<int>(dir)], eMapData::WALL)) return false;
+			if (checkMapDataFromPos(pos_ + DIR_POS[static_cast<int>(eDir_8::DOWN)], eMapData::WALL)) return false;
+			if (checkMapDataFromPos(pos_ + DIR_POS[static_cast<int>(eDir_8::LEFT)], eMapData::WALL)) return false;
 			return true;
 		}
 		else if (dir == eDir_8::DOWN_RIGHT) {
-			if (checkMapDataFromPos(pos_ + getPosFromDir(dir), eMapData::WALL)) return false;
-			if (checkMapDataFromPos(pos_ + getPosFromDir(eDir_8::DOWN), eMapData::WALL)) return false;
-			if (checkMapDataFromPos(pos_ + getPosFromDir(eDir_8::RIGHT), eMapData::WALL)) return false;
+			if (checkMapDataFromPos(pos_ + DIR_POS[static_cast<int>(dir)], eMapData::WALL)) return false;
+			if (checkMapDataFromPos(pos_ + DIR_POS[static_cast<int>(eDir_8::DOWN)], eMapData::WALL)) return false;
+			if (checkMapDataFromPos(pos_ + DIR_POS[static_cast<int>(eDir_8::RIGHT)], eMapData::WALL)) return false;
 			return true;
 		}
-		return !checkMapDataFromPos(pos_ + getPosFromDir(dir), eMapData::WALL);
+		return !checkMapDataFromPos(pos_ + DIR_POS[static_cast<int>(dir)], eMapData::WALL);
 	}
 
 	// =====================================================================================
