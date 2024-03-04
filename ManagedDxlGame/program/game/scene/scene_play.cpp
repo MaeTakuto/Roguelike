@@ -4,12 +4,30 @@
 #include "scene_title.h"
 #include "../dungeon/dungeon_manager.h"
 #include "../manager/enemy_manager.h"
+#include "../base/enemy_base.h"
 #include "../manager/ui_manager.h"
 #include "../common/camera.h"
 #include "../base/character_base.h"
 #include "../character/player.h"
 #include "scene_play.h"
 
+
+namespace {
+	// 階層移動時のダンジョン名の表示時間
+	const float DRAW_TIME_DUNGEON_NAME = 2.0f;
+
+	// ダンジョンの名前
+	const std::string DUNGEON_NAME = "不思議な森";
+
+	// ダンジョンタイトルの位置
+	const tnl::Vector3 DUNGEON_NAME_POS = { 450, 100, 0 };
+
+	// タイトルのフォントサイズ
+	const int DUNGEON_NAME_FONT_SIZE = 60;
+
+	// メッセージの表示時間
+	const float MESSAGE_DRAW_TIME = 3.0f;
+}
 
 ScenePlay::ScenePlay() {
 
@@ -153,9 +171,9 @@ void ScenePlay::charaUpdate(float delta_time) {
 	enemy_mgr_->update(delta_time);
 }
 
-std::shared_ptr<Enemy> ScenePlay::findEnemy(const tnl::Vector3& pos) {
+std::shared_ptr<EnemyBase> ScenePlay::findEnemy(const tnl::Vector3& pos) {
 
-	std::shared_ptr<Enemy> enemy = enemy_mgr_->findEnemy(pos);
+	std::shared_ptr<EnemyBase> enemy = enemy_mgr_->findEnemy(pos);
 
 	return enemy;
 }
@@ -223,8 +241,6 @@ void ScenePlay::gameOverProcess() {
 // ====================================================
 bool ScenePlay::seqSceneStart(const float delta_time) {
 
-	enemy_mgr_->init();
-
 	main_seq_.change(&ScenePlay::seqGenerateDungeon);
 
 	return true;
@@ -253,7 +269,7 @@ bool ScenePlay::seqGenerateDungeon(const float delta_time) {
 			}
 			else if (field_[y][x].map_data == eMapData::ENEMY) {
 				tnl::DebugTrace("enemy x = %d, y = %d\n", x, y);
-				enemy_mgr_->spawnEnemy(tnl::Vector3{ static_cast<float>(x) , static_cast<float>(y), 0});
+				enemy_mgr_->createEnemy(tnl::Vector3{ static_cast<float>(x) , static_cast<float>(y), 0});
 			}
 		}
 	}
@@ -430,7 +446,9 @@ bool ScenePlay::seqEnemyAttack(const float delta_time) {
 
 	charaUpdate(delta_time);
 
-	if (atk_enemy_->getActState() != eActState::END) return true;
+	if (atk_enemy_->getActState() != eActState::END) {
+		return true;
+	}
 
 	applyDamage(atk_enemy_, player_);
 	ui_mgr_->setHP_BarStatus(player_->getStatus().getMaxHP(), player_->getStatus().getHP());

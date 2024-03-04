@@ -185,9 +185,11 @@
     <ClCompile Include="program\dxlib_ext\mesh\dxlib_ext_mesh_base.cpp" />
     <ClCompile Include="program\dxlib_ext\mesh\dxlib_ext_mesh_mtrl_gui_controller.cpp" />
     <ClCompile Include="program\dxlib_ext\OBJLoader.cpp" />
+    <ClCompile Include="program\game\base\character_base.cpp" />
+    <ClCompile Include="program\game\base\enemy_base.cpp" />
     <ClCompile Include="program\game\base\scene_base.cpp" />
-    <ClCompile Include="program\game\character\enemy.cpp" />
     <ClCompile Include="program\game\character\player.cpp" />
+    <ClCompile Include="program\game\character\pumpkin.cpp" />
     <ClCompile Include="program\game\common\camera.cpp" />
     <ClCompile Include="program\game\common\chara_status.cpp" />
     <ClCompile Include="program\game\dungeon\dungeon_manager.cpp" />
@@ -267,9 +269,10 @@
     <ClInclude Include="program\dxlib_ext\mesh\dxlib_ext_mesh_mtrl_gui_controller.h" />
     <ClInclude Include="program\dxlib_ext\OBJLoader.h" />
     <ClInclude Include="program\game\base\character_base.h" />
+    <ClInclude Include="program\game\base\enemy_base.h" />
     <ClInclude Include="program\game\base\scene_base.h" />
-    <ClInclude Include="program\game\character\enemy.h" />
     <ClInclude Include="program\game\character\player.h" />
+    <ClInclude Include="program\game\character\pumpkin.h" />
     <ClInclude Include="program\game\common\camera.h" />
     <ClInclude Include="program\game\common\chara_status.h" />
     <ClInclude Include="program\game\common\enum.h" />

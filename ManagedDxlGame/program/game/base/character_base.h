@@ -5,7 +5,7 @@
 
 class Camera;
 
-const int DIR_MAX = 8;
+// const int DIR_MAX = 8;
 
 // キャラの行動状態
 enum class eActState {
@@ -15,7 +15,9 @@ enum class eActState {
 	END
 };
 
+// =====================================================================================
 // キャラクターのベースクラス
+// =====================================================================================
 class Character {
 public:
 	Character() {};
@@ -24,43 +26,54 @@ public:
 	virtual void update(float delta_time) = 0;
 	virtual void draw(const std::shared_ptr<Camera> camera) = 0;
 
-	// pos_ を取得、セット
-	virtual const tnl::Vector3& getPos() const = 0;
-	virtual void setPos(const tnl::Vector3& pos) = 0;
-	
-	// next_pos_ を取得
-	virtual const tnl::Vector3& getNextPos() const = 0;
+	// 現在の位置を取得
+	inline const tnl::Vector3& getPos() const { return pos_; }
+
+	// 位置をセット
+	inline void setPos(const tnl::Vector3& pos) {
+		pos_ = pos;
+		next_pos_ = pos_;
+	}
+
+	// 移動先の座標を取得
+	inline const tnl::Vector3& getNextPos() const { return next_pos_; }
 
 	// 生存しているか判定
-	virtual bool isAlive() const = 0;
+	inline bool isAlive() const { return is_alive_; }
 
 	// 行動状態を取得
-	virtual const eActState& getActState() const = 0;
+	inline eActState getActState() { return act_state_; }
 
 	// 名前を取得
-	virtual const std::string& getName() const = 0;
+	inline const std::string& getName() const { return name_; };
 
-	// ステータスを取得
-	virtual const CharaStatus& getStatus() const = 0;
+	// ステータスクラスを取得
+	inline const CharaStatus& getStatus() const { return status_; }
+
+	// 経験値を追加する
+	inline void addExp(int exp) { status_.addExp(exp); }
+
+	// ダメージを受ける
+	void takeDamage(int damage);
 
 	// 行動を開始させる
 	virtual void beginAction() = 0;
-
-	// ダメージを受ける
-	virtual void takeDamage(int damage) = 0;
-
-	// 経験値を取得
-	virtual void addExp(int exp) = 0;
 
 protected:
 	// 移動させるスピード
 	const float MOVE_SPEED = 0.25f;
 
 	// 各方向の表示画像の方向
-	const eDir_4 ANIM_DIR[DIR_MAX] = { eDir_4::UP, eDir_4::DOWN, eDir_4::LEFT, eDir_4::RIGHT, eDir_4::UP, eDir_4::UP, eDir_4::DOWN, eDir_4::DOWN };
+	const eDir_4 ANIM_DIR[static_cast<int>(eDir_8::MAX)] 
+		= { eDir_4::UP, eDir_4::DOWN, eDir_4::LEFT, eDir_4::RIGHT, eDir_4::UP, eDir_4::UP, eDir_4::DOWN, eDir_4::DOWN };
 
 	// 各方向のベクトル
-	const tnl::Vector3 DIR_POS[DIR_MAX] = { { 0, -1, 0 }, { 0, 1, 0 }, { -1, 0, 0 }, { 1, 0 , 0 }, { -1, -1, 0 }, { 1, -1, 0 }, { -1, 1, 0 }, { 1, 1, 0 } };
+	const tnl::Vector3 DIR_POS[static_cast<int>(eDir_8::MAX)] 
+		= { { 0, -1, 0 }, { 0, 1, 0 }, { -1, 0, 0 }, { 1, 0 , 0 }, { -1, -1, 0 }, { 1, -1, 0 }, { -1, 1, 0 }, { 1, 1, 0 } };
+
+	// 逆方向
+	const eDir_8 REVERCE_DIRECTION[static_cast<int>(eDir_8::MAX)]
+		= { eDir_8::DOWN, eDir_8::UP, eDir_8::RIGHT, eDir_8::LEFT, eDir_8::DOWN_RIGHT, eDir_8::DOWN_LEFT, eDir_8::UP_RIGHT, eDir_8::UP_LEFT };
 
 	// キャラの画像
 	std::vector< std::vector<int> > chara_gpc_hdl_;
@@ -89,5 +102,9 @@ protected:
 	// 生存しているか
 	bool is_alive_ = true;;
 	bool is_collision_ = false;
+
+protected:
+	// 指定した位置がフィールドの中か判定
+	bool isInField(const tnl::Vector3& pos);
 
 };

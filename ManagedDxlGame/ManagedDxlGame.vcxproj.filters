@@ -260,7 +260,13 @@
     <ClCompile Include="program\game\ui\select_window.cpp">
       <Filter>program\[003] game\ui</Filter>
     </ClCompile>
-    <ClCompile Include="program\game\character\enemy.cpp">
+    <ClCompile Include="program\game\base\enemy_base.cpp">
+      <Filter>program\[003] game\base</Filter>
+    </ClCompile>
+    <ClCompile Include="program\game\base\character_base.cpp">
+      <Filter>program\[003] game\base</Filter>
+    </ClCompile>
+    <ClCompile Include="program\game\character\pumpkin.cpp">
       <Filter>program\[003] game\character</Filter>
     </ClCompile>
   </ItemGroup>
@@ -518,7 +524,10 @@
     <ClInclude Include="program\game\ui\select_window.h">
       <Filter>program\[003] game\ui</Filter>
     </ClInclude>
-    <ClInclude Include="program\game\character\enemy.h">
+    <ClInclude Include="program\game\base\enemy_base.h">
+      <Filter>program\[003] game\base</Filter>
+    </ClInclude>
+    <ClInclude Include="program\game\character\pumpkin.h">
       <Filter>program\[003] game\character</Filter>
     </ClInclude>
   </ItemGroup>

@@ -37,7 +37,7 @@ enum class eMapData {
 
 // ƒZƒ‹‚ÌêŠ
 enum class ePlace {
-	WALL = 0,
-	ROAD,
-	ROOM,
+	WALL = 0,		// •Ç
+	CORRIDOR,		// ’Ê˜H
+	ROOM,			// •”‰®
 };

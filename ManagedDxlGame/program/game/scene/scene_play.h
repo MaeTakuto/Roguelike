@@ -6,12 +6,12 @@
 class DungeonManager;
 class Camera;
 class Player;
-class Enemy;
+class EnemyBase;
 class EnemyManager;
 class UI_Manager;
 
 // プレイシーンクラス
-class ScenePlay : public SceneBase {
+class ScenePlay final : public SceneBase {
 public:
 	ScenePlay();
 	~ScenePlay();
@@ -22,21 +22,6 @@ public:
 	void draw() override;
 
 private:
-	// 階層移動時のダンジョン名の表示時間
-	const float DRAW_TIME_DUNGEON_NAME = 2.0f;
-
-	// ダンジョンの名前
-	const std::string DUNGEON_NAME = "不思議な森";
-	
-	// ダンジョンタイトルの位置
-	const tnl::Vector3 DUNGEON_NAME_POS = { 450, 100, 0 };
-	
-	// タイトルのフォントサイズ
-	const int DUNGEON_NAME_FONT_SIZE = 60;
-	
-	// メッセージの表示時間
-	const float MESSAGE_DRAW_TIME = 3.0f;
-
 	// シーン内のシーケンス
 	tnl::Sequence<ScenePlay> main_seq_ = tnl::Sequence<ScenePlay>(this, &ScenePlay::seqSceneStart);
 	
@@ -50,7 +35,7 @@ private:
 	std::shared_ptr<EnemyManager> enemy_mgr_ = nullptr;
 	std::shared_ptr<UI_Manager> ui_mgr_ = nullptr;
 
-	std::shared_ptr<Enemy> atk_enemy_ = nullptr;
+	std::shared_ptr<EnemyBase> atk_enemy_ = nullptr;
 
 	// エリアデータ
 	std::vector<Area> areas_;
@@ -144,7 +129,7 @@ public:
 	// ==============================================
 	// プロトタイプ宣言
 	// ==============================================
-	std::shared_ptr<Enemy> findEnemy(const tnl::Vector3& pos);
+	std::shared_ptr<EnemyBase> findEnemy(const tnl::Vector3& pos);
 	void applyDamage(std::shared_ptr<Character> attacker, std::shared_ptr<Character> target);
 	void charaLevelUpProcess(std::shared_ptr<Character> chara);
 	void changeProcessNextFloor();
@@ -213,10 +198,10 @@ public:
 		return areas_[area_id].room.entrance;
 	}
 
-	// プレイヤーの位置を取得 
-	inline const tnl::Vector3& getPlayerPos() { return player_->getPos(); }
+	//// プレイヤーの位置を取得 
+	//inline const tnl::Vector3& getPlayerPos() { return player_->getPos(); }
 
 	// プレイヤーを取得
-	inline std::shared_ptr<Player> getPlayer() { return player_; }
+	inline const std::shared_ptr<Player> getPlayer() const { return player_; }
 
 };

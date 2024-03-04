@@ -3,7 +3,7 @@
 #include "../common/camera.h"
 #include "../manager/resource_manager.h"
 #include "../scene/scene_play.h"
-#include "enemy.h"
+#include "../base/enemy_base.h"
 #include "player.h"
 
 
@@ -256,7 +256,7 @@ bool Player::seqAttack(const float delta_time) {
 		if (!scene_play) return true;
 
 		std::shared_ptr<Player> player = scene_play->getPlayer();
-		std::shared_ptr<Enemy> target = scene_play->findEnemy(attack_dir_);
+		std::shared_ptr<EnemyBase> target = scene_play->findEnemy(attack_dir_);
 
 		if (target) scene_play->applyDamage(player, target);
 

@@ -10,25 +10,7 @@ ResourceManager::ResourceManager() {
 // デストラクタ
 ResourceManager::~ResourceManager() {
 
-	// 画像データの削除
-	for (auto it = gpc_hdl_container_.begin(); it != gpc_hdl_container_.end(); ++it) {
-		DeleteGraph(it->second);
-	}
-	gpc_hdl_container_.clear();
-
-	// アニメーションデータの削除
-	for (auto it = anim_hdl_container_.begin(); it != anim_hdl_container_.end(); ++it) {
-		for (int i = 0; i < it->second.size(); ++i) {
-			DeleteGraph(it->second[i]);
-		}
-	}
-	anim_hdl_container_.clear();
-
-	// サウンドの削除
-	for (auto it = snd_container_.begin(); it != snd_container_.end(); ++it) {
-		DeleteSoundMem(it->second);
-	}
-	snd_container_.clear();
+	clearAllResources();
 }
 
 // インスタンスを返す
@@ -125,4 +107,28 @@ void ResourceManager::deleteSound(const std::string& snd_path) {
 
 	DeleteSoundMem(snd_container_[snd_path]);
 	snd_container_.erase(snd_path);
+}
+
+// 全てのデータを削除
+void ResourceManager::clearAllResources() {
+
+	// 画像データの削除
+	for (auto it = gpc_hdl_container_.begin(); it != gpc_hdl_container_.end(); ++it) {
+		DeleteGraph(it->second);
+	}
+	gpc_hdl_container_.clear();
+
+	// アニメーションデータの削除
+	for (auto it = anim_hdl_container_.begin(); it != anim_hdl_container_.end(); ++it) {
+		for (int i = 0; i < it->second.size(); ++i) {
+			DeleteGraph(it->second[i]);
+		}
+	}
+	anim_hdl_container_.clear();
+
+	// サウンドの削除
+	for (auto it = snd_container_.begin(); it != snd_container_.end(); ++it) {
+		DeleteSoundMem(it->second);
+	}
+	snd_container_.clear();
 }

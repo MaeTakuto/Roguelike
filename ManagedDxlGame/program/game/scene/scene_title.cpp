@@ -4,6 +4,17 @@
 #include "scene_play.h"
 #include "scene_title.h"
 
+namespace {
+	// 背景の表示位置
+	const tnl::Vector2i BACKGROUND_POS = { 0, 0 };
+	
+	// ゲームタイトルの表示位置
+	const tnl::Vector2i TITLE_POS = { 400, 200 };
+
+	// ゲームタイトル名
+	const std::string TITLE = "不思議な森";
+}
+
 
 SceneTitle::SceneTitle() {
 
