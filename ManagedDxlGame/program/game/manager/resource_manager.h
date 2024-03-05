@@ -1,10 +1,14 @@
 #pragma once
 
 
-
-// 画像、アニメーション、サウンドのパスを管理するクラス
-class ResourceManager {
+// =====================================================================================
+// 画像、アニメーション、サウンドのパスを管理するクラス（ Flyweight パターン ）
+// =====================================================================================
+class ResourceManager final {
 public:
+	// デストラクタ
+	~ResourceManager();
+
 	// インスタンスを返す
 	static ResourceManager* getInstance();
 
@@ -30,9 +34,12 @@ public:
 	// サウンドの削除
 	void deleteSound(const std::string& snd_path);
 
+	// 全てのデータを削除
+	void clearAllResources();
+
 private:
+	// コンストラクタ
 	ResourceManager();
-	~ResourceManager();
 
 	// 画像データの格納用コンテナ
 	std::unordered_map< std::string, int > gpc_hdl_container_;

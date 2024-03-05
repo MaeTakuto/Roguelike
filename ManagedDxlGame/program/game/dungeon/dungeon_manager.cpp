@@ -11,6 +11,12 @@ DungeonManager::DungeonManager() {
 
 	order_connect_rooms_ = new int[AREA_MAX];
 
+	field_.resize(GameManager::FIELD_HEIGHT);
+
+	for (int i = 0; i < field_.size(); ++i) {
+		field_[i].resize(GameManager::FIELD_WIDTH);
+	}
+
 	for (int i = 0; i < AREA_MAX; i++) {
 		order_connect_rooms_[i] = 0;
 
@@ -499,19 +505,19 @@ void DungeonManager::connectUpAndDownRooms(int up_x, int up_y, int down_x, int d
 			tnl::DebugTrace("down_y = %d\n", down_y);
 			field_[down_y][down_x].terrain_data = eMapData::GROUND;
 			field_[down_y][down_x].map_data = eMapData::GROUND;
-			field_[down_y][down_x].place = ePlace::ROAD;
+			field_[down_y][down_x].place = ePlace::CORRIDOR;
 		}
 		else {
 			down_y--, up_y++;
 			tnl::DebugTrace("down_y = %d, up_y = %d\n", down_y, up_y);
 			field_[down_y][down_x].terrain_data = eMapData::GROUND;
 			field_[down_y][down_x].map_data = eMapData::GROUND;
-			field_[down_y][down_x].place = ePlace::ROAD;
+			field_[down_y][down_x].place = ePlace::CORRIDOR;
 
 			if (field_[up_y][up_x].terrain_data == eMapData::GROUND) continue;
 			field_[up_y][up_x].terrain_data = eMapData::GROUND;
 			field_[up_y][up_x].map_data = eMapData::GROUND;
-			field_[up_y][up_x].place = ePlace::ROAD;
+			field_[up_y][up_x].place = ePlace::CORRIDOR;
 		}
 	}
 
@@ -523,7 +529,7 @@ void DungeonManager::connectUpAndDownRooms(int up_x, int up_y, int down_x, int d
 			/*if (terrain_data_[down_y][down_x] == static_cast<int>(eMapData::GROUND)) break;*/
 			field_[down_y][down_x].terrain_data = eMapData::GROUND;
 			field_[down_y][down_x].map_data = eMapData::GROUND;
-			field_[down_y][down_x].place = ePlace::ROAD;
+			field_[down_y][down_x].place = ePlace::CORRIDOR;
 
 		}
 	}
@@ -537,18 +543,18 @@ void DungeonManager::connectLeftAndRightRooms(int left_x, int left_y, int right_
 			left_x++;
 			field_[left_y][left_x].terrain_data = eMapData::GROUND;
 			field_[left_y][left_x].map_data = eMapData::GROUND;
-			field_[left_y][left_x].place = ePlace::ROAD;
+			field_[left_y][left_x].place = ePlace::CORRIDOR;
 		}
 		else {
 			left_x++, right_x--;
 			field_[right_y][right_x].terrain_data = eMapData::GROUND;
 			field_[right_y][right_x].map_data = eMapData::GROUND;
-			field_[right_y][right_x].place = ePlace::ROAD;
+			field_[right_y][right_x].place = ePlace::CORRIDOR;
 
 			if (field_[left_y][left_x].terrain_data == eMapData::GROUND) continue;
 			field_[left_y][left_x].terrain_data = eMapData::GROUND;
 			field_[left_y][left_x].map_data = eMapData::GROUND;
-			field_[left_y][left_x].place = ePlace::ROAD;
+			field_[left_y][left_x].place = ePlace::CORRIDOR;
 		}
 	}
 
@@ -559,7 +565,7 @@ void DungeonManager::connectLeftAndRightRooms(int left_x, int left_y, int right_
 			// if (field_[left_y][left_x + 1].terrain_data == eMapData::GROUND && field_[left_y][left_x - 1].terrain_data == eMapData::GROUND) return;
 			field_[left_y][left_x].terrain_data = eMapData::GROUND;
 			field_[left_y][left_x].map_data = eMapData::GROUND;
-			field_[left_y][left_x].place = ePlace::ROAD;
+			field_[left_y][left_x].place = ePlace::CORRIDOR;
 		}
 	}
 }

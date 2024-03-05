@@ -122,7 +122,7 @@ private:
 	// int area_number_[FIELD_HEIGHT][FIELD_WIDTH] = { 0 };
 
 	// 地形データ
-	std::vector<std::vector<Cell> > field_{ GameManager::FIELD_HEIGHT, std::vector<Cell>( GameManager::FIELD_WIDTH ) };
+	std::vector<std::vector<Cell> > field_;
 	// std::vector<std::vector<int> > map_data_{ GameManager::FIELD_HEIGHT, std::vector<int>( GameManager::FIELD_WIDTH ) };
 
 	int area_count_ = 0;

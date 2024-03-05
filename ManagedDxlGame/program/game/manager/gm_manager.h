@@ -8,8 +8,12 @@ public:
 	~GameManager();
 
 	// ====== const ======
-	static constexpr int CHIP_SIZE = 32;									// 画像チップサイズ
-	static constexpr int DRAW_CHIP_SIZE = CHIP_SIZE * 2;					// オブジェクトの表示サイズ
+	// 画像チップサイズ
+	static constexpr int CHIP_SIZE = 32;
+	// オブジェクトの表示サイズ
+	static constexpr int DRAW_CHIP_SIZE = CHIP_SIZE * 2;
+	// csv のセルの読み取りの最初の行
+	static constexpr int CSV_CELL_ROW_START = 1;
 
 	// ダンジョンのサイズ
 	static constexpr int FIELD_WIDTH = 64;
@@ -43,12 +47,18 @@ private:
 	// 次のシーン
 	std::shared_ptr<SceneBase> next_scene_ = nullptr;
 
-	std::string transition_gpc_hdl_path_;									// フェード演出画像パス
+	// フェード演出画像パス
+	std::string transition_gpc_hdl_path_;
 
-	int transition_gpc_hdl_;												// フェード演出画像
-	float fade_time_ = 0.0f;												// フェード演出時間
-	float fade_time_wait_ = 0.25f;											// フェード演出待機時間
-	bool is_transition_ = false;											// フェード演出フラグ
+	// フェード演出画像
+	int transition_gpc_hdl_;
+
+	// フェード演出時間
+	float fade_time_ = 0.0f;
+	// フェード演出待機時間
+	float fade_time_wait_ = 0.25f;
+	// フェード演出フラグ
+	bool is_transition_ = false;
 
 	// ゲームマネージャーのシーケンス
 	tnl::Sequence<GameManager> sequence_

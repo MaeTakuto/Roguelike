@@ -37,7 +37,15 @@ enum class eMapData {
 
 // ƒZƒ‹‚ÌêŠ
 enum class ePlace {
-	WALL = 0,
-	ROAD,
-	ROOM,
+	WALL = 0,		// •Ç
+	CORRIDOR,		// ’Ê˜H
+	ROOM,			// •”‰®
+};
+
+// “G‚Ìí—Ş
+enum class eEnemyType {
+	NONE = -1,
+	PUMPKIN = 0,
+	SKELETON,
+	MAX
 };

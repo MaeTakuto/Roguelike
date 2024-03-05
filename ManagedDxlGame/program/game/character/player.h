@@ -8,7 +8,9 @@ const int MAX_LEVEL = 6;
 // 経験値テーブル
 const int LEVEL_TABLE[MAX_LEVEL - 1] = { 12, 30, 55, 80, 110 };
 
+// =====================================================================================
 // プレイヤークラス
+// =====================================================================================
 class Player : public Character {
 public:
 	Player();
@@ -17,52 +19,15 @@ public:
 	void update(float delta_time) override;
 	void draw(const std::shared_ptr<Camera> camera) override;
 
-	// 現在の位置を取得
-	inline const tnl::Vector3& getPos() const override { return pos_; }
-
-	// 位置をセット
-	inline void setPos(const tnl::Vector3& pos) override { 
-		pos_ = pos; 
-		next_pos_ = pos_; 
-	}
-
-	// 移動先の座標を取得
-	inline const tnl::Vector3& getNextPos() const override { return next_pos_; }
-	
-	// 生存しているか判定
-	inline bool isAlive() const { return is_alive_; }
-
-	// 行動状態を取得
-	inline const eActState& getActState() const override { return act_state_; }
-
-	// 名前を取得
-	inline const std::string& getName() const override { return name_; };
-
-	// ステータスクラスを取得
-	inline const CharaStatus& getStatus() const override { return status_; }
-
 	// 行動を開始する
 	inline void beginAction() override { act_state_ = eActState::IDLE; }
-
-	// 経験値を追加する
-	inline void addExp(int exp) override { status_.addExp(exp); }
 
 	// 衝突処理
 	inline void collisionProcess() {
 
 		act_state_ = eActState::IDLE;
-		is_collision_ = false;
 		sequence_.immediatelyChange(&Player::seqIdle);
 		next_pos_ = pos_;
-	}
-
-	// ダメージを受ける
-	inline void takeDamage(int damage) override {
-		status_.takeDamage(damage);
-
-		if (status_.getHP() <= 0) {
-			is_alive_ = false;
-		}
 	}
 
 private:
