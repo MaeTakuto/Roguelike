@@ -1,5 +1,5 @@
 #pragma once
-#include "../base/enemy_base.h"
+#include "../../base/enemy_base.h"
 
 
 // =====================================================================================
@@ -20,12 +20,14 @@ private:
 public:
 	// ============= プロトタイプ宣言 =============
 	
+	// クローンを生成する
+	std::shared_ptr<EnemyBase> createClone() const override;
+	// 敵のレベルを設定する
+	void setEnemyLevel(int lv) override;
 	// 行動を決定する。
 	void decideAction() override;
 	// 行動を開始する
 	void beginAction() override;
-	// 自身をスポーンさせる
-	void spawn(const tnl::Vector3& pos) override;
 	// 敵をデスさせる
 	void death() override;
 
@@ -40,7 +42,7 @@ private:
 
 	// ============= プロトタイプ宣言 =============
 	// 目標の位置に向かって 1マス移動する
-	void moveToTarget();
+	void setNextPosToTarget();
 	// プレイヤーを追跡する
 	void trackingPlayer() override;
 	// 各セルの移動コスト、有効なセルかを更新

@@ -139,6 +139,9 @@ public:
 	//				インライン関数
 	// ==============================================
 
+	// 現在のフロアを取得
+	inline int getFloor() const { return dungeon_floor_; }
+
 	// 指定された座標のマップデータを返す
 	inline eMapData getMapData(const tnl::Vector3& pos) {
 		int x = static_cast<int>(pos.x);
@@ -159,7 +162,7 @@ public:
 	}
 
 	// 地形データを取得する
-	inline eMapData getTerrainData(const tnl::Vector3& pos) {
+	inline eMapData getTerrainData(const tnl::Vector3& pos) const {
 		int x = static_cast<int>(pos.x);
 		int y = static_cast<int>(pos.y);
 
@@ -167,7 +170,7 @@ public:
 	}
 
 	// 部屋か通路かを返す。
-	inline ePlace getPlace(const tnl::Vector3& pos) {
+	inline ePlace getPlace(const tnl::Vector3& pos) const {
 		int x = static_cast<int>(pos.x);
 		int y = static_cast<int>(pos.y);
 
@@ -175,7 +178,7 @@ public:
 	}
 
 	// エリア番号を返す
-	inline int getAreaId(const tnl::Vector3& pos) {
+	inline int getAreaId(const tnl::Vector3& pos) const {
 		int x = static_cast<int>(pos.x);
 		int y = static_cast<int>(pos.y);
 
@@ -185,21 +188,10 @@ public:
 		return field_[y][x].area_id;
 	}
 
-	// 指定したエリア番号の部屋にプレイヤーが存在するか
-	inline bool isPlayerInRoom(int id) {
-		if (getPlace(player_->getPos()) != ePlace::ROOM) return false;
-		if (getAreaId(player_->getPos()) != id) return false;
-
-		return true;
-	}
-
 	// 部屋の入口の座標を返す
-	inline std::vector<Entrance>& getRoomEntrance(int area_id) {
+	inline const std::vector<Entrance>& getRoomEntrance(int area_id) const {
 		return areas_[area_id].room.entrance;
 	}
-
-	//// プレイヤーの位置を取得 
-	//inline const tnl::Vector3& getPlayerPos() { return player_->getPos(); }
 
 	// プレイヤーを取得
 	inline const std::shared_ptr<Player> getPlayer() const { return player_; }

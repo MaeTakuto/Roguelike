@@ -39,7 +39,7 @@ std::vector<eDir_4> EnemyBase::getMapDataDir_4(eMapData map_data) {
 
 // =====================================================================================
 // 周囲 8マスからプレイヤーがいるか確認し、その方向を返す。
-// いなければ、"eDir_8::NONE" が返ってくる
+// 存在しない場合、"eDir_8::NONE" が返ってくる
 // =====================================================================================
 eDir_8 EnemyBase::findPlayerDir_8() {
 
@@ -124,13 +124,15 @@ bool EnemyBase::isSameRoomToPlayer() {
 
 
 // =====================================================================================
-// 入口を探す
+// 現在の部屋の入口をランダムに取得する
 // =====================================================================================
-void EnemyBase::findEntrance() {
+const tnl::Vector3& EnemyBase::getRandomEntranceToNowRoom() const {
+
+	tnl::Vector3 pos = { 0, 0, 0 };
 
 	auto scene_play = scene_play_.lock();
 	if (!scene_play) {
-		return;
+		return pos;
 	}
 
 	int area_id = scene_play->getAreaId(pos_);
@@ -138,14 +140,12 @@ void EnemyBase::findEntrance() {
 
 	if (entrance.size() == 0) {
 		tnl::DebugTrace("Entranceが存在しません\n");
-		return;
+		return pos;
 	}
 
 	int target_pos_index = rand() % entrance.size();
-	target_pos_ = entrance[target_pos_index].pos;
-	target_entrance_id_ = entrance[target_pos_index].id;
-
-	is_find_target_ = true;
+	pos = entrance[target_pos_index].pos;
+	return pos;
 }
 
 // =====================================================================================

@@ -26,7 +26,6 @@ public:
 	inline void collisionProcess() {
 
 		act_state_ = eActState::IDLE;
-		is_collision_ = false;
 		sequence_.immediatelyChange(&Player::seqIdle);
 		next_pos_ = pos_;
 	}

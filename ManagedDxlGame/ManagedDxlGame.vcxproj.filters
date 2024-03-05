@@ -60,6 +60,12 @@
     <Filter Include="program\[003] game\ui">
       <UniqueIdentifier>{33c5bcea-ed39-48e1-a48b-c7b5eb8b221c}</UniqueIdentifier>
     </Filter>
+    <Filter Include="program\[003] game\character\enemy">
+      <UniqueIdentifier>{7c6781e2-3f43-42db-91d9-d0c7a951dc1b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="program\[002] my_library">
+      <UniqueIdentifier>{f0190c57-6a39-4de6-927d-d9aa5ce7956b}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="ManagedDxlGame.cpp">
@@ -266,8 +272,14 @@
     <ClCompile Include="program\game\base\character_base.cpp">
       <Filter>program\[003] game\base</Filter>
     </ClCompile>
-    <ClCompile Include="program\game\character\pumpkin.cpp">
-      <Filter>program\[003] game\character</Filter>
+    <ClCompile Include="program\game\character\enemy\skeleton.cpp">
+      <Filter>program\[003] game\character\enemy</Filter>
+    </ClCompile>
+    <ClCompile Include="program\game\character\enemy\pumpkin.cpp">
+      <Filter>program\[003] game\character\enemy</Filter>
+    </ClCompile>
+    <ClCompile Include="program\game\my_library\my_library.cpp">
+      <Filter>program\[002] my_library</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -527,8 +539,14 @@
     <ClInclude Include="program\game\base\enemy_base.h">
       <Filter>program\[003] game\base</Filter>
     </ClInclude>
-    <ClInclude Include="program\game\character\pumpkin.h">
-      <Filter>program\[003] game\character</Filter>
+    <ClInclude Include="program\game\character\enemy\skeleton.h">
+      <Filter>program\[003] game\character\enemy</Filter>
+    </ClInclude>
+    <ClInclude Include="program\game\character\enemy\pumpkin.h">
+      <Filter>program\[003] game\character\enemy</Filter>
+    </ClInclude>
+    <ClInclude Include="program\game\my_library\my_library.h">
+      <Filter>program\[002] my_library</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

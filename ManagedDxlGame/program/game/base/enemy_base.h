@@ -50,7 +50,6 @@ protected:
 
 	// 行動出来なかった回数
 	int action_error_ = 0;
-	int target_entrance_id_ = 0;
 
 	// 攻撃時間
 	float attack_time_ = 0.0f;
@@ -58,12 +57,14 @@ protected:
 public:
 	// ================= 仮想関数 =================
 	
+	// クローンを生成する
+	virtual std::shared_ptr<EnemyBase> createClone() const = 0;
+	// 敵のレベルを設定する
+	virtual void setEnemyLevel(int lv) = 0;
 	// 行動を決定する。
 	virtual void decideAction() = 0;
 	// 行動を開始する
 	virtual void beginAction() = 0;
-	// 自身をスポーンさせる
-	virtual void spawn(const tnl::Vector3& pos) = 0;
 	// 敵をデスさせる
 	virtual void death() = 0;
 
@@ -105,8 +106,8 @@ protected:
 	// プレイヤーが同じ部屋にいるか判定
 	bool isSameRoomToPlayer();
 
-	// 入口を探す
-	void findEntrance();
+	// 現在の部屋の入口をランダムに取得する
+	const tnl::Vector3& getRandomEntranceToNowRoom() const;
 
 	// 移動コストが最も小さく有効な CellCostのインデックスを取得
 	int getMinimunScoreCellIndex();

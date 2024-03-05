@@ -9,19 +9,19 @@
 
 Player::Player() {
 
-	gpc_hdl_data_ = tnl::LoadCsv("csv/player_gpc_data.csv");
+	std::vector<std::vector<tnl::CsvCell>> gpc_hdl_data = tnl::LoadCsv("csv/player_gpc_data.csv");
 
 	chara_gpc_hdl_.resize(4);
 
-	for (int i = 1; i < gpc_hdl_data_.size(); i++) {
+	for (int i = GameManager::CSV_CELL_ROW_START; i < gpc_hdl_data.size(); i++) {
 		
-		chara_gpc_hdl_[i - 1].resize( gpc_hdl_data_[i][1].getInt() );
+		chara_gpc_hdl_[i - 1].resize(gpc_hdl_data[i][1].getInt() );
 
 		chara_gpc_hdl_[i - 1] = ResourceManager::getInstance()->loadAnimation
-		(gpc_hdl_data_[i][0].getString(),
-		 gpc_hdl_data_[i][1].getInt(),
-		 gpc_hdl_data_[i][2].getInt(),
-		 gpc_hdl_data_[i][3].getInt(),
+		(gpc_hdl_data[i][0].getString(),
+		 gpc_hdl_data[i][1].getInt(),
+		 gpc_hdl_data[i][2].getInt(),
+		 gpc_hdl_data[i][3].getInt(),
 		 GameManager::CHIP_SIZE,
 		 GameManager::CHIP_SIZE
 		);
@@ -34,7 +34,6 @@ Player::Player() {
 	status_.setStatus(1, 15, 5, 0, 0);
 	anim_dir_ = eDir_4::DOWN;
 	act_state_ = eActState::IDLE;
-	is_collision_ = false;
 
 }
 

@@ -41,3 +41,11 @@ enum class ePlace {
 	CORRIDOR,		// ’Ê˜H
 	ROOM,			// •”‰®
 };
+
+// “G‚ÌŽí—Þ
+enum class eEnemyType {
+	NONE = -1,
+	PUMPKIN = 0,
+	SKELETON,
+	MAX
+};

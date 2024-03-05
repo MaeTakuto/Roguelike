@@ -1,5 +1,3 @@
-画像パス,画像総数,x方向,y方向
-graphics/pumpkin_anim_up.png,4,4,1
-graphics/pumpkin_anim_down.png,4,4,1
-graphics/pumpkin_anim_left.png,4,4,1
-graphics/pumpkin_anim_right.png,4,4,1
+モンスター名,上方向の画像パス,下方向の画像パス,左方向の画像パス,右方向の画像パス
+おばけかぼちゃ,graphics/pumpkin_anim_up.png,graphics/pumpkin_anim_down.png,graphics/pumpkin_anim_left.png,graphics/pumpkin_anim_right.png
+がいこつ,graphics/hone_anim_up.png,graphics/hone_anim_down.png,graphics/hone_anim_left.png,graphics/hone_anim_right.png

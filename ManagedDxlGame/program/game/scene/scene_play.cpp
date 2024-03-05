@@ -58,10 +58,10 @@ ScenePlay::ScenePlay() {
 	// 画像のロード
 	mapchip_gpc_hdl_ =
 		ResourceManager::getInstance()->loadAnimation(
-			gpc_hdl_data_[1][0].getString(),
-			gpc_hdl_data_[1][1].getInt(),
-			gpc_hdl_data_[1][2].getInt(),
-			gpc_hdl_data_[1][3].getInt(),
+			gpc_hdl_data_[GameManager::CSV_CELL_ROW_START][0].getString(),
+			gpc_hdl_data_[GameManager::CSV_CELL_ROW_START][1].getInt(),
+			gpc_hdl_data_[GameManager::CSV_CELL_ROW_START][2].getInt(),
+			gpc_hdl_data_[GameManager::CSV_CELL_ROW_START][3].getInt(),
 			GameManager::CHIP_SIZE,
 			GameManager::CHIP_SIZE
 		);
@@ -252,12 +252,17 @@ bool ScenePlay::seqSceneStart(const float delta_time) {
 bool ScenePlay::seqGenerateDungeon(const float delta_time) {
 	
 	alpha_ = 0;
+
+	// 敵を削除し、敵テーブルを現在フロアのデータに更新
 	enemy_mgr_->deathAllEnemys();
+	enemy_mgr_->updateEnemyDataToNowFloor(dungeon_floor_);
+
+	// ダンジョンを生成とフィールドの設定
 	dungeon_mgr_->generateDungeon();
 	field_ = dungeon_mgr_->getField();
-	ui_mgr_->setFloor(dungeon_floor_);
-	// map_data_ = dungeon_mgr_->getMapData();
 	areas_ = dungeon_mgr_->getAreas();
+
+	ui_mgr_->setFloor(dungeon_floor_);
 
 	// プレイヤー、敵をスポーン
 	for (int y = 0; y < field_.size(); y++) {
@@ -274,8 +279,8 @@ bool ScenePlay::seqGenerateDungeon(const float delta_time) {
 		}
 	}
 
+	// ダンジョンデータのデバッグ
 	// debugMapData();
-
 	debugPlaceData();
 
 	camera_->setPos(player_->getPos());

@@ -60,6 +60,11 @@ public:
 	virtual void beginAction() = 0;
 
 protected:
+	// キャラの画像数、チップサイズ（ キャラチップの切り取り ）
+	const int CHARA_GPC_X_NUM = 4;
+	const int CHARA_GPC_Y_NUM = 1;
+	const int CHARA_GPC_MAX_NUM = CHARA_GPC_X_NUM * CHARA_GPC_Y_NUM;
+
 	// 移動させるスピード
 	const float MOVE_SPEED = 0.25f;
 
@@ -78,8 +83,8 @@ protected:
 	// キャラの画像
 	std::vector< std::vector<int> > chara_gpc_hdl_;
 
-	// 画像データ（ 画像パス、フレーム数など ）
-	std::vector< std::vector<tnl::CsvCell> > gpc_hdl_data_;
+	//// 画像データ（ 画像パス、フレーム数など ）
+	//std::vector< std::vector<tnl::CsvCell> > gpc_hdl_data_;
 
 	// キャラクターの名前
 	std::string name_ = "";
@@ -101,7 +106,7 @@ protected:
 
 	// 生存しているか
 	bool is_alive_ = true;;
-	bool is_collision_ = false;
+	// bool is_collision_ = false;
 
 protected:
 	// 指定した位置がフィールドの中か判定
