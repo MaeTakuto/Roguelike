@@ -58,7 +58,7 @@ eDir_8 EnemyBase::findPlayerDir_8() {
 // =====================================================================================
 // プレイヤーに最も近い入口を返す
 // =====================================================================================
-const tnl::Vector3& EnemyBase::getEntrancePosToNearestPlayer(int area_id) const {
+tnl::Vector3 EnemyBase::getEntrancePosToNearestPlayer(int area_id) const {
 
 	tnl::Vector3 pos = { 0, 0, 0 };
 	auto scene_play = scene_play_.lock();
@@ -88,7 +88,7 @@ const tnl::Vector3& EnemyBase::getEntrancePosToNearestPlayer(int area_id) const 
 // =====================================================================================
 // プレイヤーが同じ部屋にいるか判定
 // =====================================================================================
-bool EnemyBase::isSameRoomToPlayer() {
+bool EnemyBase::isSameRoomToPlayer() const {
 
 	bool is_same_room = true;
 
@@ -126,7 +126,7 @@ bool EnemyBase::isSameRoomToPlayer() {
 // =====================================================================================
 // 現在の部屋の入口をランダムに取得する
 // =====================================================================================
-const tnl::Vector3& EnemyBase::getRandomEntranceToNowRoom() const {
+tnl::Vector3 EnemyBase::getRandomEntranceToNowRoom() const {
 
 	tnl::Vector3 pos = { 0, 0, 0 };
 

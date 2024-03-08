@@ -1,9 +1,13 @@
 #pragma once
+#include <queue>
 #include "../../dxlib_ext/dxlib_ext.h"
 
 class Camera;
 class EnemyBase;
 
+// =====================================================================================
+// 敵のデータ、ダンジョンにスポーンする敵の行動を制御するクラス
+// =====================================================================================
 class EnemyManager {
 public:
 	EnemyManager();
@@ -13,10 +17,11 @@ public:
 	void draw(const std::shared_ptr<Camera> camera);
 
 private:
+	// 敵の最大数
 	const int ENEMY_MAX = 10;
 	
 	// ダンジョンに生成する敵
-	std::vector< std::shared_ptr<EnemyBase> > enemys_;
+	std::vector< std::shared_ptr<EnemyBase> > enemies_;
 
 	// 各敵のデータを保持（ モンスター名、敵クラス ）
 	std::unordered_map< std::string, std::shared_ptr<EnemyBase> > enemy_data_;
@@ -41,7 +46,7 @@ public:
 	void desideAction();
 
 	// 攻撃状態の敵を取得
-	std::shared_ptr<EnemyBase> getEnemyToAttackAction();
+	std::queue< std::shared_ptr<EnemyBase> > getEnemyToAttackAction();
 
 	// 移動を行う敵の行動を開始させる
 	void beginActionToMove();

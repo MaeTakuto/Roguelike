@@ -1,5 +1,5 @@
 #pragma once
-#include "../dxlib_ext/dxlib_ext.h"
+#include "../../dxlib_ext/dxlib_ext.h"
 
 namespace mtl {
 

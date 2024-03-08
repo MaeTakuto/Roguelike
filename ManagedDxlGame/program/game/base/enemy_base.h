@@ -71,6 +71,12 @@ public:
 protected:
 	// ================= 仮想関数 =================
 
+	// レベル１モンスターの行動を決める
+	virtual void decideActionForLv_1() = 0;
+	
+	// レベル２モンスターの行動を決める
+	virtual void decideActionForLv_2() = 0;
+
 	// プレイヤーを追跡する
 	virtual void trackingPlayer() {}
 	
@@ -101,13 +107,13 @@ protected:
 	eDir_8 findPlayerDir_8();
 
 	// プレイヤーにもっとも近い入口の位置を返す
-	const tnl::Vector3& getEntrancePosToNearestPlayer(int area_id) const;
+	tnl::Vector3 getEntrancePosToNearestPlayer(int area_id) const;
 
 	// プレイヤーが同じ部屋にいるか判定
-	bool isSameRoomToPlayer();
+	bool isSameRoomToPlayer() const;
 
 	// 現在の部屋の入口をランダムに取得する
-	const tnl::Vector3& getRandomEntranceToNowRoom() const;
+	tnl::Vector3 getRandomEntranceToNowRoom() const;
 
 	// 移動コストが最も小さく有効な CellCostのインデックスを取得
 	int getMinimunScoreCellIndex();
