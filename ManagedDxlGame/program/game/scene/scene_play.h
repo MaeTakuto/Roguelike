@@ -1,7 +1,8 @@
 #pragma once
+#include <queue>
 #include "../base/scene_base.h"
 #include "../dungeon/dungeon_manager.h"
-#include "../character/player.h"
+#include "../object/character/player.h"
 
 class DungeonManager;
 class Camera;
@@ -35,7 +36,7 @@ private:
 	std::shared_ptr<EnemyManager> enemy_mgr_ = nullptr;
 	std::shared_ptr<UI_Manager> ui_mgr_ = nullptr;
 
-	std::shared_ptr<EnemyBase> atk_enemy_ = nullptr;
+	std::queue< std::shared_ptr<EnemyBase> > atk_enemies;
 
 	// エリアデータ
 	std::vector<Area> areas_;

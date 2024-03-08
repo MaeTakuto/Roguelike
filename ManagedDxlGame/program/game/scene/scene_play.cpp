@@ -8,7 +8,7 @@
 #include "../manager/ui_manager.h"
 #include "../common/camera.h"
 #include "../base/character_base.h"
-#include "../character/player.h"
+#include "../object/character/player.h"
 #include "scene_play.h"
 
 
@@ -389,9 +389,9 @@ bool ScenePlay::seqEnemyAct(const float delta_time) {
 	// ƒvƒŒƒCƒ„[‚ªˆÚ“®‚·‚éê‡
 	if (player_->getActState() == eActState::MOVE) {
 
-		atk_enemy_ = enemy_mgr_->getEnemyToAttackAction();
-		// UŒ‚‚·‚é“G‚ª‚¢‚½ê‡
-		if (atk_enemy_) {
+		atk_enemies = enemy_mgr_->getEnemyToAttackAction();
+		// UŒ‚‚·‚é“G‚ª‚¢‚½ê‡AƒvƒŒƒCƒ„[‚Ì‚ÝˆÚ“®
+		if (!atk_enemies.empty()) {
 			in_dungeon_seq_.change(&ScenePlay::seqPlayerMove);
 			return true;
 		}
@@ -399,9 +399,10 @@ bool ScenePlay::seqEnemyAct(const float delta_time) {
 		enemy_mgr_->beginActionToMove();
 		return true;
 	}
-
 	// ƒvƒŒƒCƒ„[‚ªUŒ‚‚·‚éê‡
-	else if(player_->getActState() == eActState::ATTACK) in_dungeon_seq_.change(&ScenePlay::seqPlayerAttack);
+	else if (player_->getActState() == eActState::ATTACK) {
+		in_dungeon_seq_.change(&ScenePlay::seqPlayerAttack);
+	}
 	return true;
 }
 
@@ -427,10 +428,10 @@ bool ScenePlay::seqPlayerAttack(const float delta_time) {
 
 	if (player_->getActState() != eActState::END) return true;
 
-	atk_enemy_ = enemy_mgr_->getEnemyToAttackAction();
+	atk_enemies = enemy_mgr_->getEnemyToAttackAction();
 
 	// UŒ‚‚·‚é“G‚ª‚¢‚½ê‡
-	if (enemy_mgr_->getEnemyToAttackAction()) {
+	if (!atk_enemies.empty()) {
 		in_dungeon_seq_.change(&ScenePlay::seqEnemyAttack);
 		return true;
 	}
@@ -445,17 +446,19 @@ bool ScenePlay::seqPlayerAttack(const float delta_time) {
 // “G‚ÌUŒ‚ƒV[ƒPƒ“ƒX
 // ====================================================
 bool ScenePlay::seqEnemyAttack(const float delta_time) {
+
+	// æ“ª‚Ì“G‚ÌUŒ‚‚ðŠJŽn
 	if (in_dungeon_seq_.isStart()) {
-		atk_enemy_->beginAction();
+		atk_enemies.front()->beginAction();
 	}
 
 	charaUpdate(delta_time);
 
-	if (atk_enemy_->getActState() != eActState::END) {
+	if (atk_enemies.front()->getActState() != eActState::END) {
 		return true;
 	}
 
-	applyDamage(atk_enemy_, player_);
+	applyDamage(atk_enemies.front(), player_);
 	ui_mgr_->setHP_BarStatus(player_->getStatus().getMaxHP(), player_->getStatus().getHP());
 
 	// ƒvƒŒƒCƒ„[Ž€–SŽž
@@ -464,15 +467,15 @@ bool ScenePlay::seqEnemyAttack(const float delta_time) {
 		return true;
 	}
 	
-	atk_enemy_ = enemy_mgr_->getEnemyToAttackAction();
+	atk_enemies.pop();
 
 	// UŒ‚‚·‚é“G‚ª‚¢‚È‚¢ê‡
-	if (atk_enemy_ == nullptr) {
+	if (atk_enemies.empty()) {
 		in_dungeon_seq_.change(&ScenePlay::seqCharaMove);
 		enemy_mgr_->beginActionToMove();
 		return true;
 	}
-	atk_enemy_->beginAction();
+	atk_enemies.front()->beginAction();
 	return true;
 }
 

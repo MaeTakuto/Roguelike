@@ -1,5 +1,5 @@
 #pragma once
-#include "../base/character_base.h"
+#include "../../base/character_base.h"
 
 class Camera;
 
@@ -64,7 +64,7 @@ private:
 
 		anim_dir_ = ANIM_DIR[index];
 		looking_dir_ = dir;
-		next_pos_ += DIR_POS[static_cast<int>(dir)];
+		next_pos_ = pos_ + DIR_POS[index];
 	}
 
 	// Žw’è‚µ‚½•ûŒü‚ª—LŒø‚©

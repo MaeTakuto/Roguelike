@@ -1,9 +1,9 @@
-#include "../../dxlib_ext/dxlib_ext.h"
-#include "../manager/gm_manager.h"
-#include "../common/camera.h"
-#include "../manager/resource_manager.h"
-#include "../scene/scene_play.h"
-#include "../base/enemy_base.h"
+#include "../../../dxlib_ext/dxlib_ext.h"
+#include "../../manager/gm_manager.h"
+#include "../../common/camera.h"
+#include "../../manager/resource_manager.h"
+#include "../../scene/scene_play.h"
+#include "../../base/enemy_base.h"
 #include "player.h"
 
 
@@ -57,11 +57,13 @@ void Player::draw(std::shared_ptr<Camera> camera) {
 	DrawExtendGraph(player_draw_pos.x, player_draw_pos.y, player_draw_pos.x + GameManager::DRAW_CHIP_SIZE, player_draw_pos.y + GameManager::DRAW_CHIP_SIZE,
 		chara_gpc_hdl_[static_cast<int>(anim_dir_)][0], true);
 
-	if (act_state_ != eActState::IDLE) return;
+	SetFontSize(DEFAULT_FONT_SIZE);
+	DrawStringEx(10, 10, -1, "%s", pos_.toString().c_str());
+	DrawStringEx(10, 30, -1, "%s", next_pos_.toString().c_str());
 
 	SetDrawBlendMode(DX_BLENDMODE_ALPHA, 128);
 	// ---------------- Žw’è‚µ‚Ä‚¢‚éƒZƒ‹‚Ì•`‰æ ----------------
-	if (tnl::Input::IsKeyDown(eKeys::KB_LSHIFT)) {
+	if (!tnl::Input::IsKeyDown(eKeys::KB_RSHIFT)) {
 		tnl::Vector3 select_cell_draw_pos = (pos_ + DIR_POS[static_cast<int>(looking_dir_)]) * GameManager::DRAW_CHIP_SIZE
 			- camera->getPos() + tnl::Vector3(DXE_WINDOW_WIDTH >> 1, DXE_WINDOW_HEIGHT >> 1, 0);
 		if (isEnableDir(looking_dir_)) {
@@ -73,8 +75,12 @@ void Player::draw(std::shared_ptr<Camera> camera) {
 				select_cell_red_gpc_hdl_, true);
 		}
 	}
+	if (act_state_ != eActState::IDLE) {
+		SetDrawBlendMode(DX_BLENDMODE_ALPHA, 255);
+		return;
+	}
 	// ---------------- ŽÎ‚ßˆÚ“®‚Å‚«‚é•ûŒü‚ÌƒZƒ‹•`‰æ ----------------
-	else if (tnl::Input::IsKeyDown(eKeys::KB_RSHIFT)) {
+	if (tnl::Input::IsKeyDown(eKeys::KB_RSHIFT)) {
 		for (int i = static_cast<int>(eDir_8::UP_LEFT); i < static_cast<int>(eDir_8::MAX); ++i) {
 			eDir_8 dir = static_cast<eDir_8>(i);
 			if (isEnableDir(dir) && !checkMapDataFromPos(pos_ + DIR_POS[static_cast<int>(dir)], eMapData::ENEMY)) {

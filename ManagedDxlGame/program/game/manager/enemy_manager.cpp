@@ -1,9 +1,10 @@
+#include <fstream>
 #include "../../dxlib_ext/dxlib_ext.h"
 #include "gm_manager.h"
 #include "../scene/scene_play.h"
 #include "../my_library/my_library.h"
-#include "../character/enemy/pumpkin.h"
-#include "../character/enemy/skeleton.h"
+#include "../object/character/enemy/pumpkin.h"
+#include "../object/character/enemy/skeleton.h"
 #include "enemy_manager.h"
 
 namespace {
@@ -15,7 +16,7 @@ namespace {
 // =====================================================================================
 EnemyManager::EnemyManager() {
 
-	enemys_.resize(ENEMY_MAX);
+	enemies_.resize(ENEMY_MAX);
 	
 	// 敵データの登録
 	enemy_data_.insert(make_pair("おばけかぼちゃ", std::make_shared<Pumpkin>()));
@@ -31,7 +32,7 @@ EnemyManager::~EnemyManager() {
 
 	tnl::DebugTrace("EnemyManagerのデストラクタが実行されました\n");
 
-	enemys_.clear();
+	enemies_.clear();
 }
 
 // =====================================================================================
@@ -39,12 +40,12 @@ EnemyManager::~EnemyManager() {
 // =====================================================================================
 void EnemyManager::update(float delta_time) {
 
-	for (int i = 0; i < enemys_.size(); i++) {
-		if (!enemys_[i]) {
+	for (int i = 0; i < enemies_.size(); i++) {
+		if (!enemies_[i]) {
 			continue;
 		}
-		if (enemys_[i]->isAlive())
-			enemys_[i]->update(delta_time);
+		if (enemies_[i]->isAlive())
+			enemies_[i]->update(delta_time);
 	}
 }
 
@@ -53,12 +54,12 @@ void EnemyManager::update(float delta_time) {
 // =====================================================================================
 void EnemyManager::draw(const std::shared_ptr<Camera> camera) {
 
-	for (int i = 0; i < enemys_.size(); i++) {
-		if (!enemys_[i]) {
+	for (int i = 0; i < enemies_.size(); i++) {
+		if (!enemies_[i]) {
 			continue;
 		}
-		if (enemys_[i]->isAlive())
-			enemys_[i]->draw(camera);
+		if (enemies_[i]->isAlive())
+			enemies_[i]->draw(camera);
 	}
 }
 
@@ -66,6 +67,7 @@ void EnemyManager::draw(const std::shared_ptr<Camera> camera) {
 // 階層の敵データを現在のフロアの敵データに更新
 // =====================================================================================
 void EnemyManager::updateEnemyDataToNowFloor(int floor) {
+	tnl::DebugTrace("=============== updateRnemyDataToNowFloor ===============\n");
 
 	if (floor <= 0 || floor > enemy_table_.size()) {
 		tnl::DebugTrace("floor が enemy_tableの範囲外です。floor：%d\n", floor);
@@ -94,12 +96,19 @@ void EnemyManager::updateEnemyDataToNowFloor(int floor) {
 // =====================================================================================
 void EnemyManager::createEnemy(const tnl::Vector3& pos) {
 
-	for (int i = 0; i < enemys_.size(); i++) {
-		if (!enemys_[i]) {
-			enemys_[i] = createRandomEnemy();
-			enemys_[i]->setPos(pos);
+	for (int i = 0; i < enemies_.size();) {
+		if (!enemies_[i]) {
+			
+			enemies_[i] = createRandomEnemy();
+			
+			if (!enemies_[i]) {
+				continue;
+			}
+
+			enemies_[i]->setPos(pos);
 			return;
 		}
+		++i;
 	}
 }
 
@@ -108,12 +117,12 @@ void EnemyManager::createEnemy(const tnl::Vector3& pos) {
 // =====================================================================================
 void EnemyManager::deathAllEnemys() {
 
-	for (int i = 0; i < enemys_.size(); i++) {
-		if (!enemys_[i]) {
+	for (int i = 0; i < enemies_.size(); i++) {
+		if (!enemies_[i]) {
 			continue;
 		}
 
-		enemys_[i] = nullptr;
+		enemies_[i] = nullptr;
 	}
 }
 
@@ -122,49 +131,55 @@ void EnemyManager::deathAllEnemys() {
 // =====================================================================================
 void EnemyManager::desideAction() {
 
-	for (int i = 0; i < enemys_.size(); i++) {
-		if (!enemys_[i]) {
+	for (int i = 0; i < enemies_.size(); i++) {
+		if (!enemies_[i]) {
 			continue;
 		}
-		if (enemys_[i]->isAlive() == false) continue;
-		enemys_[i]->decideAction();
+		if (enemies_[i]->isAlive() == false) continue;
+
+		// ログファイルに出力
+		std::ofstream logfile("GameLog.txt", std::ios_base::app);
+		logfile << "敵名：" << enemies_[i]->getName() << "Index：" << i << std::endl;
+		enemies_[i]->decideAction();
 	}
 }
 
 // =====================================================================================
 // 攻撃行動をする敵を取得。いない場合は nullptr
 // =====================================================================================
-std::shared_ptr<EnemyBase> EnemyManager::getEnemyToAttackAction() {
-	for (int i = 0; i < enemys_.size(); i++) {
-		if (!enemys_[i]) {
+std::queue< std::shared_ptr<EnemyBase> > EnemyManager::getEnemyToAttackAction() {
+	std::queue< std::shared_ptr<EnemyBase> > atk_enemies;
+	
+	for (int i = 0; i < enemies_.size(); i++) {
+		if (!enemies_[i]) {
 			continue;
 		}
-		if (!(enemys_[i]->isAlive())) {
+		if (!(enemies_[i]->isAlive())) {
 			continue;
 		}
-		if (enemys_[i]->getActState() != eActState::ATTACK) {
+		if (enemies_[i]->getActState() != eActState::ATTACK) {
 			continue;
 		}
-		return enemys_[i];
+		atk_enemies.push(enemies_[i]);
 	}
-	return nullptr;
+	return atk_enemies;
 }
 
 // =====================================================================================
 // 移動を行う敵の行動を開始させる
 // =====================================================================================
 void EnemyManager::beginActionToMove() {
-	for (int i = 0; i < enemys_.size(); i++) {
-		if (!enemys_[i]) {
+	for (int i = 0; i < enemies_.size(); i++) {
+		if (!enemies_[i]) {
 			continue;
 		}
-		if (!(enemys_[i]->isAlive())) {
+		if (!(enemies_[i]->isAlive())) {
 			continue;
 		}
-		if (enemys_[i]->getActState() != eActState::MOVE) {
+		if (enemies_[i]->getActState() != eActState::MOVE) {
 			continue;
 		}
-		enemys_[i]->beginAction();
+		enemies_[i]->beginAction();
 	}
 }
 
@@ -173,14 +188,14 @@ void EnemyManager::beginActionToMove() {
 // =====================================================================================
 bool EnemyManager::isAllEnemyActEnd() {
 
-	for (int i = 0; i < enemys_.size(); i++) {
-		if (!enemys_[i]) {
+	for (int i = 0; i < enemies_.size(); i++) {
+		if (!enemies_[i]) {
 			continue;
 		}
-		if (!(enemys_[i]->isAlive())) {
+		if (!(enemies_[i]->isAlive())) {
 			continue;
 		}
-		if (enemys_[i]->getActState() != eActState::END) {
+		if (enemies_[i]->getActState() != eActState::END) {
 			return false;
 		}
 	}
@@ -191,15 +206,15 @@ bool EnemyManager::isAllEnemyActEnd() {
 // 指定した位置にいる敵を返す。一致する敵がいなければ nullptr を返す。
 std::shared_ptr<EnemyBase> EnemyManager::findEnemy(const tnl::Vector3& pos) {
 
-	for (int i = 0; i < enemys_.size(); i++) {
-		if (!enemys_[i]) {
+	for (int i = 0; i < enemies_.size(); i++) {
+		if (!enemies_[i]) {
 			continue;
 		}
-		if (!(enemys_[i]->isAlive())) {
+		if (!(enemies_[i]->isAlive())) {
 			continue;
 		}
-		if ( (enemys_[i]->getPos() - pos).length() < FLT_EPSILON )
-			return enemys_[i];
+		if ( (enemies_[i]->getPos() - pos).length() < FLT_EPSILON )
+			return enemies_[i];
 	}
 
 	return nullptr;
@@ -210,11 +225,17 @@ std::shared_ptr<EnemyBase> EnemyManager::findEnemy(const tnl::Vector3& pos) {
 // =====================================================================================
 std::shared_ptr<EnemyBase> EnemyManager::createRandomEnemy() {
 
+	tnl::DebugTrace("=============== createRandomEnemy ===============\n");
 	std::shared_ptr<EnemyBase> enemy = nullptr;
 	std::vector<std::string> enemy_names;
 
 	for (auto pair : now_floor_enemy_data_) {
 		enemy_names.emplace_back(pair.first);
+	}
+
+	if (enemy_names.size() <= 0) {
+		tnl::DebugTrace("敵データがありません\n");
+		return nullptr;
 	}
 
 	int index = mtl::getRandomValue(0, enemy_names.size() - 1);

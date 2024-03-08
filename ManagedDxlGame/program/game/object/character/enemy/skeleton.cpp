@@ -1,28 +1,30 @@
-#include "../../../dxlib_ext/dxlib_ext.h"
-#include "../../manager/gm_manager.h"
-#include "../../manager/resource_manager.h"
-#include "../../common/camera.h"
-#include "../../scene/scene_play.h"
-#include "pumpkin.h"
+#include "../../../../dxlib_ext/dxlib_ext.h"
+#include "../../../manager/gm_manager.h"
+#include "../../../manager/resource_manager.h"
+#include "../../../common/camera.h"
+#include "../../../scene/scene_play.h"
+#include "../../projectile.h"
+#include "skeleton.h"
 
-namespace
-{
-	const std::string PUMPKIN_DATA_CSV_PATH = "csv/enemy_data/pumpkin_data.csv";
+namespace {
+	// がいこつのステータスデータのCSVパス
+	const std::string SKELETON_DATA_CSV_PATH = "csv/enemy_data/skeleton_data.csv";
 };
 
-
-Pumpkin::Pumpkin() {
-
+// =====================================================================================
+// コンストラクタ
+// =====================================================================================
+Skeleton::Skeleton() : sequence_(tnl::Sequence<Skeleton>(this, &Skeleton::seqIdle)), bone_(std::make_shared<Projectile>()), bone_gpc_hdl_(0) {
 	std::vector<std::vector<tnl::CsvCell>> gpc_hdl_data = tnl::LoadCsv("csv/enemy_gpc_data.csv");
 
 	chara_gpc_hdl_.resize(static_cast<int>(eDir_4::MAX));
 
 	// キャラの各方向の画像データを "chara_gpc_hdl_" に保存。
-	int gpc_index = std::underlying_type<eEnemyType>::type( eEnemyType::PUMPKIN ) + 1;
+	int gpc_index = std::underlying_type<eEnemyType>::type(eEnemyType::SKELETON) + 1;
 
 	for (int i = 1; i < gpc_hdl_data[gpc_index].size(); i++) {
 
-		chara_gpc_hdl_[i - 1].resize( CHARA_GPC_X_NUM );
+		chara_gpc_hdl_[i - 1].resize(CHARA_GPC_X_NUM);
 
 		chara_gpc_hdl_[i - 1] = ResourceManager::getInstance()->loadAnimation
 		(gpc_hdl_data[gpc_index][i].getString(),
@@ -34,17 +36,21 @@ Pumpkin::Pumpkin() {
 		);
 	}
 
+	// 投擲物の画像をロード
+	bone_gpc_hdl_ = ResourceManager::getInstance()->loadGraph("graphics/bone.png");
+	bone_->setProjectileGpcHdl(bone_gpc_hdl_);
+
 	// ステータスデータを CSV から取得
-	std::vector<std::vector<tnl::CsvCell>> status_data = tnl::LoadCsv(PUMPKIN_DATA_CSV_PATH);
+	std::vector<std::vector<tnl::CsvCell>> status_data = tnl::LoadCsv(SKELETON_DATA_CSV_PATH);
 
 	// 敵の各ステータスをセット
-	name_ = status_data[GameManager::CSV_CELL_ROW_START][0].getString();
+	name_ = status_data[1][0].getString();
 	status_.setStatus(
-		status_data[GameManager::CSV_CELL_ROW_START][1].getInt(),		// レベル 
-		status_data[GameManager::CSV_CELL_ROW_START][2].getInt(),		// HP
-		status_data[GameManager::CSV_CELL_ROW_START][3].getInt(),		// ATK
-		status_data[GameManager::CSV_CELL_ROW_START][4].getInt(),		// DEF
-		status_data[GameManager::CSV_CELL_ROW_START][5].getInt()		// EXP
+		status_data[1][1].getInt(),		// レベル 
+		status_data[1][2].getInt(),		// HP
+		status_data[1][3].getInt(),		// ATK
+		status_data[1][4].getInt(),		// DEF
+		status_data[1][5].getInt()		// EXP
 	);
 
 	anim_dir_ = eDir_4::DOWN;
@@ -53,22 +59,33 @@ Pumpkin::Pumpkin() {
 	is_alive_ = true;
 }
 
-Pumpkin::~Pumpkin() {
-	tnl::DebugTrace("Pumpkinのデストラクタが実行されました。\n");
+// =====================================================================================
+// デストラクタ
+// =====================================================================================
+Skeleton::~Skeleton() {
+	tnl::DebugTrace("Skeletonのデストラクタが実行されました。\n");
 }
 
 // =====================================================================================
 // アップデート
 // =====================================================================================
-void Pumpkin::update(float delta_time) {
+void Skeleton::update(float delta_time) {
 
 	sequence_.update(delta_time);
+
+	if (bone_->isEnable()) {
+		bone_->update(delta_time);
+	}
 }
 
 // =====================================================================================
 // 描画
 // =====================================================================================
-void Pumpkin::draw(const std::shared_ptr<Camera> camera) {
+void Skeleton::draw(const std::shared_ptr<Camera> camera) {
+
+	if (bone_->isEnable()) {
+		bone_->draw(camera);
+	}
 
 	// 描画位置調整
 	tnl::Vector3 draw_pos = tnl::Vector3(pos_.x * GameManager::DRAW_CHIP_SIZE, pos_.y * GameManager::DRAW_CHIP_SIZE, 0)
@@ -81,24 +98,24 @@ void Pumpkin::draw(const std::shared_ptr<Camera> camera) {
 // =====================================================================================
 // クローンを生成する
 // =====================================================================================
-std::shared_ptr<EnemyBase> Pumpkin::createClone() const {
+std::shared_ptr<EnemyBase> Skeleton::createClone() const {
 
-	std::shared_ptr<Pumpkin> clone = std::make_shared<Pumpkin>();
+	std::shared_ptr<Skeleton> clone = std::make_shared<Skeleton>();
 	return clone;
 }
 
 // =====================================================================================
 // 敵の強さを設定する
 // =====================================================================================
-void Pumpkin::setEnemyLevel(int lv) {
+void Skeleton::setEnemyLevel(int lv) {
 
-	if (lv < GameManager::CSV_CELL_ROW_START) {
+	if (lv <= 0) {
 		tnl::DebugTrace("lv は 1以上の値をセットしてください. 入力値：%d\n", lv);
 		return;
 	}
 
 	// ステータスデータを CSV から取得
-	std::vector<std::vector<tnl::CsvCell>> status_data = tnl::LoadCsv(PUMPKIN_DATA_CSV_PATH);
+	std::vector<std::vector<tnl::CsvCell>> status_data = tnl::LoadCsv(SKELETON_DATA_CSV_PATH);
 
 	if (lv >= status_data.size()) {
 		tnl::DebugTrace("lv の値が CSVデータのサイズを超えています. 入力値：%d\n", lv);
@@ -119,7 +136,96 @@ void Pumpkin::setEnemyLevel(int lv) {
 // =====================================================================================
 // 行動を決める
 // =====================================================================================
-void Pumpkin::decideAction() {
+void Skeleton::decideAction() {
+
+	switch(status_.getLevel()) {
+	case 1:
+		decideActionForLv_1();
+		break;
+	case 2:
+		decideActionForLv_2();
+		break;
+	default:
+		tnl::DebugTrace("設定されたレベルの行動が存在しません. 入力値：%d\n", status_.getLevel());
+		act_state_ = eActState::END;
+		break;
+	}
+}
+
+// =====================================================================================
+// 行動を開始する
+// =====================================================================================
+void Skeleton::beginAction() {
+
+	if (!sequence_.isComparable(&Skeleton::seqIdle)) {
+		tnl::DebugTrace("sequence_ がIdleになっていません\n");
+		return;
+	}
+	if (act_state_ == eActState::MOVE) {
+		sequence_.immediatelyChange(&Skeleton::seqMove);
+		return;
+	}
+	if (act_state_ == eActState::ATTACK) {
+		if (status_.getLevel() >= 2) {
+			bone_->setEnable(true);
+			bone_->setPos(pos_);
+			bone_->setTargetPos(target_pos_);
+		}
+		sequence_.immediatelyChange(&Skeleton::seqAttack);
+	}
+}
+
+// =====================================================================================
+// 自信をデスさせる
+// =====================================================================================
+void Skeleton::death() {
+	is_alive_ = false;
+}
+
+// =====================================================================================
+// 待機シーケンス
+// =====================================================================================
+bool Skeleton::seqIdle(const float delta_time) {
+
+	return true;
+}
+
+// =====================================================================================
+// next_pos_ に移動させる。
+// =====================================================================================
+bool Skeleton::seqMove(const float delta_time) {
+
+	if (abs(next_pos_.y - pos_.y) > 0.1f || abs(next_pos_.x - pos_.x) > 0.1f) {
+		pos_ += (next_pos_ - pos_) * MOVE_SPEED;
+	}
+	else {
+		pos_ = next_pos_;
+		act_state_ = eActState::END;
+		sequence_.change(&Skeleton::seqIdle);
+	}
+
+	return true;
+}
+
+// ====================================================
+// 攻撃シーケンス
+// ====================================================
+bool Skeleton::seqAttack(const float delta_time) {
+
+	attack_time_ += delta_time;
+
+	if (attack_time_ > ATTACK_TIME_MAX && !bone_->isEnable()) {
+		attack_time_ = 0.0f;
+		act_state_ = eActState::END;
+		sequence_.change(&Skeleton::seqIdle);
+	}
+	return true;
+}
+
+// =====================================================================================
+// レベル１モンスターの行動を決める
+// =====================================================================================
+void Skeleton::decideActionForLv_1() {
 
 	auto scene_play = scene_play_.lock();
 	if (scene_play == nullptr) {
@@ -131,7 +237,7 @@ void Pumpkin::decideAction() {
 	if (player_dir != eDir_8::NONE) {
 
 		is_find_player_ = true;
-	
+
 		// プレイヤーのいる方向が攻撃可能か判定
 		if (canAttackInDir(player_dir)) {
 			changeToAttackAction(player_dir);
@@ -139,14 +245,8 @@ void Pumpkin::decideAction() {
 		}
 	}
 
-	// プレイヤーを見つけた場合、追跡を行う
-	if (is_find_player_) {
-		trackingPlayer();
-		return;
-	}
-
 	// 通路にいる場合、通路での行動処理を行う
-	if ( scene_play->getPlace(pos_) == ePlace::CORRIDOR ) {
+	if (scene_play->getPlace(pos_) == ePlace::CORRIDOR) {
 		actionInCorridor();
 	}
 	else {
@@ -155,74 +255,54 @@ void Pumpkin::decideAction() {
 }
 
 // =====================================================================================
-// 行動を開始する
+// レベル2モンスターの行動を決める
 // =====================================================================================
-void Pumpkin::beginAction() {
+void Skeleton::decideActionForLv_2() {
 
-	if (!sequence_.isComparable(&Pumpkin::seqIdle)) {
-		tnl::DebugTrace("sequence_ がIdleになっていません\n");
+
+	auto scene_play = scene_play_.lock();
+	if (scene_play == nullptr) {
 		return;
 	}
-	if (act_state_ == eActState::MOVE) {
-		sequence_.immediatelyChange(&Pumpkin::seqMove);
+
+	// 通路にいる場合、通路での行動処理を行う
+	if (scene_play->getPlace(pos_) == ePlace::CORRIDOR) {
+		// 周囲 8マスにプレイヤーがいるか確認
+		eDir_8 player_dir = findPlayerDir_8();
+		if (player_dir != eDir_8::NONE) {
+			target_pos_ = pos_ + DIR_POS[ std::underlying_type<eDir_8>::type(player_dir) ];
+			changeToAttackAction(player_dir);
+			return;
+		}
+		actionInCorridor();
 		return;
 	}
-	if (act_state_ == eActState::ATTACK) {
-		sequence_.immediatelyChange(&Pumpkin::seqAttack);
-	}
-}
 
-// =====================================================================================
-// 自信をデスさせる
-// =====================================================================================
-void Pumpkin::death() {
-	is_alive_ = false;
-}
+	// プレイヤーが同じ部屋にいた場合
+	if (isSameRoomToPlayer()) {
+		
+		is_find_player_ = true;
+		target_pos_ = scene_play->getPlayer()->getNextPos();
+		eDir_8 player_dir = eDir_8::NONE;
 
-// =====================================================================================
-// 待機シーケンス
-// =====================================================================================
-bool Pumpkin::seqIdle(const float delta_time) {
+		// 骨投げ攻撃ができるか判定
+		if(tryCanBoneAttack(player_dir)) {
+			changeToAttackAction(player_dir);
+			return;
+		}
 
-	return true;
-}
-
-// =====================================================================================
-// next_pos_ に移動させる。
-// =====================================================================================
-bool Pumpkin::seqMove(const float delta_time) {
-
-	if (abs(next_pos_.y - pos_.y) > 0.1f || abs(next_pos_.x - pos_.x) > 0.1f) {
-		pos_ += (next_pos_ - pos_) * MOVE_SPEED;
-	}
-	else {
-		pos_ = next_pos_;
-		act_state_ = eActState::END;
-		sequence_.change(&Pumpkin::seqIdle);
+		trackingPlayer();
+		return;
 	}
 
-	return true;
-}
-
-// ====================================================
-// 攻撃シーケンス
-// ====================================================
-bool Pumpkin::seqAttack(const float delta_time) {
-
-	attack_time_ += delta_time;
-
-	if ( attack_time_ > ATTACK_TIME_MAX ) {
-		attack_time_ = 0.0f;
-		act_state_ = eActState::END;
-		sequence_.change(&Pumpkin::seqIdle);
-	}
-	return true;
+	// 部屋での行動処理を行う
+	actionInRoom();
 }
 
 // =====================================================================================
 // "next_pos_" を目標の位置に向かって 1マス移動する
 // =====================================================================================
-void Pumpkin::setNextPosToTarget() {
+void Skeleton::setNextPosToTarget() {
 
 	// セルの更新
 	updateCellsCost();
@@ -235,7 +315,7 @@ void Pumpkin::setNextPosToTarget() {
 // =====================================================================================
 // プレイヤーを追跡する
 // =====================================================================================
-void Pumpkin::trackingPlayer() {
+void Skeleton::trackingPlayer() {
 
 	auto scene_play = scene_play_.lock();
 	if (!scene_play) {
@@ -247,7 +327,7 @@ void Pumpkin::trackingPlayer() {
 
 	// 部屋にいる場合いて、プレイヤーが通常にいる場合
 	if (scene_play->getPlace(pos_) == ePlace::ROOM && scene_play->getPlace(player_pos) == ePlace::CORRIDOR) {
-		
+
 		tnl::Vector3 entrance_pos = getEntrancePosToNearestPlayer(scene_play->getAreaId(pos_));
 
 		// 部屋の入口から、プレイヤーが一定以上距離が離れていたら見失い、ランダムに入口を目指す。
@@ -267,7 +347,7 @@ void Pumpkin::trackingPlayer() {
 // =====================================================================================
 // 各セルの移動コスト、有効なセルか更新を行う
 // =====================================================================================
-void Pumpkin::updateCellsCost() {
+void Skeleton::updateCellsCost() {
 
 	auto scene_play = scene_play_.lock();
 	if (!scene_play) {
@@ -282,7 +362,7 @@ void Pumpkin::updateCellsCost() {
 		cells_[i].is_enable_ = false;
 
 		// 斜め方向を確認するとき
-		if ( i >= static_cast<int>(eDir_8::UP_LEFT) ) {
+		if (i >= static_cast<int>(eDir_8::UP_LEFT)) {
 			if (scene_play->getMapData(tnl::Vector3(cells_[i].pos_.x, cells_[i].pos_.y, 0)) != eMapData::GROUND) continue;;
 			if (!canActionToCell(tnl::Vector2i((pos_.x + DIR_POS[i].x), pos_.y))) continue;
 			if (!canActionToCell(tnl::Vector2i(pos_.x, (pos_.y + DIR_POS[i].y)))) continue;
@@ -299,7 +379,7 @@ void Pumpkin::updateCellsCost() {
 // =====================================================================================
 // 各セルの移動コストから次の位置を決める
 // =====================================================================================
-void Pumpkin::decideNextPosFromCellCost() {
+void Skeleton::decideNextPosFromCellCost() {
 
 	int index = getMinimunScoreCellIndex();
 
@@ -316,7 +396,7 @@ void Pumpkin::decideNextPosFromCellCost() {
 // =====================================================================================
 // 指定した方向のセルが行動できるか判定
 // =====================================================================================
-bool Pumpkin::canActionToCell(const tnl::Vector2i& pos) {
+bool Skeleton::canActionToCell(const tnl::Vector2i& pos) {
 
 	auto scene_play = scene_play_.lock();
 	if (!scene_play) {
@@ -334,9 +414,125 @@ bool Pumpkin::canActionToCell(const tnl::Vector2i& pos) {
 }
 
 // =====================================================================================
+// 骨を投げる攻撃ができるか判定する
+// 自身の直線状にいる場合は "true"、そうでなければ "false" を返す。
+// =====================================================================================
+bool Skeleton::tryCanBoneAttack(eDir_8& dir) {
+
+	float dx = target_pos_.x - pos_.x;
+	float dy = target_pos_.y - pos_.y;
+
+	// 位置が重なっている場合、エラー
+	if (abs(dx) < FLT_EPSILON && abs(dy) < FLT_EPSILON) {
+		tnl::DebugTrace("error：プレイヤーと位置が重なっています\n");
+		return false;
+	}
+
+	// 斜め方向にいる場合
+	if (abs(abs(dx) - abs(dy)) < FLT_EPSILON) {
+		// 左にいる場合、左上か左下を判定し、プレイヤーが直線上にいるか確認する。
+		if (dx < 0 && dy < 0) {
+			if (isPlayerDir(pos_, eDir_8::UP_LEFT, true) ) {
+				dir = eDir_8::UP_LEFT;
+				return true;
+			} 
+		}
+		else if (dx < 0 && dy > 0) {
+			if (isPlayerDir(pos_, eDir_8::DOWN_LEFT, true)) {
+				dir = eDir_8::DOWN_LEFT;
+				return true;
+			}
+		}
+		else if (dx > 0 && dy < 0) {
+			if (isPlayerDir(pos_, eDir_8::UP_RIGHT, true)) {
+				dir = eDir_8::UP_RIGHT;
+				return true;
+			}
+		}
+		// 右にいる場合、右上か右下を判定し、プレイヤーが直線上にいるか確認する。
+		else {
+			if (isPlayerDir(pos_, eDir_8::DOWN_RIGHT, true)) {
+				dir = eDir_8::DOWN_RIGHT;
+				return true;
+			}
+		}
+	}
+	else if (abs(dx) < FLT_EPSILON) {
+		if (dy < 0) {
+			if (isPlayerDir(pos_, eDir_8::UP, true)) {
+				dir = eDir_8::UP;
+				return true;
+			}
+		}
+		else {
+			if (isPlayerDir(pos_, eDir_8::DOWN, true)) {
+				dir = eDir_8::DOWN;
+				return  true;
+			}
+		}
+	}
+	else if (abs(dy) < FLT_EPSILON) {
+		if (dx < 0) {
+			if (isPlayerDir(pos_, eDir_8::LEFT, true)) {
+				dir = eDir_8::LEFT;
+				return true;
+			}
+		}
+		else {
+			if (isPlayerDir(pos_, eDir_8::RIGHT, true)) {
+				dir = eDir_8::RIGHT;
+				return true;
+			}
+		}
+		
+	}
+
+	dir = eDir_8::NONE;
+	return false;
+}
+
+// =====================================================================================
+// プレイヤーがいるか確認する。
+// =====================================================================================
+bool Skeleton::isPlayerDir(const tnl::Vector3& pos, eDir_8 dir, bool is_loop) const {
+
+	// 確認するマスの位置
+	tnl::Vector3 check_pos = pos + DIR_POS[std::underlying_type<eDir_8>::type(dir)];
+
+	auto scene_play = scene_play_.lock();
+	if (!scene_play) {
+		tnl::DebugTrace("canActionToCell関数が正常に動作できませんでした\n");
+		return false;
+	}
+
+	// 部屋で無くなった場合、さらに次のマスにプレイヤーがいるか確認に判定を返す。
+	if ( scene_play->getPlace( check_pos ) != ePlace::ROOM ) {
+		return scene_play->getMapData( check_pos ) == eMapData::PLAYER;
+	}
+
+	if ( scene_play->getMapData( check_pos ) == eMapData::WALL) {
+		return false;
+	}
+	if (scene_play->getMapData(check_pos) == eMapData::ENEMY) {
+		return false;
+	}
+
+	if ( scene_play->getMapData( check_pos ) == eMapData::PLAYER) {
+		return true;
+	}
+
+	// 再帰させるか
+	if (is_loop) {
+		return isPlayerDir( check_pos, dir, true);
+	}
+
+	return false;
+}
+
+// =====================================================================================
 // 指定した方向が攻撃可能か
 // =====================================================================================
-bool Pumpkin::canAttackInDir(eDir_8 dir) {
+bool Skeleton::canAttackInDir(eDir_8 dir) {
 
 	auto scene_play = scene_play_.lock();
 	if (!scene_play) {
@@ -346,8 +542,8 @@ bool Pumpkin::canAttackInDir(eDir_8 dir) {
 
 	// dir が斜め方向の場合 
 	if (dir == eDir_8::UP_LEFT) {
-		if ( scene_play->getMapData( pos_ + DIR_POS[static_cast<int>(eDir_8::UP)] ) == eMapData::WALL ) return false;
-		if ( scene_play->getMapData(pos_ + DIR_POS[static_cast<int>(eDir_8::LEFT)] ) == eMapData::WALL ) return false;
+		if (scene_play->getMapData(pos_ + DIR_POS[static_cast<int>(eDir_8::UP)]) == eMapData::WALL) return false;
+		if (scene_play->getMapData(pos_ + DIR_POS[static_cast<int>(eDir_8::LEFT)]) == eMapData::WALL) return false;
 	}
 	else if (dir == eDir_8::UP_RIGHT) {
 		if (scene_play->getMapData(pos_ + DIR_POS[static_cast<int>(eDir_8::UP)]) == eMapData::WALL) return false;
@@ -367,12 +563,18 @@ bool Pumpkin::canAttackInDir(eDir_8 dir) {
 // =====================================================================================
 // 通路での行動
 // =====================================================================================
-void Pumpkin::actionInCorridor() {
+void Skeleton::actionInCorridor() {
+
+	// プレイヤーを見つけた場合、追跡を行う
+	if (is_find_player_) {
+		trackingPlayer();
+		return;
+	}
 
 	// 行動エラーのカウント回数が3回以上の場合、来た道を戻る
 	if (action_error_ >= ACTION_ERROR_MAX) {
-		eDir_8 reverce_dir = REVERCE_DIRECTION[ std::underlying_type<eDir_4>::type( anim_dir_ ) ];
-		anim_dir_ = ANIM_DIR[ std::underlying_type<eDir_8>::type( reverce_dir ) ];
+		eDir_8 reverce_dir = REVERCE_DIRECTION[std::underlying_type<eDir_4>::type(anim_dir_)];
+		anim_dir_ = ANIM_DIR[std::underlying_type<eDir_8>::type(reverce_dir)];
 		action_error_ = 0;
 	}
 
@@ -381,7 +583,7 @@ void Pumpkin::actionInCorridor() {
 
 	// 来た方向の要素だけ削除する
 	eDir_8 reverce_dir = REVERCE_DIRECTION[std::underlying_type<eDir_4>::type(anim_dir_)];
-	auto it = std::find(directions.begin(), directions.end(), ANIM_DIR[ std::underlying_type<eDir_8>::type(reverce_dir) ]);
+	auto it = std::find(directions.begin(), directions.end(), ANIM_DIR[std::underlying_type<eDir_8>::type(reverce_dir)]);
 	if (it != directions.end()) directions.erase(it);
 
 	// 移動できる方向がない場合、行動エラーをカウントする
@@ -407,7 +609,13 @@ void Pumpkin::actionInCorridor() {
 // =====================================================================================
 // 部屋での行動
 // =====================================================================================
-void Pumpkin::actionInRoom() {
+void Skeleton::actionInRoom() {
+
+	// プレイヤーを見つけた場合、追跡を行う
+	if (is_find_player_) {
+		trackingPlayer();
+		return;
+	}
 
 	auto scene_play = scene_play_.lock();
 	if (!scene_play) {
@@ -433,7 +641,7 @@ void Pumpkin::actionInRoom() {
 	setNextPosToTarget();
 
 	// 通路の入口に着いたら、targetフラグを切る
-	if ( (next_pos_ - target_pos_).length() < FLT_EPSILON ) {
+	if ((next_pos_ - target_pos_).length() < FLT_EPSILON) {
 		is_find_target_ = false;
 	}
 }

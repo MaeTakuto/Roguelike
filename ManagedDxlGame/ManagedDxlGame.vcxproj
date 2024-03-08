@@ -188,9 +188,6 @@
     <ClCompile Include="program\game\base\character_base.cpp" />
     <ClCompile Include="program\game\base\enemy_base.cpp" />
     <ClCompile Include="program\game\base\scene_base.cpp" />
-    <ClCompile Include="program\game\character\enemy\pumpkin.cpp" />
-    <ClCompile Include="program\game\character\enemy\skeleton.cpp" />
-    <ClCompile Include="program\game\character\player.cpp" />
     <ClCompile Include="program\game\common\camera.cpp" />
     <ClCompile Include="program\game\common\chara_status.cpp" />
     <ClCompile Include="program\game\dungeon\dungeon_manager.cpp" />
@@ -200,6 +197,10 @@
     <ClCompile Include="program\game\manager\resource_manager.cpp" />
     <ClCompile Include="program\game\manager\ui_manager.cpp" />
     <ClCompile Include="program\game\my_library\my_library.cpp" />
+    <ClCompile Include="program\game\object\character\enemy\pumpkin.cpp" />
+    <ClCompile Include="program\game\object\character\enemy\skeleton.cpp" />
+    <ClCompile Include="program\game\object\character\player.cpp" />
+    <ClCompile Include="program\game\object\projectile.cpp" />
     <ClCompile Include="program\game\scene\scene_play.cpp" />
     <ClCompile Include="program\game\scene\scene_title.cpp" />
     <ClCompile Include="program\game\ui\hp_bar.cpp" />
@@ -273,9 +274,6 @@
     <ClInclude Include="program\game\base\character_base.h" />
     <ClInclude Include="program\game\base\enemy_base.h" />
     <ClInclude Include="program\game\base\scene_base.h" />
-    <ClInclude Include="program\game\character\enemy\pumpkin.h" />
-    <ClInclude Include="program\game\character\enemy\skeleton.h" />
-    <ClInclude Include="program\game\character\player.h" />
     <ClInclude Include="program\game\common\camera.h" />
     <ClInclude Include="program\game\common\chara_status.h" />
     <ClInclude Include="program\game\common\enum.h" />
@@ -286,6 +284,10 @@
     <ClInclude Include="program\game\manager\resource_manager.h" />
     <ClInclude Include="program\game\manager\ui_manager.h" />
     <ClInclude Include="program\game\my_library\my_library.h" />
+    <ClInclude Include="program\game\object\character\enemy\pumpkin.h" />
+    <ClInclude Include="program\game\object\character\enemy\skeleton.h" />
+    <ClInclude Include="program\game\object\character\player.h" />
+    <ClInclude Include="program\game\object\projectile.h" />
     <ClInclude Include="program\game\scene\scene_play.h" />
     <ClInclude Include="program\game\scene\scene_title.h" />
     <ClInclude Include="program\game\ui\hp_bar.h" />

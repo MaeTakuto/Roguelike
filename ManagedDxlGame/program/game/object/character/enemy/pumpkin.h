@@ -1,22 +1,25 @@
 #pragma once
-#include "../../base/enemy_base.h"
+#include "../../../base/enemy_base.h"
 
 
-class Skeleton final : public EnemyBase {
+// =====================================================================================
+// おばけかぼちゃ（敵）のクラス
+// =====================================================================================
+class Pumpkin final : public EnemyBase {
 public:
-	Skeleton();
-	~Skeleton();
+	Pumpkin();
+	~Pumpkin();
 
 	void update(float delta_time) override;
-	void draw(const std::shared_ptr<Camera> camera) override;
+	void draw(std::shared_ptr<Camera> camera) override;
 
 private:
 	// 敵の行動シーケンスの管理
-	tnl::Sequence<Skeleton> sequence_ = tnl::Sequence<Skeleton>(this, &Skeleton::seqIdle);
+	tnl::Sequence<Pumpkin> sequence_ = tnl::Sequence<Pumpkin>(this, &Pumpkin::seqIdle);
 
 public:
 	// ============= プロトタイプ宣言 =============
-
+	
 	// クローンを生成する
 	std::shared_ptr<EnemyBase> createClone() const override;
 	// 敵のレベルを設定する
@@ -38,6 +41,11 @@ private:
 	bool seqAttack(const float delta_time);
 
 	// ============= プロトタイプ宣言 =============
+
+	// レベル１モンスターの行動を決める
+	void decideActionForLv_1() override;
+	// レベル２モンスターの行動を決める
+	void decideActionForLv_2() override;
 	// 目標の位置に向かって 1マス移動する
 	void setNextPosToTarget();
 	// プレイヤーを追跡する
@@ -54,5 +62,4 @@ private:
 	void actionInCorridor() override;
 	// 部屋での行動
 	void actionInRoom() override;
-
 };

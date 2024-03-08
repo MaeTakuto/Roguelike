@@ -250,17 +250,6 @@ void DungeonManager::connectRoom(int area_index) {
 		tnl::DebugTrace("order[%d] = %d\n", order_index_, order_connect_rooms_[order_index_]);
 		tnl::DebugTrace("d1 index = %d\n", index);
 
-		// 両ルームの適当な座標指定
-		/*dx1 = random(areas_[index].room.x + ROOM_AND_ROAD_SPACE, areas_[index].room.x + areas_[index].room.width - 1 - ROOM_AND_ROAD_SPACE);
-		dy1 = random(areas_[index].room.y + ROOM_AND_ROAD_SPACE, areas_[index].room.y + areas_[index].room.height - 1 - ROOM_AND_ROAD_SPACE);
-
-		index = order_connect_rooms_[order_index_];
-		tnl::DebugTrace("d2 index = %d\n", index);
-		dx2 = random(areas_[index].room.x + ROOM_AND_ROAD_SPACE, areas_[index].room.x + areas_[index].room.width - 1 - ROOM_AND_ROAD_SPACE);
-		dy2 = random(areas_[index].room.y + ROOM_AND_ROAD_SPACE, areas_[index].room.y + areas_[index].room.height - 1 - ROOM_AND_ROAD_SPACE);*/
-
-		//tnl::DebugTrace("dx1 = %d, dy1 = %d, dx2 = %d, dy2 = %d\n", dx1, dy1, dx2, dy2);
-
 		// 各部屋から通路を伸ばし
 		// 
 		switch (areas_[area_index].connect_area_dir) {
