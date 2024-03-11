@@ -2,6 +2,9 @@
 #include "../manager/gm_manager.h"
 #include "character_base.h"
 
+Character::Character() : name_(""), status_(CharaStatus())/*, atk_target_(nullptr)*/, atk_effect_(Animation()), is_alive_(true), is_damaged_(false) {
+
+}
 
 // ƒ_ƒ[ƒW‚ğó‚¯‚é
 void Character::takeDamage(int damage) {

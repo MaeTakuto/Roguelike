@@ -36,25 +36,12 @@ public:
 	//std::shared_ptr<HP_Bar> getHP_Bar() { return hp_bar_; }
 
 private:
-	// メッセージウィンドウの通常の位置、サイズ
-	const tnl::Vector2i	DEFAULT_MESS_WINDOW_POS = { 250, 450 };
-	const tnl::Vector2i DEFAULT_MESS_WINDOW_SIZE = { 800, 200 };
-
-	// 階段での選択時のメッセージウィンドウの位置、サイズ、メッセージ
-	const tnl::Vector2i STAIR_SEL_MESS_WINDOW_POS = { 150, 450 };
-	const tnl::Vector2i STAIR_SEL_MESS_WINDOW_SIZE = { 750, 200 };
-	const std::string STAIR_SEL_MESSAGE = "穴がある。落ちますか？";
-
-	// 階数の表示位置
-	const tnl::Vector2i FLOOR_STR_POS = { 1000, 55 };
-	const int FLOOR_STR_FONT_SIZE = 40;
-
 	// 各 UIクラス
-	std::shared_ptr<MessageWindow> message_window_ = nullptr;
-	std::shared_ptr<SelectWindow> select_window_ = nullptr;
-	std::shared_ptr<HP_Bar> hp_bar_ = nullptr;
+	std::shared_ptr<MessageWindow> message_window_;
+	std::shared_ptr<SelectWindow> select_window_;
+	std::shared_ptr<HP_Bar> hp_bar_;
 
-	int floor_ = 0;
+	int floor_;
 
 public:
 	// 階段での選択結果を返す。

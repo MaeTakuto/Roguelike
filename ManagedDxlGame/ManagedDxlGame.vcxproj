@@ -190,6 +190,7 @@
     <ClCompile Include="program\game\base\scene_base.cpp" />
     <ClCompile Include="program\game\common\camera.cpp" />
     <ClCompile Include="program\game\common\chara_status.cpp" />
+    <ClCompile Include="program\game\common\animation.cpp" />
     <ClCompile Include="program\game\dungeon\dungeon_manager.cpp" />
     <ClCompile Include="program\game\gm_main.cpp" />
     <ClCompile Include="program\game\manager\enemy_manager.cpp" />
@@ -276,6 +277,7 @@
     <ClInclude Include="program\game\base\scene_base.h" />
     <ClInclude Include="program\game\common\camera.h" />
     <ClInclude Include="program\game\common\chara_status.h" />
+    <ClInclude Include="program\game\common\animation.h" />
     <ClInclude Include="program\game\common\enum.h" />
     <ClInclude Include="program\game\dungeon\dungeon_manager.h" />
     <ClInclude Include="program\game\gm_main.h" />

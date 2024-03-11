@@ -1,19 +1,26 @@
 #include "../../dxlib_ext/dxlib_ext.h"
+#include "gm_manager.h"
 #include "resource_manager.h"
 
 
+// ====================================================
 // コンストラクタ
+// ====================================================
 ResourceManager::ResourceManager() {
 
 }
 
+// ====================================================
 // デストラクタ
+// ====================================================
 ResourceManager::~ResourceManager() {
 
 	clearAllResources();
 }
 
+// ====================================================
 // インスタンスを返す
+// ====================================================
 ResourceManager* ResourceManager::getInstance() {
 	static ResourceManager* instance = nullptr;
 
@@ -23,12 +30,16 @@ ResourceManager* ResourceManager::getInstance() {
 	return instance;
 }
 
+// ====================================================
 // インスタンスを削除
+// ====================================================
 void ResourceManager::destroy() {
 	delete getInstance();
 }
 
+// ====================================================
 // 画像ロード
+// ====================================================
 int ResourceManager::loadGraph(const std::string& gpc_hdl_path) {
 
 	auto it = gpc_hdl_container_.find(gpc_hdl_path);
@@ -45,7 +56,9 @@ void ResourceManager::deleteGraph(const std::string& gpc_hdl_path) {
 	gpc_hdl_container_.erase(gpc_hdl_path);
 }
 
+// ====================================================
 // アニメーションのロード、アニメーションをのパスを返す。
+// ====================================================
 std::vector<int>& ResourceManager::loadAnimation(const std::string& anim_hdl_path,
 	int all_size, int x_size, int y_size, int anim_hdl_width, int anim_hdl_height) {
 
@@ -79,7 +92,9 @@ std::vector<int>& ResourceManager::loadAnimation(const std::string& anim_hdl_pat
 	return anim_hdl_container_[anim_hdl_path];
 }
 
+// ====================================================
 // アニメーションの削除
+// ====================================================
 void ResourceManager::deleteAnimation(const std::string& anim_hdl_path, int all_size) {
 
 	auto it = anim_hdl_container_.find(anim_hdl_path);
@@ -92,7 +107,9 @@ void ResourceManager::deleteAnimation(const std::string& anim_hdl_path, int all_
 	anim_hdl_container_.erase(anim_hdl_path);
 }
 
+// ====================================================
 // サウンドのロード、パスを返す。
+// ====================================================
 int ResourceManager::loadSound(const std::string& snd_path) {
 
 	auto it = snd_container_.find(snd_path);
@@ -102,14 +119,61 @@ int ResourceManager::loadSound(const std::string& snd_path) {
 	return gpc_hdl;
 }
 
+// ====================================================
+// サウンドを再生
+// ====================================================
+void ResourceManager::playSound(const std::string& snd_path, int play_type, int top_position_flag) {
+	int sound_hdl = loadSound(snd_path);
+	PlaySoundMem(sound_hdl, play_type, top_position_flag);
+}
+
+// ====================================================
+// サウンドが再生されているか判定
+// ====================================================
+bool ResourceManager::checkSound(const std::string& snd_path) {
+	int sound_hdl = loadSound(snd_path);
+	return CheckSoundMem(sound_hdl);
+}
+
+// ====================================================
+// サウンドを停止
+// ====================================================
+void ResourceManager::stopSound(const std::string& snd_path) {
+	int sound_hdl = loadSound(snd_path);
+	StopSoundMem(sound_hdl);
+}
+
+// ====================================================
 // サウンドを削除
+// ====================================================
 void ResourceManager::deleteSound(const std::string& snd_path) {
 
 	DeleteSoundMem(snd_container_[snd_path]);
 	snd_container_.erase(snd_path);
 }
 
+// ====================================================
+// csvを読み込み返す
+// ====================================================
+CsvData& ResourceManager::loadCsvData(const std::string& csv_path) {
+
+	auto it = csv_data_container_.find(csv_path);
+	if (it != csv_data_container_.end()) return csv_data_container_[csv_path];
+	CsvData csv_data = tnl::LoadCsv(csv_path);
+	csv_data_container_.insert(std::make_pair(csv_path, csv_data));
+	return csv_data_container_[csv_path];
+}
+
+// ====================================================
+// csvデータを削除
+// ====================================================
+void ResourceManager::deleteCsvData(const std::string& csv_path) {
+	csv_data_container_.erase(csv_path);
+}
+
+// ====================================================
 // 全てのデータを削除
+// ====================================================
 void ResourceManager::clearAllResources() {
 
 	// 画像データの削除

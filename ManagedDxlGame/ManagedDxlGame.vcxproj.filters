@@ -287,6 +287,9 @@
     <ClCompile Include="program\game\object\projectile.cpp">
       <Filter>program\[003] game\object</Filter>
     </ClCompile>
+    <ClCompile Include="program\game\common\animation.cpp">
+      <Filter>program\[003] game\common</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="ManagedDxlGame.rc">
@@ -556,6 +559,9 @@
     </ClInclude>
     <ClInclude Include="program\game\object\character\enemy\skeleton.h">
       <Filter>program\[003] game\object\character\enemy</Filter>
+    </ClInclude>
+    <ClInclude Include="program\game\common\animation.h">
+      <Filter>program\[003] game\common</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

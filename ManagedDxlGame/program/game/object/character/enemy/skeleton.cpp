@@ -9,13 +9,21 @@
 namespace {
 	// がいこつのステータスデータのCSVパス
 	const std::string SKELETON_DATA_CSV_PATH = "csv/enemy_data/skeleton_data.csv";
+
+	// 
+	const std::string SKELETON_ATK_SE_HDL_PATH = "sound/swing.mp3";
 };
 
 // =====================================================================================
 // コンストラクタ
 // =====================================================================================
 Skeleton::Skeleton() : sequence_(tnl::Sequence<Skeleton>(this, &Skeleton::seqIdle)), bone_(std::make_shared<Projectile>()), bone_gpc_hdl_(0) {
-	std::vector<std::vector<tnl::CsvCell>> gpc_hdl_data = tnl::LoadCsv("csv/enemy_gpc_data.csv");
+
+	// リソースマネージャーのインスタンスを取得
+	auto rm_instance = ResourceManager::getInstance();
+
+	// スケルトンの画像
+	CsvData& gpc_hdl_data = rm_instance->loadCsvData("csv/enemy_gpc_data.csv");
 
 	chara_gpc_hdl_.resize(static_cast<int>(eDir_4::MAX));
 
@@ -26,7 +34,7 @@ Skeleton::Skeleton() : sequence_(tnl::Sequence<Skeleton>(this, &Skeleton::seqIdl
 
 		chara_gpc_hdl_[i - 1].resize(CHARA_GPC_X_NUM);
 
-		chara_gpc_hdl_[i - 1] = ResourceManager::getInstance()->loadAnimation
+		chara_gpc_hdl_[i - 1] = rm_instance->loadAnimation
 		(gpc_hdl_data[gpc_index][i].getString(),
 			CHARA_GPC_MAX_NUM,
 			CHARA_GPC_X_NUM,
@@ -37,11 +45,11 @@ Skeleton::Skeleton() : sequence_(tnl::Sequence<Skeleton>(this, &Skeleton::seqIdl
 	}
 
 	// 投擲物の画像をロード
-	bone_gpc_hdl_ = ResourceManager::getInstance()->loadGraph("graphics/bone.png");
+	bone_gpc_hdl_ = rm_instance->loadGraph("graphics/bone.png");
 	bone_->setProjectileGpcHdl(bone_gpc_hdl_);
 
 	// ステータスデータを CSV から取得
-	std::vector<std::vector<tnl::CsvCell>> status_data = tnl::LoadCsv(SKELETON_DATA_CSV_PATH);
+	CsvData& status_data = rm_instance->loadCsvData(SKELETON_DATA_CSV_PATH);
 
 	// 敵の各ステータスをセット
 	name_ = status_data[1][0].getString();
@@ -96,6 +104,13 @@ void Skeleton::draw(const std::shared_ptr<Camera> camera) {
 }
 
 // =====================================================================================
+// 描画
+// =====================================================================================
+void Skeleton::drawEffect(const std::shared_ptr<Camera> camera) {
+
+}
+
+// =====================================================================================
 // クローンを生成する
 // =====================================================================================
 std::shared_ptr<EnemyBase> Skeleton::createClone() const {
@@ -113,9 +128,11 @@ void Skeleton::setEnemyLevel(int lv) {
 		tnl::DebugTrace("lv は 1以上の値をセットしてください. 入力値：%d\n", lv);
 		return;
 	}
+	// リソースマネージャーのインスタンスを取得
+	auto rm_instance = ResourceManager::getInstance();
 
 	// ステータスデータを CSV から取得
-	std::vector<std::vector<tnl::CsvCell>> status_data = tnl::LoadCsv(SKELETON_DATA_CSV_PATH);
+	CsvData& status_data = rm_instance->loadCsvData(SKELETON_DATA_CSV_PATH);
 
 	if (lv >= status_data.size()) {
 		tnl::DebugTrace("lv の値が CSVデータのサイズを超えています. 入力値：%d\n", lv);
@@ -170,6 +187,7 @@ void Skeleton::beginAction() {
 			bone_->setEnable(true);
 			bone_->setPos(pos_);
 			bone_->setTargetPos(target_pos_);
+			ResourceManager::getInstance()->playSound(SKELETON_ATK_SE_HDL_PATH, DX_PLAYTYPE_BACK);
 		}
 		sequence_.immediatelyChange(&Skeleton::seqAttack);
 	}
@@ -258,7 +276,6 @@ void Skeleton::decideActionForLv_1() {
 // レベル2モンスターの行動を決める
 // =====================================================================================
 void Skeleton::decideActionForLv_2() {
-
 
 	auto scene_play = scene_play_.lock();
 	if (scene_play == nullptr) {
@@ -428,7 +445,7 @@ bool Skeleton::tryCanBoneAttack(eDir_8& dir) {
 		return false;
 	}
 
-	// 斜め方向にいる場合
+	// ------------- 斜め方向にいる場合 -------------
 	if (abs(abs(dx) - abs(dy)) < FLT_EPSILON) {
 		// 左にいる場合、左上か左下を判定し、プレイヤーが直線上にいるか確認する。
 		if (dx < 0 && dy < 0) {
@@ -457,6 +474,7 @@ bool Skeleton::tryCanBoneAttack(eDir_8& dir) {
 			}
 		}
 	}
+	// ------------- 上下にいる場合 -------------
 	else if (abs(dx) < FLT_EPSILON) {
 		if (dy < 0) {
 			if (isPlayerDir(pos_, eDir_8::UP, true)) {
@@ -471,6 +489,7 @@ bool Skeleton::tryCanBoneAttack(eDir_8& dir) {
 			}
 		}
 	}
+	// ------------- 左右にいる場合 -------------
 	else if (abs(dy) < FLT_EPSILON) {
 		if (dx < 0) {
 			if (isPlayerDir(pos_, eDir_8::LEFT, true)) {

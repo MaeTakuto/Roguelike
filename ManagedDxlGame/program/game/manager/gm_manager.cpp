@@ -5,7 +5,9 @@
 #include "resource_manager.h"
 
 // コンストラクタ
-GameManager::GameManager(std::shared_ptr<SceneBase> start_scene) {
+GameManager::GameManager(std::shared_ptr<SceneBase> start_scene) : now_scene_(nullptr), next_scene_(nullptr), fade_time_(1.0f), fade_time_wait_(0.25f),
+is_transition_(false), sequence_(tnl::Sequence<GameManager>(this, &GameManager::seqTransIn)) 
+{
 	now_scene_ = start_scene;
 	transition_gpc_hdl_path_ = "graphics/black.bmp";
 

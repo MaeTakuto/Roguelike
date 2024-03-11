@@ -1,6 +1,12 @@
 #include "../../dxlib_ext/dxlib_ext.h"
+#include "../manager/resource_manager.h"
 #include "select_window.h"
 
+
+namespace {
+	// 選択切り替え効果音のパス
+	const std::string SELECT_SE_HDL_PATH = "sound/button_select.mp3";
+}
 
 SelectWindow::SelectWindow() {
 
@@ -19,16 +25,19 @@ SelectWindow::SelectWindow() {
 SelectWindow::~SelectWindow() {
 
 	tnl::DebugTrace("SelectWindowのデストラクタが実行されました\n");
+	ResourceManager::getInstance()->deleteSound(SELECT_SE_HDL_PATH);
 }
 
 void SelectWindow::update(float delta_time) {
 
 	if (tnl::Input::IsKeyDownTrigger(eKeys::KB_W, eKeys::KB_UP)) {
+		ResourceManager::getInstance()->playSound(SELECT_SE_HDL_PATH, DX_PLAYTYPE_BACK);
 		is_yes_ = !is_yes_;
 		selected_cmd_index_--;
 		if (selected_cmd_index_ < 0) selected_cmd_index_ = message_line_ - 1;
 	}
 	if (tnl::Input::IsKeyDownTrigger(eKeys::KB_S, eKeys::KB_DOWN)) {
+		ResourceManager::getInstance()->playSound(SELECT_SE_HDL_PATH, DX_PLAYTYPE_BACK);
 		is_yes_ = !is_yes_;
 		selected_cmd_index_++;
 		if (selected_cmd_index_ >= message_line_) selected_cmd_index_ = 0;
