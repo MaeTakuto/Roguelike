@@ -12,6 +12,7 @@ public:
 
 	void update(float delta_time) override;
 	void draw(std::shared_ptr<Camera> camera) override;
+	void drawEffect(const std::shared_ptr<Camera> camera) override;
 
 private:
 	// 敵の行動シーケンスの管理

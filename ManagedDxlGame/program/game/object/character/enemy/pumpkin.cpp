@@ -13,7 +13,10 @@ namespace
 
 Pumpkin::Pumpkin() {
 
-	std::vector<std::vector<tnl::CsvCell>> gpc_hdl_data = tnl::LoadCsv("csv/enemy_gpc_data.csv");
+	// リソースマネージャーのインスタンスを取得
+	auto rm_instance = ResourceManager::getInstance();
+
+	CsvData& gpc_hdl_data = rm_instance->loadCsvData("csv/enemy_gpc_data.csv");
 
 	chara_gpc_hdl_.resize(static_cast<int>(eDir_4::MAX));
 
@@ -24,7 +27,7 @@ Pumpkin::Pumpkin() {
 
 		chara_gpc_hdl_[i - 1].resize( CHARA_GPC_X_NUM );
 
-		chara_gpc_hdl_[i - 1] = ResourceManager::getInstance()->loadAnimation
+		chara_gpc_hdl_[i - 1] = rm_instance->loadAnimation
 		(gpc_hdl_data[gpc_index][i].getString(),
 			CHARA_GPC_MAX_NUM,
 			CHARA_GPC_X_NUM,
@@ -35,7 +38,7 @@ Pumpkin::Pumpkin() {
 	}
 
 	// ステータスデータを CSV から取得
-	std::vector<std::vector<tnl::CsvCell>> status_data = tnl::LoadCsv(PUMPKIN_DATA_CSV_PATH);
+	CsvData status_data = rm_instance->loadCsvData(PUMPKIN_DATA_CSV_PATH);
 
 	// 敵の各ステータスをセット
 	name_ = status_data[GameManager::CSV_CELL_ROW_START][0].getString();
@@ -79,6 +82,13 @@ void Pumpkin::draw(const std::shared_ptr<Camera> camera) {
 }
 
 // =====================================================================================
+// 描画
+// =====================================================================================
+void Pumpkin::drawEffect(const std::shared_ptr<Camera> camera) {
+
+}
+
+// =====================================================================================
 // クローンを生成する
 // =====================================================================================
 std::shared_ptr<EnemyBase> Pumpkin::createClone() const {
@@ -97,8 +107,11 @@ void Pumpkin::setEnemyLevel(int lv) {
 		return;
 	}
 
+	// リソースマネージャーのインスタンスを取得
+	auto rm_instance = ResourceManager::getInstance();
+
 	// ステータスデータを CSV から取得
-	std::vector<std::vector<tnl::CsvCell>> status_data = tnl::LoadCsv(PUMPKIN_DATA_CSV_PATH);
+	CsvData& status_data = rm_instance->loadCsvData(PUMPKIN_DATA_CSV_PATH);
 
 	if (lv >= status_data.size()) {
 		tnl::DebugTrace("lv の値が CSVデータのサイズを超えています. 入力値：%d\n", lv);

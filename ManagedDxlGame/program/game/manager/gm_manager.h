@@ -2,6 +2,8 @@
 
 class SceneBase;
 
+using CsvData = std::vector< std::vector<tnl::CsvCell> >;
+
 class GameManager {
 public:
 	// デストラクタ
@@ -42,10 +44,10 @@ private:
 	GameManager(std::shared_ptr<SceneBase> start_scene);
 
 	// 現在のシーン
-	std::shared_ptr<SceneBase> now_scene_ = nullptr;
+	std::shared_ptr<SceneBase> now_scene_;
 
 	// 次のシーン
-	std::shared_ptr<SceneBase> next_scene_ = nullptr;
+	std::shared_ptr<SceneBase> next_scene_;
 
 	// フェード演出画像パス
 	std::string transition_gpc_hdl_path_;
@@ -54,15 +56,14 @@ private:
 	int transition_gpc_hdl_;
 
 	// フェード演出時間
-	float fade_time_ = 0.0f;
+	float fade_time_;
 	// フェード演出待機時間
-	float fade_time_wait_ = 0.25f;
+	float fade_time_wait_;
 	// フェード演出フラグ
-	bool is_transition_ = false;
+	bool is_transition_;
 
 	// ゲームマネージャーのシーケンス
-	tnl::Sequence<GameManager> sequence_
-		= tnl::Sequence<GameManager>(this, &GameManager::seqRun);
+	tnl::Sequence<GameManager> sequence_;
 
 	// 各シーケンス
 	bool seqRun(const float delta_time);									// 何もしない

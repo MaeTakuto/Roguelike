@@ -28,6 +28,8 @@ public:
 	virtual void update(float delta_time) = 0;
 	// 描画関数
 	virtual void draw(std::shared_ptr<Camera> camera) = 0;
+	// エフェクト描画関数
+	virtual void drawEffect(const std::shared_ptr<Camera> camera) = 0;
 
 protected:
 	// 行動エラーの最大カウント（ 行動エラー時の対応を行う ）
@@ -90,7 +92,7 @@ protected:
 	virtual bool canActionToCell(const tnl::Vector2i& pos) { return false; }
 	
 	// 指定した方向が攻撃可能か
-	// args...判定する方向
+	// arg...判定する方向
 	virtual bool canAttackInDir(eDir_8 dir) { return false; }
 	
 	// 通路での行動

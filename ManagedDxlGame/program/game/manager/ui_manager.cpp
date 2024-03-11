@@ -3,11 +3,27 @@
 #include "../ui/hp_bar.h"
 #include "ui_manager.h"
 
-UI_Manager::UI_Manager() {
+namespace {
+	// メッセージウィンドウの通常の位置、サイズ
+	const tnl::Vector2i	DEFAULT_MESS_WINDOW_POS = { 175, 500 };
+	const tnl::Vector2i DEFAULT_MESS_WINDOW_SIZE = { 900, 200 };
 
-	message_window_ = std::make_shared<MessageWindow>();
-	select_window_ = std::make_shared<SelectWindow>();
-	hp_bar_ = std::make_shared<HP_Bar>();
+	// 階段での選択時のメッセージウィンドウの位置、サイズ、メッセージ
+	const tnl::Vector2i STAIR_SEL_MESS_WINDOW_POS = { 150, 450 };
+	const tnl::Vector2i STAIR_SEL_MESS_WINDOW_SIZE = { 750, 200 };
+	const std::string STAIR_SEL_MESSAGE = "穴がある。落ちますか？";
+
+	// 階数の表示位置
+	const tnl::Vector2i FLOOR_STR_POS = { 1000, 55 };
+	const int FLOOR_STR_FONT_SIZE = 40;
+}
+
+UI_Manager::UI_Manager() : message_window_(std::make_shared<MessageWindow>()), 
+select_window_(std::make_shared<SelectWindow>()), hp_bar_(std::make_shared<HP_Bar>()), floor_(0) 
+{
+
+	message_window_->setWindowPos(DEFAULT_MESS_WINDOW_POS);
+	message_window_->setWindowSize(DEFAULT_MESS_WINDOW_SIZE);
 }
 
 UI_Manager::~UI_Manager() {

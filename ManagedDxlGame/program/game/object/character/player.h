@@ -18,9 +18,13 @@ public:
 
 	void update(float delta_time) override;
 	void draw(const std::shared_ptr<Camera> camera) override;
+	void drawEffect(const std::shared_ptr<Camera> camera) override;
 
 	// 行動を開始する
-	inline void beginAction() override { act_state_ = eActState::IDLE; }
+	inline void beginAction() override { 
+		act_state_ = eActState::IDLE;
+		atk_target_ = nullptr;
+	}
 
 	// 衝突処理
 	inline void collisionProcess() {
@@ -40,10 +44,21 @@ private:
 	// 現在見ている方向
 	eDir_8 looking_dir_ = eDir_8::DOWN;
 
+	// 攻撃
+	//tnl::Vector3 attack_dir_ = { 0, 0, 0 };
+
+
 	// 選択中のセルの画像
 	int select_cell_blue_gpc_hdl_ = 0;
 	int select_cell_red_gpc_hdl_ = 0;
 
+public:
+	// レベルアップできるか判定
+	bool canLevelUp();
+	
+	void levelUpProcess();
+
+private:
 	// プレイヤーシーケンス
 	bool seqIdle(const float delta_time);
 	bool seqMove(const float delta_time);
@@ -51,50 +66,9 @@ private:
 
 	// ====================== 関数のプロトタイプ宣言 ============================
 	bool checkMapDataFromPos(const tnl::Vector3& pos, eMapData map_data);
-
-	// ============================= インライン関数 =============================
-
 	// 指定した方向の next_pos_、looking_dir_、dir_をセット
-	inline void setNextPosInDir(eDir_8 dir) {
-
-		int index = static_cast<int>(dir);
-		if (index < 0 || index >= static_cast<int>(eDir_8::MAX)) {
-			return;
-		}
-
-		anim_dir_ = ANIM_DIR[index];
-		looking_dir_ = dir;
-		next_pos_ = pos_ + DIR_POS[index];
-	}
-
-	// 指定した方向が有効か
-	inline bool isEnableDir(eDir_8 dir) {
-
-		if (dir == eDir_8::UP_LEFT) {
-			if (checkMapDataFromPos(pos_ + DIR_POS[static_cast<int>(dir)], eMapData::WALL)) return false;
-			if (checkMapDataFromPos(pos_ + DIR_POS[static_cast<int>(eDir_8::UP)], eMapData::WALL)) return false;
-			if (checkMapDataFromPos(pos_ + DIR_POS[static_cast<int>(eDir_8::LEFT)], eMapData::WALL)) return false;
-			return true;
-		}
-		else if (dir == eDir_8::UP_RIGHT) {
-			if (checkMapDataFromPos(pos_ + DIR_POS[static_cast<int>(dir)], eMapData::WALL)) return false;
-			if (checkMapDataFromPos(pos_ + DIR_POS[static_cast<int>(eDir_8::UP)], eMapData::WALL)) return false;
-			if (checkMapDataFromPos(pos_ + DIR_POS[static_cast<int>(eDir_8::RIGHT)], eMapData::WALL)) return false;
-			return true;
-		}
-		else if (dir == eDir_8::DOWN_LEFT) {
-			if (checkMapDataFromPos(pos_ + DIR_POS[static_cast<int>(dir)], eMapData::WALL)) return false;
-			if (checkMapDataFromPos(pos_ + DIR_POS[static_cast<int>(eDir_8::DOWN)], eMapData::WALL)) return false;
-			if (checkMapDataFromPos(pos_ + DIR_POS[static_cast<int>(eDir_8::LEFT)], eMapData::WALL)) return false;
-			return true;
-		}
-		else if (dir == eDir_8::DOWN_RIGHT) {
-			if (checkMapDataFromPos(pos_ + DIR_POS[static_cast<int>(dir)], eMapData::WALL)) return false;
-			if (checkMapDataFromPos(pos_ + DIR_POS[static_cast<int>(eDir_8::DOWN)], eMapData::WALL)) return false;
-			if (checkMapDataFromPos(pos_ + DIR_POS[static_cast<int>(eDir_8::RIGHT)], eMapData::WALL)) return false;
-			return true;
-		}
-		return !checkMapDataFromPos(pos_ + DIR_POS[static_cast<int>(dir)], eMapData::WALL);
-	}
+	void setNextPosInDir(eDir_8 dir);
+	// 指定した方向のセルが行動できるか判定
+	bool canActionToCell(eDir_8 dir);
 
 };

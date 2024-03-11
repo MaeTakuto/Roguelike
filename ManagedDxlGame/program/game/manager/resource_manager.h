@@ -1,5 +1,5 @@
 #pragma once
-
+#include "gm_manager.h"
 
 // =====================================================================================
 // 画像、アニメーション、サウンドのパスを管理するクラス（ Flyweight パターン ）
@@ -15,6 +15,9 @@ public:
 	// インスタンスを削除
 	static void destroy();
 
+	// ============================================================
+	// 画像、アニメーション関連 
+	// ============================================================
 	// 画像のロード、画像のアドレスを渡す。
 	int loadGraph(const std::string& gpc_hdl_path);
 
@@ -28,11 +31,33 @@ public:
 	// アニメーションの削除
 	void deleteAnimation(const std::string& anim_hdl_path, int all_size);
 
+	// ============================================================
+	// サウンド関連 
+	// ============================================================
 	// サウンドのアドレスを渡す。
 	int loadSound(const std::string& snd_path);
 
+	// サウンドを再生
+	void playSound(const std::string& snd_path, int play_type, int top_position_flag = 1);
+
+	// サウンドが再生されているか判定
+	bool checkSound(const std::string& snd_path);
+
+	// サウンドを停止
+	void stopSound(const std::string& snd_path);
+
 	// サウンドの削除
 	void deleteSound(const std::string& snd_path);
+
+	// ============================================================
+	// CSV関連 
+	// ============================================================
+
+	// csvを読み込み返す
+	CsvData& loadCsvData(const std::string& csv_path);
+
+	// csvデータを削除
+	void deleteCsvData(const std::string& csv_path);
 
 	// 全てのデータを削除
 	void clearAllResources();
@@ -50,5 +75,8 @@ private:
 
 	// サウンドデータの格納用コンテナ
 	std::unordered_map< std::string, int > snd_container_;
+
+	// CSVデータのコンテナ
+	std::unordered_map< std::string, CsvData > csv_data_container_;
 
 };
