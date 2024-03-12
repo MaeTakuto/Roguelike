@@ -25,10 +25,16 @@ public:
 	std::shared_ptr<EnemyBase> createClone() const override;
 	// 敵のレベルを設定する
 	void setEnemyLevel(int lv) override;
+	// レベルが上がるか判定
+	bool canLevelUp() override;
 	// 行動を決定する。
 	void decideAction() override;
+	// 攻撃を開始する
+	void startAttack() override;
 	// 行動を開始する
 	void beginAction() override;
+	// レベルアップ処理を行う
+	void startLevelUp() override;
 	// 敵をデスさせる
 	void death() override;
 

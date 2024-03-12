@@ -20,12 +20,6 @@ public:
 	void draw(const std::shared_ptr<Camera> camera) override;
 	void drawEffect(const std::shared_ptr<Camera> camera) override;
 
-	// 行動を開始する
-	inline void beginAction() override { 
-		act_state_ = eActState::IDLE;
-		atk_target_ = nullptr;
-	}
-
 	// 衝突処理
 	inline void collisionProcess() {
 
@@ -53,16 +47,22 @@ private:
 	int select_cell_red_gpc_hdl_ = 0;
 
 public:
+	// 行動を開始する
+	void beginAction() override;
 	// レベルアップできるか判定
-	bool canLevelUp();
-	
-	void levelUpProcess();
+	bool canLevelUp() override;
+	// 攻撃開始
+	void startAttack() override;
+	// レベルアップさせる
+	void startLevelUp() override;
 
 private:
 	// プレイヤーシーケンス
 	bool seqIdle(const float delta_time);
 	bool seqMove(const float delta_time);
 	bool seqAttack(const float delta_time);
+	bool seqDamage(const float delta_time);
+	bool seqLevellUp(const float delta_time);
 
 	// ====================== 関数のプロトタイプ宣言 ============================
 	bool checkMapDataFromPos(const tnl::Vector3& pos, eMapData map_data);

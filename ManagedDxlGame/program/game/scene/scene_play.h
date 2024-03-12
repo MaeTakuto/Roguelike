@@ -27,7 +27,7 @@ private:
 	tnl::Sequence<ScenePlay> main_seq_ = tnl::Sequence<ScenePlay>(this, &ScenePlay::seqSceneStart);
 	
 	// ダンジョン中のターン制御シーケンス
-	tnl::Sequence<ScenePlay> in_dungeon_seq_ = tnl::Sequence<ScenePlay>(this, &ScenePlay::seqPlayerAct);
+	tnl::Sequence<ScenePlay> dungeon_sequence_ = tnl::Sequence<ScenePlay>(this, &ScenePlay::seqPlayerAct);
 
 	// シーンプレイ内で使用する各クラス
 	std::shared_ptr<Camera> camera_ = nullptr;
@@ -36,8 +36,11 @@ private:
 	std::shared_ptr<EnemyManager> enemy_mgr_ = nullptr;
 	std::shared_ptr<UI_Manager> ui_mgr_ = nullptr;
 
-	// 攻撃する敵
-	std::queue< std::shared_ptr<EnemyBase> > atk_enemies_;
+	// 攻撃するキャラクター
+	std::queue< std::shared_ptr<Character> > attackers_;
+
+	// 攻撃目標
+	std::queue < std::shared_ptr<Character> > atk_targets_;
 
 	// ------------------------- ダンジョン情報関連 ------------------------------------
 	// 各エリアの情報（ 始点座標、サイズなど ）
@@ -85,14 +88,10 @@ public:
 	// ==============================================
 	// 指定した位置の敵を返す。存在しない場合、"nullptr" で返す
 	std::shared_ptr<EnemyBase> findEnemy(const tnl::Vector3& pos);
-	// 指定した対象にダメージを与える
-	void applyDamage(std::shared_ptr<Character> attacker, std::shared_ptr<Character> target);
-	// レベルアップ処理をする
-	void charaLevelUpProcess(std::shared_ptr<Character> chara);
-	// 次のフロアに変える処理を行う
-	void changeProcessNextFloor();
-	// ゲームオーバー処理を実行
-	void executeGameOverProcess();
+	// 攻撃を行うキャラクターを追加する
+	void addAttacker(std::shared_ptr<Character> attacker);
+	// 攻撃対象を追加
+	void addAttackTarget(std::shared_ptr<Character> target);
 	// メッセージウィンドウにメッセージをセット
 	void setMessage(const std::string& message);
 
@@ -187,8 +186,21 @@ private:
 
 	// キャラクターアップデート
 	void charaUpdate(float delta_time);
+	// 指定した対象にダメージを与える
+	void applyDamage(std::shared_ptr<Character> attacker, std::shared_ptr<Character> target);
 	// キャラクターを倒したときの処理
 	void defeatCharacter(std::shared_ptr<Character> attacker, std::shared_ptr<Character> target);
+	// 攻撃キャラを切り替える。いなければ、"dungeon_sequence_"を"seqCharaMove" に変更。
+	void changeAttacker();
+	// レベルアップ処理をする
+	void executeLevelUpProcess(std::shared_ptr<Character> chara);
+	//// 次の攻撃者を確認する
+	//void checkNextAttacker(std::queue< std::shared_ptr<Character> >& attacker);
+	// 次のフロアに変える処理を行う
+	void changeProcessNextFloor();
+	// ゲームオーバー処理を実行
+	void executeGameOverProcess();
+
 
 	// =========== メインシーケンス ===========
 	bool seqSceneStart(const float delta_time);
@@ -202,12 +214,13 @@ private:
 	bool seqPlayerAct(const float delta_time);
 	bool seqEnemyAct(const float delta_time);
 	bool seqPlayerMove(const float delta_time);
-	bool seqPlayerAttack(const float delta_time);
-	bool seqEnemyAttack(const float delta_time);
+	bool seqCharacterAttack(const float delta_time);
+	// bool seqEnemyAttack(const float delta_time);
+	bool seqTargetDamaged(const float delta_time);
+	bool seqCharaLevelUp(const float delta_time);
 	bool seqCharaMove(const float delta_time);
 	bool seqActEndProcess(const float delta_time);
 	bool seqStairSelect(const float delta_time);
-	bool seqLevelUp(const float delta_time);
 	bool seqGameOver(const float delta_time);
 
 };

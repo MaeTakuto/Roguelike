@@ -5,6 +5,7 @@
 #include "../my_library/my_library.h"
 #include "../object/character/enemy/pumpkin.h"
 #include "../object/character/enemy/skeleton.h"
+#include "../base/character_base.h"
 #include "enemy_manager.h"
 
 namespace {
@@ -131,39 +132,47 @@ void EnemyManager::deathAllEnemys() {
 // =====================================================================================
 void EnemyManager::desideAction() {
 
+	std::shared_ptr<ScenePlay> scene_play 
+		= std::dynamic_pointer_cast<ScenePlay>( GameManager::GetInstance()->getSceneInstance());
+
+	if (!scene_play) {
+		tnl::DebugTrace("EnemyManager::desideAction() : scene_play を取得できませんでした");
+	}
+
 	for (int i = 0; i < enemies_.size(); i++) {
 		if (!enemies_[i]) {
 			continue;
 		}
 		if (enemies_[i]->isAlive() == false) continue;
 
-		// ログファイルに出力
-		std::ofstream logfile("GameLog.txt", std::ios_base::app);
-		logfile << "敵名：" << enemies_[i]->getName() << "Index：" << i << std::endl;
 		enemies_[i]->decideAction();
+		// シーンプレイに攻撃行動者を登録
+		if (enemies_[i]->getActState() == eActState::ATTACK) {
+			scene_play->addAttacker(enemies_[i]);
+		}
 	}
 }
 
-// =====================================================================================
-// 攻撃行動をする敵を取得。いない場合は nullptr
-// =====================================================================================
-std::queue< std::shared_ptr<EnemyBase> > EnemyManager::getEnemyToAttackAction() {
-	std::queue< std::shared_ptr<EnemyBase> > atk_enemies;
-	
-	for (int i = 0; i < enemies_.size(); i++) {
-		if (!enemies_[i]) {
-			continue;
-		}
-		if (!(enemies_[i]->isAlive())) {
-			continue;
-		}
-		if (enemies_[i]->getActState() != eActState::ATTACK) {
-			continue;
-		}
-		atk_enemies.push(enemies_[i]);
-	}
-	return atk_enemies;
-}
+//// =====================================================================================
+//// 攻撃行動をする敵を取得。いない場合は nullptr
+//// =====================================================================================
+//std::queue< std::shared_ptr<Character> > EnemyManager::getEnemyToAttackAction() {
+//	std::queue< std::shared_ptr<Character> > atk_enemies;
+//	
+//	for (int i = 0; i < enemies_.size(); i++) {
+//		if (!enemies_[i]) {
+//			continue;
+//		}
+//		if (!(enemies_[i]->isAlive())) {
+//			continue;
+//		}
+//		if (enemies_[i]->getActState() != eActState::ATTACK) {
+//			continue;
+//		}
+//		atk_enemies.push(enemies_[i]);
+//	}
+//	return atk_enemies;
+//}
 
 // =====================================================================================
 // 移動を行う敵の行動を開始させる
