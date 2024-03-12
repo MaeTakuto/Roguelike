@@ -13,6 +13,7 @@ enum class eActState {
 	IDLE,
 	MOVE,
 	ATTACK,
+	LEVEL_UP,
 	END
 };
 
@@ -33,6 +34,9 @@ protected:
 	const int CHARA_GPC_X_NUM = 4;
 	const int CHARA_GPC_Y_NUM = 1;
 	const int CHARA_GPC_MAX_NUM = CHARA_GPC_X_NUM * CHARA_GPC_Y_NUM;
+
+	// シーケンスに留まる時間
+	const float SEQUENCE_WAIT_TIME = 1.0f;
 
 	// 移動させるスピード
 	const float MOVE_SPEED = 0.25f;
@@ -81,9 +85,6 @@ protected:
 
 	// 生存しているか判定
 	bool is_alive_;
-	
-	// ダメージを受けているか判定
-	bool is_damaged_;
 
 public:
 	// ================= ゲッター、セッター =================
@@ -114,10 +115,14 @@ public:
 	void takeDamage(int damage);
 
 	// ================= 仮想関数 =================
+	// レベルが上がるが判定
+	virtual bool canLevelUp() = 0;
 	// 行動を開始させる
 	virtual void beginAction() = 0;
+	// 攻撃開始
+	virtual void startAttack() = 0;
 	// レベルアップ処理を行う
-	virtual void executeLevelUpProcess() {};
+	virtual void startLevelUp() = 0;
 
 protected:
 	// 指定した位置がフィールドの中か判定

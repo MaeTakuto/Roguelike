@@ -152,6 +152,13 @@ void Player::drawEffect(std::shared_ptr<Camera> camera) {
 }
 
 // ====================================================
+// 行動を開始する
+// ====================================================
+void Player::beginAction() {
+	act_state_ = eActState::IDLE;
+}
+
+// ====================================================
 // レベルアップできるか判定
 // ====================================================
 bool Player::canLevelUp() {
@@ -168,10 +175,19 @@ bool Player::canLevelUp() {
 }
 
 // ====================================================
+// 攻撃開始
+// ====================================================
+void Player::startAttack() {
+	sequence_.change(&Player::seqAttack);
+}
+
+// ====================================================
 // レベルアップできるか判定
 // ====================================================
-void Player::levelUpProcess() {
+void Player::startLevelUp() {
 	status_.levelUP(4, 3, 3);
+	sequence_.change(&Player::seqLevellUp);
+	act_state_ = eActState::LEVEL_UP;
 }
 
 // ====================================================
@@ -347,8 +363,12 @@ bool Player::seqIdle(const float delta_time) {
 
 	// ======== 攻撃入力 ========
 	if (tnl::Input::IsKeyDownTrigger(eKeys::KB_RETURN)) {
+		std::shared_ptr<ScenePlay> scene_play = std::dynamic_pointer_cast<ScenePlay>(GameManager::GetInstance()->getSceneInstance());
+		if (!scene_play) {
+			return true;
+		}
+		scene_play->addAttacker(scene_play->getPlayer());
 		act_state_ = eActState::ATTACK;
-		sequence_.change(&Player::seqAttack);
 	}
 
 	return true;
@@ -394,16 +414,32 @@ bool Player::seqAttack(const float delta_time) {
 
 		std::shared_ptr<ScenePlay> scene_play = std::dynamic_pointer_cast<ScenePlay>(GameManager::GetInstance()->getSceneInstance());
 
-		if (!scene_play) return true;
+		if (!scene_play) {
+			return true;
+		}
 
 		tnl::Vector3 attack_pos = pos_ + DIR_POS[std::underlying_type<eDir_8>::type(looking_dir_)];
-
-		std::shared_ptr<Player> player = scene_play->getPlayer();
-		atk_target_ = scene_play->findEnemy(attack_pos);
+		scene_play->addAttackTarget(scene_play->findEnemy(attack_pos));
 
 	}
+
 	act_state_ = eActState::END;
 	sequence_.change(&Player::seqIdle);
-	
+	return true;
+}
+
+bool Player::seqDamage(const float delta_time) {
+
+	return true;
+}
+
+bool Player::seqLevellUp(const float delta_time) {
+
+	if (sequence_.getProgressTime() > SEQUENCE_WAIT_TIME) {
+		act_state_ = eActState::END;
+		sequence_.change(&Player::seqIdle);
+		return true;
+	}
+
 	return true;
 }

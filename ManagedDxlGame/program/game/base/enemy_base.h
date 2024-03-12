@@ -63,10 +63,16 @@ public:
 	virtual std::shared_ptr<EnemyBase> createClone() const = 0;
 	// 敵のレベルを設定する
 	virtual void setEnemyLevel(int lv) = 0;
+	// レベルが上がるが判定
+	virtual bool canLevelUp() = 0;
 	// 行動を決定する。
 	virtual void decideAction() = 0;
 	// 行動を開始する
 	virtual void beginAction() = 0;
+	// 攻撃開始
+	virtual void startAttack() = 0;
+	// レベルアップ処理を行う
+	virtual void startLevelUp() = 0;
 	// 敵をデスさせる
 	virtual void death() = 0;
 

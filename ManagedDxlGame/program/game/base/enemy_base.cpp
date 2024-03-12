@@ -174,6 +174,13 @@ int EnemyBase::getMinimunScoreCellIndex() {
 // UŒ‚s“®‚ÉØ‚è‘Ö‚¦‚é
 // =====================================================================================
 void EnemyBase::changeToAttackAction(eDir_8 dir) {
+	
+	auto scene_play = scene_play_.lock();
+	if (!scene_play) {
+		tnl::DebugTrace("UŒ‚s“®‚ÉØ‚è‘Ö‚¦‚ç‚ê‚Ü‚¹‚ñ‚Å‚µ‚½\n");
+		return;
+	}
+
 	act_state_ = eActState::ATTACK;
 	anim_dir_ = ANIM_DIR[std::underlying_type<eDir_8>::type(dir)];
 	
@@ -185,7 +192,7 @@ void EnemyBase::changeToAttackAction(eDir_8 dir) {
 void EnemyBase::changeToMoveAction() {
 
 	auto scene_play = scene_play_.lock();
-	if (scene_play == nullptr) {
+	if (!scene_play) {
 		return;
 	}
 

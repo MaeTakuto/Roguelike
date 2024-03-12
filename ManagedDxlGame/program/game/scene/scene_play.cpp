@@ -192,6 +192,26 @@ std::shared_ptr<EnemyBase> ScenePlay::findEnemy(const tnl::Vector3& pos) {
 }
 
 // ====================================================
+// 攻撃を行うキャラクターを追加する
+// ====================================================
+void ScenePlay::addAttacker(std::shared_ptr<Character> attacker) {
+	if (!attacker) {
+		return;
+	}
+	attackers_.push(attacker);
+}
+
+// ====================================================
+// 攻撃対象を追加
+// ====================================================
+void ScenePlay::addAttackTarget(std::shared_ptr<Character> target) {
+	if (!target) {
+		return;
+	}
+	atk_targets_.push(target);
+}
+
+// ====================================================
 // attaker が target にダメージを与える。
 // ====================================================
 void ScenePlay::applyDamage(std::shared_ptr<Character> attacker, std::shared_ptr<Character> target) {
@@ -210,7 +230,7 @@ void ScenePlay::applyDamage(std::shared_ptr<Character> attacker, std::shared_ptr
 // ====================================================
 void ScenePlay::changeProcessNextFloor() {
 	main_seq_.change(&ScenePlay::seqFadeOut);
-	in_dungeon_seq_.change(&ScenePlay::seqPlayerAct);
+	dungeon_sequence_.change(&ScenePlay::seqPlayerAct);
 	ui_mgr_->executeStairSelectEnd();
 	++dungeon_floor_;
 	is_created_dungeon_ = false;
@@ -219,13 +239,11 @@ void ScenePlay::changeProcessNextFloor() {
 // ====================================================
 // キャラのレベルが上がった時の処理
 // ====================================================
-void ScenePlay::charaLevelUpProcess(std::shared_ptr<Character> chara) {
-	std::string message = chara->getName() + "はレベルが" + std::to_string(chara->getStatus().getLevel()) + "になった";
-	ui_mgr_->setMessage(message, MESSAGE_DRAW_TIME);
-
-	std::shared_ptr<Player> player = std::dynamic_pointer_cast<Player>(chara);
-	if (player == nullptr) return;
-	ui_mgr_->setHP_BarStatus(player->getStatus().getHP(), player->getStatus().getMaxHP());
+void ScenePlay::executeLevelUpProcess(std::shared_ptr<Character> chara) {
+	ResourceManager::getInstance()->playSound(level_up_se_hdl_path_, DX_PLAYTYPE_BACK);
+	chara->startLevelUp();
+	if (chara.get() != player_.get()) return;
+	ui_mgr_->setHP_BarStatus(chara->getStatus().getHP(), chara->getStatus().getMaxHP());
 }
 
 // ====================================================
@@ -235,7 +253,7 @@ void ScenePlay::executeGameOverProcess() {
 	ui_mgr_->clearMessage();
 	std::string message = player_->getName() + "はやられてしまった";
 	ui_mgr_->setMessage(message);
-	in_dungeon_seq_.immediatelyChange(&ScenePlay::seqGameOver);
+	dungeon_sequence_.immediatelyChange(&ScenePlay::seqGameOver);
 }
 
 // ====================================================
@@ -248,6 +266,32 @@ void ScenePlay::defeatCharacter(std::shared_ptr<Character> attacker, std::shared
 	std::string message = target->getName() + "を倒した";
 	ui_mgr_->setMessage(message, MESSAGE_DRAW_TIME);
 	tnl::DebugTrace("倒した\n");
+}
+
+// ====================================================
+// 攻撃キャラを切り替える。
+// いなければ、"dungeon_sequence_"を"seqCharaMove" に変更。
+// ====================================================
+void ScenePlay::changeAttacker() {
+
+	attackers_.pop();
+
+	if (!attackers_.empty()) {
+		// 攻撃キャラから死亡していたら再帰する。
+		if (!attackers_.front()->isAlive()) {
+			changeAttacker();
+			return;
+		}
+		
+		if (!dungeon_sequence_.isComparable(&ScenePlay::seqCharacterAttack)) {
+			dungeon_sequence_.change(&ScenePlay::seqCharacterAttack);
+		}
+		attackers_.front()->startAttack();
+		return;
+	}
+
+	enemy_mgr_->beginActionToMove();
+	dungeon_sequence_.change(&ScenePlay::seqCharaMove);
 }
 
 // ====================================================
@@ -349,7 +393,7 @@ bool ScenePlay::seqFadeIn(const float delta_time) {
 // ダンジョン探索シーケンス
 // ====================================================
 bool ScenePlay::seqMain(const float delta_time) {
-	if (in_dungeon_seq_.isStart()) {
+	if (dungeon_sequence_.isStart()) {
 		if (!CheckSoundMem(dungeon_bgm_hdl_)) {
 			PlaySoundMem(dungeon_bgm_hdl_, DX_PLAYTYPE_LOOP, true);
 		}
@@ -357,7 +401,7 @@ bool ScenePlay::seqMain(const float delta_time) {
 
 	// camera_->control();
 
-	 in_dungeon_seq_.update(delta_time);
+	 dungeon_sequence_.update(delta_time);
 	 camera_->setPos(player_->getPos());
 	 ui_mgr_->update(delta_time);
 
@@ -396,7 +440,7 @@ bool ScenePlay::seqPlayerAct(const float delta_time) {
 		if ( getMapData( player_->getNextPos() ) ==  eMapData::WALL )  { player_->collisionProcess(); }
 		else if (getMapData(player_->getNextPos()) == eMapData::ENEMY) { player_->collisionProcess(); }
 		else {
-			in_dungeon_seq_.change(&ScenePlay::seqEnemyAct);
+			dungeon_sequence_.change(&ScenePlay::seqEnemyAct);
 
 			setMapData(player_->getPos(), getTerrainData(player_->getPos()));
 			setMapData(player_->getNextPos(), eMapData::PLAYER);
@@ -416,19 +460,19 @@ bool ScenePlay::seqEnemyAct(const float delta_time) {
 	// プレイヤーが移動する場合
 	if (player_->getActState() == eActState::MOVE) {
 
-		atk_enemies_ = enemy_mgr_->getEnemyToAttackAction();
 		// 攻撃する敵がいた場合、プレイヤーのみ移動
-		if (!atk_enemies_.empty()) {
-			in_dungeon_seq_.change(&ScenePlay::seqPlayerMove);
+		if (!attackers_.empty()) {
+			dungeon_sequence_.change(&ScenePlay::seqPlayerMove);
 			return true;
 		}
-		in_dungeon_seq_.change(&ScenePlay::seqCharaMove);
+		dungeon_sequence_.change(&ScenePlay::seqCharaMove);
 		enemy_mgr_->beginActionToMove();
 		return true;
 	}
 	// プレイヤーが攻撃する場合
 	else if (player_->getActState() == eActState::ATTACK) {
-		in_dungeon_seq_.change(&ScenePlay::seqPlayerAttack);
+		attackers_.front()->startAttack();
+		dungeon_sequence_.change(&ScenePlay::seqCharacterAttack);
 	}
 	return true;
 }
@@ -442,88 +486,121 @@ bool ScenePlay::seqPlayerMove(const float delta_time) {
 
 	if (player_->getActState() != eActState::END) return true;
 	ui_mgr_->setHP_BarStatus(player_->getStatus().getMaxHP(), player_->getStatus().getHP());
-	in_dungeon_seq_.change(&ScenePlay::seqEnemyAttack);
+
+	dungeon_sequence_.change(&ScenePlay::seqCharacterAttack);
+	attackers_.front()->startAttack();
 	return true;
 }
 
 // ====================================================
-// プレイヤーの攻撃シーケンス
+// キャラクターの攻撃シーケンス
 // ====================================================
-bool ScenePlay::seqPlayerAttack(const float delta_time) {
+bool ScenePlay::seqCharacterAttack(const float delta_time) {
 
 	charaUpdate(delta_time);
 
-	if (player_->getActState() != eActState::END) return true;
-
-	std::shared_ptr<Character> target = player_->getAttackTarget();
-
-	if (target) {
-		applyDamage(player_, target);
-
-		// 敵を倒したか判定
-		if (!target->isAlive()) {
-			defeatCharacter(player_, target);
-		}
-
-		// レベルアップできるか判定
-		if (player_->canLevelUp()) {
-			ResourceManager::getInstance()->playSound(level_up_se_hdl_path_, DX_PLAYTYPE_BACK);
-			player_->levelUpProcess();
-			charaLevelUpProcess(player_);
-			// in_dungeon_seq_.change(&ScenePlay::seqLevelUp);
-			// return true;
-		}
-	}
-	atk_enemies_ = enemy_mgr_->getEnemyToAttackAction();
-
-	// 攻撃する敵がいた場合
-	if (!atk_enemies_.empty()) {
-		in_dungeon_seq_.change(&ScenePlay::seqEnemyAttack);
+	// 攻撃者が攻撃中の場合、ここまで
+	if (attackers_.front()->getActState() != eActState::END) {
 		return true;
 	}
 
-	enemy_mgr_->beginActionToMove();
-	in_dungeon_seq_.change(&ScenePlay::seqCharaMove);
+	// 攻撃対象がいる場合、ダメージ処理シーケンスに移動
+	if (!atk_targets_.empty()) {
+		applyDamage(attackers_.front(), atk_targets_.front());
+		ui_mgr_->setHP_BarStatus(player_->getStatus().getMaxHP(), player_->getStatus().getHP());
+		dungeon_sequence_.change(&ScenePlay::seqTargetDamaged);
+		return true;
+	}
 
+	changeAttacker();
 	return true;
 }
 
 // ====================================================
-// 敵の攻撃シーケンス
+// 攻撃対象のダメージ処理を行うシーケンス
 // ====================================================
-bool ScenePlay::seqEnemyAttack(const float delta_time) {
-
-	// 先頭の敵の攻撃を開始
-	if (in_dungeon_seq_.isStart()) {
-		atk_enemies_.front()->beginAction();
-	}
+bool ScenePlay::seqTargetDamaged(const float delta_time) {
 
 	charaUpdate(delta_time);
 
-	if (atk_enemies_.front()->getActState() != eActState::END) {
+	// 攻撃対象を倒したとき、時の確認
+	if (!atk_targets_.front()->isAlive()) {
+		if (atk_targets_.front().get() == player_.get()) {
+			executeGameOverProcess();
+			return true;
+		}
+		defeatCharacter(attackers_.front(), atk_targets_.front());
+	}
+
+	atk_targets_.pop();
+
+	// 攻撃対象が残っている場合、もう一度攻撃対象のダメージ処理を行う
+	if (!atk_targets_.empty()) {
+		applyDamage(attackers_.front(), atk_targets_.front());
+		ui_mgr_->setHP_BarStatus(player_->getStatus().getMaxHP(), player_->getStatus().getHP());
 		return true;
 	}
 
-	applyDamage(atk_enemies_.front(), player_);
-	ui_mgr_->setHP_BarStatus(player_->getStatus().getMaxHP(), player_->getStatus().getHP());
-
-	// プレイヤー死亡時
-	if (!player_->isAlive()) {
-		executeGameOverProcess();
+	if (attackers_.front()->canLevelUp()) {
+		executeLevelUpProcess(attackers_.front());
+		dungeon_sequence_.change(&ScenePlay::seqCharaLevelUp);
 		return true;
 	}
-	
-	atk_enemies_.pop();
 
-	// 攻撃する敵がいない場合
-	if (atk_enemies_.empty()) {
-		in_dungeon_seq_.change(&ScenePlay::seqCharaMove);
-		enemy_mgr_->beginActionToMove();
-		return true;
-	}
-	atk_enemies_.front()->beginAction();
+	changeAttacker();
 	return true;
 }
+
+// ====================================================
+// キャラのレベルアップを行うシーケンス
+// ====================================================
+bool ScenePlay::seqCharaLevelUp(const float delta_time) {
+
+	charaUpdate(delta_time);
+
+	if (attackers_.front()->getActState() != eActState::END) {
+		return true;
+	}
+	std::string message = attackers_.front()->getName() + "はレベルが" + std::to_string(attackers_.front()->getStatus().getLevel()) + "になった";
+	ui_mgr_->setMessage(message, MESSAGE_DRAW_TIME);
+	changeAttacker();
+	return true;
+}
+//// ====================================================
+//// 敵の攻撃シーケンス
+//// ====================================================
+//bool ScenePlay::seqEnemyAttack(const float delta_time) {
+//
+//	// 先頭の敵の攻撃を開始
+//	if (dungeon_sequence_.isStart()) {
+//		attackers_.front()->beginAction();
+//	}
+//
+//	charaUpdate(delta_time);
+//
+//	if (attackers_.front()->getActState() != eActState::END) {
+//		return true;
+//	}
+//
+//	applyDamage(attackers_.front(), player_);
+//
+//	// プレイヤー死亡時
+//	if (!player_->isAlive()) {
+//		executeGameOverProcess();
+//		return true;
+//	}
+//	
+//	attackers_.pop();
+//
+//	// 攻撃する敵がいない場合
+//	if (attackers_.empty()) {
+//		dungeon_sequence_.change(&ScenePlay::seqCharaMove);
+//		enemy_mgr_->beginActionToMove();
+//		return true;
+//	}
+//	attackers_.front()->beginAction();
+//	return true;
+//}
 
 // ====================================================
 // 行動を終えていないキャラクターを行動させるシーケンス
@@ -535,7 +612,7 @@ bool ScenePlay::seqCharaMove(const float delta_time) {
 	if (player_->getActState() != eActState::END) return true;
 	if (enemy_mgr_->isAllEnemyActEnd() == false) return true;
 
-	in_dungeon_seq_.change(&ScenePlay::seqActEndProcess);
+	dungeon_sequence_.change(&ScenePlay::seqActEndProcess);
 
 	return true;
 }
@@ -552,13 +629,13 @@ bool ScenePlay::seqActEndProcess(const float delta_time) {
 
 	// プレイヤーの位置が階段だった時
 	if (getTerrainData(player_->getPos()) == eMapData::STAIR) {
-		in_dungeon_seq_.change(&ScenePlay::seqStairSelect);
+		dungeon_sequence_.change(&ScenePlay::seqStairSelect);
 		ui_mgr_->executeStairSelect();
 		ResourceManager::getInstance()->playSound(open_select_window_se_hdl_path_, DX_PLAYTYPE_BACK);
 		return true;
 	}
 
-	in_dungeon_seq_.change(&ScenePlay::seqPlayerAct);
+	dungeon_sequence_.change(&ScenePlay::seqPlayerAct);
 	return true;
 }
 
@@ -574,26 +651,12 @@ bool ScenePlay::seqStairSelect(const float delta_time) {
 			changeProcessNextFloor();
 		}
 		else {
-			in_dungeon_seq_.change(&ScenePlay::seqPlayerAct);
+			dungeon_sequence_.change(&ScenePlay::seqPlayerAct);
 			ui_mgr_->executeStairSelectEnd();
 		}
 	}
 
 	return true;
-}
-
-// ====================================================
-// 階段選択シーケンス
-// ====================================================
-bool ScenePlay::seqLevelUp(const float delta_time) {
-
-	if (ResourceManager::getInstance()->checkSound(level_up_se_hdl_path_)) {
-		return true;
-	}
-
-	if (!atk_enemies_.empty()) {
-		
-	}
 }
 
 // ====================================================
@@ -607,3 +670,51 @@ bool ScenePlay::seqGameOver(const float delta_time) {
 	}
 	return true;
 }
+
+//// ====================================================
+//// プレイヤーの攻撃シーケンス
+//// ====================================================
+//bool ScenePlay::seqPlayerAttack(const float delta_time) {
+//
+//	charaUpdate(delta_time);
+//
+//	if (attackers_.front()->getActState() != eActState::END) return true;
+//
+//	//std::shared_ptr<Character> target = player_->getAttackTarget();
+//
+//	//if (target) {
+//	//	applyDamage(player_, target);
+//
+//	//	// 敵を倒したか判定
+//	//	if (!target->isAlive()) {
+//	//		defeatCharacter(player_, target);
+//	//	}
+//
+//	//	// レベルアップできるか判定
+//	//	if (player_->canLevelUp()) {
+//	//		ResourceManager::getInstance()->playSound(level_up_se_hdl_path_, DX_PLAYTYPE_BACK);
+//	//		player_->levelUpProcess();
+//	//		charaLevelUpProcess(player_);
+//	//		// in_dungeon_seq_.change(&ScenePlay::seqLevelUp);
+//	//		// return true;
+//	//	}
+//	//}
+//
+//	if (!atk_targets_.empty()) {
+//		applyDamage(player_, atk_targets_.front());
+//		dungeon_sequence_.change(&ScenePlay::seqTargetDamaged);
+//		return true;
+//	}
+//
+//	attackers_.pop();
+//
+//	if (!attackers_.empty()) {
+//		attackers_.front()->startAttack();
+//		return true;
+//	}
+//
+//	enemy_mgr_->beginActionToMove();
+//	dungeon_sequence_.change(&ScenePlay::seqCharaMove);
+//
+//	return true;
+//}

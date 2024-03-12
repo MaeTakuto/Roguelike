@@ -130,11 +130,25 @@ void Pumpkin::setEnemyLevel(int lv) {
 }
 
 // =====================================================================================
+// レベルが上がるか判定
+// =====================================================================================
+bool Pumpkin::canLevelUp() {
+	return false;
+}
+
+// =====================================================================================
 // 行動を決める
 // =====================================================================================
 void Pumpkin::decideAction() {
 
 	decideActionForLv_1();
+}
+
+// =====================================================================================
+// 攻撃を開始する
+// =====================================================================================
+void Pumpkin::startAttack() {
+	sequence_.change(&Pumpkin::seqAttack);
 }
 
 // =====================================================================================
@@ -150,9 +164,13 @@ void Pumpkin::beginAction() {
 		sequence_.immediatelyChange(&Pumpkin::seqMove);
 		return;
 	}
-	if (act_state_ == eActState::ATTACK) {
-		sequence_.immediatelyChange(&Pumpkin::seqAttack);
-	}
+}
+
+// =====================================================================================
+// レベルアップ処理を行う
+// =====================================================================================
+void Pumpkin::startLevelUp() {
+
 }
 
 // =====================================================================================
@@ -195,6 +213,15 @@ bool Pumpkin::seqAttack(const float delta_time) {
 	attack_time_ += delta_time;
 
 	if ( attack_time_ > ATTACK_TIME_MAX ) {
+		auto scene_play = scene_play_.lock();
+		if (scene_play == nullptr) {
+			tnl::DebugTrace("攻撃を正常に実行できませんでした\n");
+			act_state_ = eActState::END;
+			sequence_.change(&Pumpkin::seqIdle);
+			return true;
+		}
+
+		scene_play->addAttackTarget(scene_play->getPlayer());
 		attack_time_ = 0.0f;
 		act_state_ = eActState::END;
 		sequence_.change(&Pumpkin::seqIdle);

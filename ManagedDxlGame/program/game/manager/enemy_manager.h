@@ -3,6 +3,7 @@
 #include "../../dxlib_ext/dxlib_ext.h"
 
 class Camera;
+class Character;
 class EnemyBase;
 
 // =====================================================================================
@@ -45,8 +46,8 @@ public:
 	// Še“G‚Ìs“®‚ğŒˆ‚ß‚é
 	void desideAction();
 
-	// UŒ‚ó‘Ô‚Ì“G‚ğæ“¾
-	std::queue< std::shared_ptr<EnemyBase> > getEnemyToAttackAction();
+	//// UŒ‚ó‘Ô‚Ì“G‚ğæ“¾
+	//void getEnemyToAttackAction();
 
 	// ˆÚ“®‚ğs‚¤“G‚Ìs“®‚ğŠJn‚³‚¹‚é
 	void beginActionToMove();
