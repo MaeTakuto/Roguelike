@@ -5,17 +5,7 @@
 #include "../common/animation.h"
 
 class Camera;
-
-// const int DIR_MAX = 8;
-
-// キャラの行動状態
-enum class eActState {
-	IDLE,
-	MOVE,
-	ATTACK,
-	LEVEL_UP,
-	END
-};
+class MagicBase;
 
 // =====================================================================================
 // キャラクターのベースクラス
@@ -36,7 +26,7 @@ protected:
 	const int CHARA_GPC_MAX_NUM = CHARA_GPC_X_NUM * CHARA_GPC_Y_NUM;
 
 	// シーケンスに留まる時間
-	const float SEQUENCE_WAIT_TIME = 1.0f;
+	const float SEQUENCE_WAIT_TIME = 0.75f;
 
 	// 移動させるスピード
 	const float MOVE_SPEED = 0.25f;
@@ -44,10 +34,6 @@ protected:
 	// 各方向の表示画像の方向
 	const eDir_4 ANIM_DIR[static_cast<int>(eDir_8::MAX)] 
 		= { eDir_4::UP, eDir_4::DOWN, eDir_4::LEFT, eDir_4::RIGHT, eDir_4::UP, eDir_4::UP, eDir_4::DOWN, eDir_4::DOWN };
-
-	// 各方向のベクトル
-	const tnl::Vector3 DIR_POS[static_cast<int>(eDir_8::MAX)] 
-		= { { 0, -1, 0 }, { 0, 1, 0 }, { -1, 0, 0 }, { 1, 0 , 0 }, { -1, -1, 0 }, { 1, -1, 0 }, { -1, 1, 0 }, { 1, 1, 0 } };
 
 	// 逆方向
 	const eDir_8 REVERCE_DIRECTION[static_cast<int>(eDir_8::MAX)]
@@ -61,6 +47,9 @@ protected:
 
 	// ステータス（ HP、ATKなど ）
 	CharaStatus status_;
+
+	// 魔法一覧
+	std::vector<std::shared_ptr<MagicBase>> magic_list_;
 
 	// ---------------- 攻撃関連 ----------------
 	// 攻撃対象のキャラクタークラス
@@ -81,13 +70,14 @@ protected:
 	eDir_4 anim_dir_ = eDir_4::DOWN;
 
 	// 行動状態
-	eActState act_state_ = eActState::IDLE;
+	eActState act_state_;
 
 	// 生存しているか判定
 	bool is_alive_;
 
 public:
 	// ================= ゲッター、セッター =================
+	
 	// 攻撃対象を取得 対象がいない場合、"nullptr" を返す。
 	inline std::shared_ptr<Character> getAttackTarget() { return atk_target_; }
 	// 現在の位置を取得
@@ -106,15 +96,19 @@ public:
 	// 名前を取得
 	inline const std::string& getName() const { return name_; };
 	// ステータスクラスを取得
-	inline const CharaStatus& getStatus() const { return status_; }
+	inline CharaStatus& getStatus() { return status_; }
+	// 魔法一覧を取得
+	const std::vector<std::shared_ptr<MagicBase>>& getMagicList() const;
 
 	// ================= 関数のプロトタイプ =================
+
 	// 経験値を追加する
 	inline void addExp(int exp) { status_.addExp(exp); }
 	// ダメージを受ける
 	void takeDamage(int damage);
 
 	// ================= 仮想関数 =================
+
 	// レベルが上がるが判定
 	virtual bool canLevelUp() = 0;
 	// 行動を開始させる
@@ -123,6 +117,7 @@ public:
 	virtual void startAttack() = 0;
 	// レベルアップ処理を行う
 	virtual void startLevelUp() = 0;
+	// virtual bool tryUseMagic(int magic_index) { return true; };
 
 protected:
 	// 指定した位置がフィールドの中か判定

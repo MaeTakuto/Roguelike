@@ -95,12 +95,12 @@ std::vector<int>& ResourceManager::loadAnimation(const std::string& anim_hdl_pat
 // ====================================================
 // アニメーションの削除
 // ====================================================
-void ResourceManager::deleteAnimation(const std::string& anim_hdl_path, int all_size) {
+void ResourceManager::deleteAnimation(const std::string& anim_hdl_path) {
 
 	auto it = anim_hdl_container_.find(anim_hdl_path);
 
 	if (it != anim_hdl_container_.end()) {
-		for (int i = 0; i < all_size; ++i)
+		for (int i = 0; i < it->second.size(); ++i)
 			DeleteGraph(it->second[i]);
 	}
 

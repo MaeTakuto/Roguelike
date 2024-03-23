@@ -17,7 +17,7 @@ namespace {
 // =====================================================================================
 // コンストラクタ
 // =====================================================================================
-Skeleton::Skeleton() : sequence_(tnl::Sequence<Skeleton>(this, &Skeleton::seqIdle)), bone_(std::make_shared<Projectile>()), bone_gpc_hdl_(0) {
+Skeleton::Skeleton() : sequence_(tnl::Sequence<Skeleton>(this, &Skeleton::seqIdle)), bone_throw_dir_{0}, bone_(std::make_shared<Projectile>()), bone_gpc_hdl_(0) {
 
 	// リソースマネージャーのインスタンスを取得
 	auto rm_instance = ResourceManager::getInstance();
@@ -56,9 +56,10 @@ Skeleton::Skeleton() : sequence_(tnl::Sequence<Skeleton>(this, &Skeleton::seqIdl
 	status_.setStatus(
 		status_data[1][1].getInt(),		// レベル 
 		status_data[1][2].getInt(),		// HP
-		status_data[1][3].getInt(),		// ATK
-		status_data[1][4].getInt(),		// DEF
-		status_data[1][5].getInt()		// EXP
+		status_data[1][3].getInt(),		// MP
+		status_data[1][4].getInt(),		// ATK
+		status_data[1][5].getInt(),		// DEF
+		status_data[1][6].getInt()		// EXP
 	);
 
 	anim_dir_ = eDir_4::DOWN;
@@ -144,9 +145,10 @@ void Skeleton::setEnemyLevel(int lv) {
 	status_.setStatus(
 		status_data[lv][1].getInt(),		// レベル 
 		status_data[lv][2].getInt(),		// HP
-		status_data[lv][3].getInt(),		// ATK
-		status_data[lv][4].getInt(),		// DEF
-		status_data[lv][5].getInt()			// EXP
+		status_data[lv][3].getInt(),		// MP
+		status_data[lv][4].getInt(),		// ATK
+		status_data[lv][5].getInt(),		// DEF
+		status_data[lv][6].getInt()			// EXP
 	);
 }
 
@@ -162,30 +164,57 @@ bool Skeleton::canLevelUp() {
 // =====================================================================================
 void Skeleton::decideAction() {
 
-	switch(status_.getLevel()) {
-	case 1:
-		decideActionForLv_1();
-		break;
-	case 2:
-		decideActionForLv_2();
-		break;
-	default:
-		tnl::DebugTrace("設定されたレベルの行動が存在しません. 入力値：%d\n", status_.getLevel());
-		act_state_ = eActState::END;
-		break;
+	auto scene_play = scene_play_.lock();
+	if (scene_play == nullptr) {
+		return;
 	}
+
+	// 通路にいる場合、通路での行動処理を行う
+	if (scene_play->getPlace(pos_) == ePlace::CORRIDOR) {
+		// 周囲 8マスにプレイヤーがいるか確認
+		eDir_8 player_dir = findPlayerDir_8();
+		if (player_dir != eDir_8::NONE) {
+			target_pos_ = pos_ + DIR_POS[std::underlying_type<eDir_8>::type(player_dir)];
+			bone_throw_dir_ = player_dir;
+			changeToAttackAction(player_dir);
+			return;
+		}
+		actionInCorridor();
+		return;
+	}
+
+	// プレイヤーが同じ部屋にいた場合
+	if (isSameRoomToPlayer()) {
+
+		is_find_player_ = true;
+		target_pos_ = scene_play->getPlayer()->getNextPos();
+		eDir_8 player_dir = eDir_8::NONE;
+
+		// 骨投げ攻撃ができるか判定
+		if (tryCanBoneAttack(player_dir)) {
+			bone_throw_dir_ = player_dir;
+			changeToAttackAction(player_dir);
+			return;
+		}
+
+		trackingPlayer();
+		return;
+	}
+
+	// 部屋での行動処理を行う
+	actionInRoom();
 }
 
 // =====================================================================================
 // 攻撃開始
 // =====================================================================================
 void Skeleton::startAttack() {
-	if (status_.getLevel() >= 2) {
-		bone_->setEnable(true);
-		bone_->setPos(pos_);
-		bone_->setTargetPos(target_pos_);
-		ResourceManager::getInstance()->playSound(SKELETON_ATK_SE_HDL_PATH, DX_PLAYTYPE_BACK);
-	}
+	
+	bone_->setEnable(true);
+	bone_->setPos(pos_);
+	bone_->setTargetPos(target_pos_);
+	bone_->launchProjectile(pos_, bone_throw_dir_, 32);
+	ResourceManager::getInstance()->playSound(SKELETON_ATK_SE_HDL_PATH, DX_PLAYTYPE_BACK);
 	sequence_.change(&Skeleton::seqAttack);
 }
 
@@ -265,82 +294,6 @@ bool Skeleton::seqAttack(const float delta_time) {
 		sequence_.change(&Skeleton::seqIdle);
 	}
 	return true;
-}
-
-// =====================================================================================
-// レベル１モンスターの行動を決める
-// =====================================================================================
-void Skeleton::decideActionForLv_1() {
-
-	auto scene_play = scene_play_.lock();
-	if (scene_play == nullptr) {
-		return;
-	}
-
-	// 周囲 8マスにプレイヤーがいるか確認
-	eDir_8 player_dir = findPlayerDir_8();
-	if (player_dir != eDir_8::NONE) {
-
-		is_find_player_ = true;
-
-		// プレイヤーのいる方向が攻撃可能か判定
-		if (canAttackInDir(player_dir)) {
-			changeToAttackAction(player_dir);
-			return;
-		}
-	}
-
-	// 通路にいる場合、通路での行動処理を行う
-	if (scene_play->getPlace(pos_) == ePlace::CORRIDOR) {
-		actionInCorridor();
-	}
-	else {
-		actionInRoom();
-	}
-}
-
-// =====================================================================================
-// レベル2モンスターの行動を決める
-// =====================================================================================
-void Skeleton::decideActionForLv_2() {
-
-	auto scene_play = scene_play_.lock();
-	if (scene_play == nullptr) {
-		return;
-	}
-
-	// 通路にいる場合、通路での行動処理を行う
-	if (scene_play->getPlace(pos_) == ePlace::CORRIDOR) {
-		// 周囲 8マスにプレイヤーがいるか確認
-		eDir_8 player_dir = findPlayerDir_8();
-		if (player_dir != eDir_8::NONE) {
-			target_pos_ = pos_ + DIR_POS[ std::underlying_type<eDir_8>::type(player_dir) ];
-			changeToAttackAction(player_dir);
-			return;
-		}
-		actionInCorridor();
-		return;
-	}
-
-	// プレイヤーが同じ部屋にいた場合
-	if (isSameRoomToPlayer()) {
-		
-		is_find_player_ = true;
-		target_pos_ = scene_play->getPlayer()->getNextPos();
-		eDir_8 player_dir = eDir_8::NONE;
-
-		// 骨投げ攻撃ができるか判定
-		if(tryCanBoneAttack(player_dir)) {
-			changeToAttackAction(player_dir);
-			return;
-		}
-
-		trackingPlayer();
-		return;
-	}
-
-	// 部屋での行動処理を行う
-	actionInRoom();
 }
 
 // =====================================================================================

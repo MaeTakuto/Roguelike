@@ -1,5 +1,6 @@
 #include "../../dxlib_ext/dxlib_ext.h"
 #include "../gm_main.h"
+#include "../common/enum.h"
 #include "../base/scene_base.h"
 #include "gm_manager.h"
 #include "resource_manager.h"

@@ -29,20 +29,32 @@ private:
 	// ダンジョン中のターン制御シーケンス
 	tnl::Sequence<ScenePlay> dungeon_sequence_ = tnl::Sequence<ScenePlay>(this, &ScenePlay::seqPlayerAct);
 
-	// シーンプレイ内で使用する各クラス
+	//// メニュー画面の制御シーケンスクラス
+	//tnl::Sequence<ScenePlay> menu_sequence_;
+
+	// ---------------- シーンプレイ内で使用する各クラス -------------------
+	// カメラクラス
 	std::shared_ptr<Camera> camera_ = nullptr;
+	// プレイヤー
 	std::shared_ptr<Player> player_ = nullptr;
+	// ダンジョンの生成処理を行うクラス
 	std::shared_ptr<DungeonManager> dungeon_mgr_ = nullptr;
+	// ダンジョンに生成される敵の生成、行動制御などを管理するクラス
 	std::shared_ptr<EnemyManager> enemy_mgr_ = nullptr;
+	// シーンプレイの表示されるUIの管理をするクラス
 	std::shared_ptr<UI_Manager> ui_mgr_ = nullptr;
 
+	// -------------------------- 戦闘関連 ---------------------------------
 	// 攻撃するキャラクター
 	std::queue< std::shared_ptr<Character> > attackers_;
 
 	// 攻撃目標
 	std::queue < std::shared_ptr<Character> > atk_targets_;
 
-	// ------------------------- ダンジョン情報関連 ------------------------------------
+	// レベルアップするキャラクター
+	std::shared_ptr<Character> level_up_character_;
+
+	// ------------------------- ダンジョン情報関連 ------------------------
 	// 各エリアの情報（ 始点座標、サイズなど ）
 	std::vector<Area> areas_;
 	// 地形データ
@@ -58,7 +70,7 @@ private:
 	// ダンジョンを表示しているか
 	bool is_drawing_dng_title_ = true;
 
-	// --------------- フェード演出関連 --------------------
+	// --------------------------- フェード演出関連 -------------------------
 	// フェード演出の画像
 	int fade_gpc_hdl_ = 0;
 	// 透明度
@@ -66,7 +78,7 @@ private:
 	// フェード演出時間
 	float fade_time_ = 0.5f;
 
-	// ------------------ BGM, SE関連 ----------------------
+	// --------------------------- BGM, SE関連 ------------------------------
 	// ダンジョンのBGMパス
 	std::string dungeon_bgm_hdl_path_;
 	// ダンジョンのBGM
@@ -81,6 +93,8 @@ private:
 	std::string level_up_se_hdl_path_;
 	// コマンド決定SEのパス
 	std::string button_enter_se_hdl_path_;
+	// キャンセルSEのパス
+	std::string cancel_se_hdl_path_;
 
 public:
 	// ==============================================
@@ -92,6 +106,8 @@ public:
 	void addAttacker(std::shared_ptr<Character> attacker);
 	// 攻撃対象を追加
 	void addAttackTarget(std::shared_ptr<Character> target);
+	// 指定した対象にダメージを与える
+	void applyDamage(std::shared_ptr<Character> attacker, std::shared_ptr<Character> target, int damage);
 	// メッセージウィンドウにメッセージをセット
 	void setMessage(const std::string& message);
 
@@ -186,8 +202,6 @@ private:
 
 	// キャラクターアップデート
 	void charaUpdate(float delta_time);
-	// 指定した対象にダメージを与える
-	void applyDamage(std::shared_ptr<Character> attacker, std::shared_ptr<Character> target);
 	// キャラクターを倒したときの処理
 	void defeatCharacter(std::shared_ptr<Character> attacker, std::shared_ptr<Character> target);
 	// 攻撃キャラを切り替える。いなければ、"dungeon_sequence_"を"seqCharaMove" に変更。
@@ -200,6 +214,8 @@ private:
 	void changeProcessNextFloor();
 	// ゲームオーバー処理を実行
 	void executeGameOverProcess();
+	// プレイヤーがいるセルを確認する
+	bool checkPlayerCell();
 
 
 	// =========== メインシーケンス ===========
@@ -211,16 +227,31 @@ private:
 	bool seqMain(const float delta_time);
 
 	// =========== ダンジョン探索中のシーケンス ===========
+	// プレイヤーの入力シーケンス
 	bool seqPlayerAct(const float delta_time);
+	// 敵の行動を決めるシーケンス
 	bool seqEnemyAct(const float delta_time);
-	bool seqPlayerMove(const float delta_time);
+	// プレイヤーのみ移動するシーケンス
+	bool seqPlayerAction(const float delta_time);
+	// 攻撃シーケンス（ "attacker_"に登録されているキャラ ）
 	bool seqCharacterAttack(const float delta_time);
-	// bool seqEnemyAttack(const float delta_time);
+	// ダメージ処理シーケンス
 	bool seqTargetDamaged(const float delta_time);
+	// レベルアップ処理シーケンス
 	bool seqCharaLevelUp(const float delta_time);
+	// 全キャラクターの移動シーケンス
 	bool seqCharaMove(const float delta_time);
+	// ターン終了シーケンス
 	bool seqActEndProcess(const float delta_time);
+	// 階段選択シーケンス
 	bool seqStairSelect(const float delta_time);
+	// ゲームオーバーシーケンス
 	bool seqGameOver(const float delta_time);
+	// メニュー選択シーケンス
+	bool seqSelectMainMenu(const float delta_time);
+	// 魔法選択シーケンス
+	bool seqSelectMagicList(const float delta_time);
+	// プレイヤーステータス表示シーケンス
+	bool seqDrawStatusWindow(const float delta_time);
 
 };

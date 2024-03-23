@@ -4,15 +4,20 @@
 #include "../../manager/resource_manager.h"
 #include "../../scene/scene_play.h"
 #include "../../base/enemy_base.h"
+#include "../../magic/heal_magic.h"
+#include "../../magic/fire_magic.h"
+#include "../projectile.h"
 #include "player.h"
 
 
-Player::Player() {
+Player::Player() : regenerating_mp_(1), sequence_(tnl::Sequence<Player>(this, &Player::seqIdle)), is_use_magic_(false), use_magic_index_(0), looking_dir_{1},
+	select_cell_blue_gpc_hdl_(0), select_cell_red_gpc_hdl_(0)
+{
 
 	// リソースマネージャーのインスタンスを取得
 	auto rm_instance = ResourceManager::getInstance();
 
-	// プレイヤー画像を設定
+	// ------------------- プレイヤー画像を設定 --------------------------------------------------------------------
 	CsvData& gpc_hdl_data = rm_instance->loadCsvData("csv/player_gpc_data.csv");
 
 	chara_gpc_hdl_.resize(gpc_hdl_data[GameManager::CSV_CELL_ROW_START].size() - GameManager::CSV_CELL_ROW_START);
@@ -31,11 +36,11 @@ Player::Player() {
 		);
 	}
 
-	// プレイヤーの攻撃方向のセル画像を設定
+	// ------------------- プレイヤーの攻撃方向のセル画像を設定 ---------------------------------------------------
 	select_cell_blue_gpc_hdl_ = rm_instance->loadGraph("graphics/blue.bmp");
 	select_cell_red_gpc_hdl_ = rm_instance->loadGraph("graphics/red.bmp");
 
-	// 攻撃エフェクトの設定
+	// ------------------- 攻撃エフェクトの設定 -------------------------------------------------------------------
 	CsvData& atk_effect_data = rm_instance->loadCsvData("csv/effect_gpc_data.csv");
 
 	std::vector<tnl::CsvCell> start_cell = atk_effect_data[GameManager::CSV_CELL_ROW_START + 1];
@@ -53,18 +58,21 @@ Player::Player() {
 
 	atk_effect_.setFrameChangeInterval(0.025f);
 
-	// ステータスデータを CSV から取得
+	// ------------------- ステータスセット -----------------------------------------------------------------------
 	CsvData& status_data = rm_instance->loadCsvData("csv/player_status_data.csv");
 
-	// ステータスセット
 	name_ = status_data[GameManager::CSV_CELL_ROW_START][1].getString();
 	status_.setStatus(
 		status_data[GameManager::CSV_CELL_ROW_START][2].getInt(),		// レベル
 		status_data[GameManager::CSV_CELL_ROW_START][3].getInt(),		// HP
-		status_data[GameManager::CSV_CELL_ROW_START][4].getInt(),		// ATK
-		status_data[GameManager::CSV_CELL_ROW_START][5].getInt(),		// DEF
-		status_data[GameManager::CSV_CELL_ROW_START][6].getInt()		// EXP
+		status_data[GameManager::CSV_CELL_ROW_START][4].getInt(),		// MP
+		status_data[GameManager::CSV_CELL_ROW_START][5].getInt(),		// ATK
+		status_data[GameManager::CSV_CELL_ROW_START][6].getInt(),		// DEF
+		status_data[GameManager::CSV_CELL_ROW_START][7].getInt()		// EXP
 	);
+
+	magic_list_.emplace_back(std::make_shared<HealMagic>());
+	magic_list_.emplace_back(std::make_shared<FireMagic>());
 
 	anim_dir_ = eDir_4::DOWN;
 	act_state_ = eActState::IDLE;
@@ -79,6 +87,11 @@ void Player::update(float delta_time) {
 
 	sequence_.update(delta_time);
 	atk_effect_.update(delta_time);
+	
+	if (is_use_magic_) {
+		magic_list_[use_magic_index_]->update(delta_time);
+	}
+
 }
 
 // ====================================================
@@ -141,13 +154,16 @@ void Player::drawEffect(std::shared_ptr<Camera> camera) {
 		tnl::Vector3 attack_pos = pos_ + DIR_POS[std::underlying_type<eDir_8>::type(looking_dir_)];
 
 		tnl::Vector3 effect_draw_pos = attack_pos * GameManager::DRAW_CHIP_SIZE
-			- camera->getPos() + tnl::Vector3(DXE_WINDOW_WIDTH >> 1, DXE_WINDOW_HEIGHT >> 1, 0);
+			+ tnl::Vector3(DXE_WINDOW_WIDTH >> 1, DXE_WINDOW_HEIGHT >> 1, 0);
 
 		tnl::Vector3 effect_draw_size = tnl::Vector3(GameManager::DRAW_CHIP_SIZE, GameManager::DRAW_CHIP_SIZE, 0);
 
 		atk_effect_.setDrawPos(tnl::Vector2i(static_cast<int>(effect_draw_pos.x), static_cast<int>(effect_draw_pos.y)));
 		atk_effect_.setDrawSize(tnl::Vector2i(static_cast<int>(effect_draw_size.x), static_cast<int>(effect_draw_size.y)));
 		atk_effect_.draw(camera);
+	}
+	if (is_use_magic_) {
+		magic_list_[use_magic_index_]->draw(camera);
 	}
 }
 
@@ -182,12 +198,56 @@ void Player::startAttack() {
 }
 
 // ====================================================
+// 魔法使用開始
+// ====================================================
+void Player::setupMagic() {
+
+	tnl::Vector2i effect_draw_pos = tnl::Vector2i(static_cast<int>(pos_.x), static_cast<int>(pos_.y)) * GameManager::DRAW_CHIP_SIZE
+		+ tnl::Vector2i(DXE_WINDOW_WIDTH >> 1, DXE_WINDOW_HEIGHT >> 1);
+
+	tnl::Vector2i effect_draw_size = tnl::Vector2i(GameManager::DRAW_CHIP_SIZE, GameManager::DRAW_CHIP_SIZE);
+
+	if (magic_list_[use_magic_index_]->getMagicTarget() == eMagicTarget::OWNER) {
+		magic_list_[use_magic_index_]->startDrawEffectOnOwner(effect_draw_pos, effect_draw_size);
+	}
+	else if (magic_list_[use_magic_index_]->getMagicTarget() == eMagicTarget::OTHER) {
+		int index = std::underlying_type<eDir_8>::type(looking_dir_);
+		effect_draw_pos = tnl::Vector2i(static_cast<int>(pos_.x), static_cast<int>(pos_.y));
+		magic_list_[use_magic_index_]->startDrawEffectOnOther(effect_draw_pos, effect_draw_size, looking_dir_);
+	}
+}
+
+// ====================================================
+// 魔法使用開始
+// ====================================================
+void Player::startMagic() {
+
+	is_use_magic_ = true;
+	sequence_.change(&Player::seqUseMagic);
+}
+
+// ====================================================
 // レベルアップできるか判定
 // ====================================================
 void Player::startLevelUp() {
 	status_.levelUP(4, 3, 3);
 	sequence_.change(&Player::seqLevellUp);
 	act_state_ = eActState::LEVEL_UP;
+}
+
+
+bool Player::tryUseMagic(int magic_index) {
+	if (magic_index < 0 || magic_index >= magic_list_.size()) {
+		return false;
+	}
+	// MPを確認する
+	if ( !status_.tryConsumeMP(magic_list_[magic_index]->getConsumedMP() ) ) {
+		return false;
+	}
+	
+	use_magic_index_ = magic_index;
+	act_state_ = eActState::USE_MAGIC;
+	return true;
 }
 
 // ====================================================
@@ -383,7 +443,7 @@ bool Player::seqMove(const float delta_time) {
 		pos_ += (next_pos_ - pos_ ) * MOVE_SPEED;
 	}
 	else {
-		status_.healHP(regenerating_hp_);
+		status_.recoveryMP(regenerating_mp_);
 		pos_ = next_pos_;
 		act_state_ = eActState::END;
 		sequence_.change(&Player::seqIdle);
@@ -401,7 +461,7 @@ bool Player::seqMove(const float delta_time) {
 bool Player::seqAttack(const float delta_time) {
 	if (sequence_.isStart()) {
 		atk_effect_.startAnimation();
-		ResourceManager::getInstance()->playSound("sound/fire.mp3", DX_PLAYTYPE_BACK);
+		ResourceManager::getInstance()->playSound("sound/springin/fire.mp3", DX_PLAYTYPE_BACK);
 	}
 
 	// 攻撃エフェクト再生中の場合はここまで
@@ -428,12 +488,38 @@ bool Player::seqAttack(const float delta_time) {
 	return true;
 }
 
-bool Player::seqDamage(const float delta_time) {
+// ====================================================
+// 魔法使用シーケンス
+// ====================================================
+bool Player::seqUseMagic(const float delta_time) {
 
+	std::shared_ptr<ScenePlay> scene_play = std::dynamic_pointer_cast<ScenePlay>(GameManager::GetInstance()->getSceneInstance());
+
+	if (!scene_play) {
+		return true;
+	}
+
+	if (magic_list_[use_magic_index_]->isDrawEffect()) {
+		return true;
+	}
+
+	magic_list_[use_magic_index_]->useMagic(scene_play->getPlayer());
+	
+	is_use_magic_ = false;
+	act_state_ = eActState::END;
+	sequence_.change(&Player::seqIdle);
 	return true;
 }
 
+// ====================================================
+// レベルアップシーケンス
+// レベルアップしたときのエフェクトを表示する。
+// 現在は、用意していないので一定時間、待機。
+// 今後実装、予定です。
+// ====================================================
 bool Player::seqLevellUp(const float delta_time) {
+
+	/* ToDo:レベルアップしたときのエフェクトを今後出そうと思います。*/
 
 	if (sequence_.getProgressTime() > SEQUENCE_WAIT_TIME) {
 		act_state_ = eActState::END;

@@ -6,7 +6,6 @@ class Camera;
 class MessageWindow {
 public:
 	MessageWindow();
-	/*MessageWindow(int line);*/
 	~MessageWindow();
 
 	void update(float delta_time);
@@ -31,7 +30,7 @@ private:
 	float time_limit_ = 0.0f;
 
 	// 表示するメッセージ
-	std::vector<std::string> message_;
+	std::vector<std::string> command_names_;
 
 	// 表示しているメッセージ数
 	int display_message_count_ = 0;
@@ -64,7 +63,7 @@ public:
 	// メッセージの最大行数を変更
 	inline void setMessageLine(int line) {
 		message_line_ = line;
-		message_.resize(message_line_);
+		command_names_.resize(message_line_);
 	}
 
 	// 表示時間を設定する
@@ -81,29 +80,12 @@ public:
 	}
 
 	// メッセージウィンドウを表示、非表示の設定をする。
-	inline void setEneble(bool enable) { is_enable_ = enable; }
+	inline void setEnable(bool enable) { is_enable_ = enable; }
 
 	// メッセージを全削除
-	inline void clearMessage() {
-		display_message_count_ = 0;
-		for (int line = 0; line < message_line_; ++line) {
-			message_[line] = "";
-		}
-		cancelTimeLimit();
-		setEneble(false);
-	};
+	void clearMessage();
 
 	// メッセージをセットする
-	inline void setMessgae(const std::string& message) {
-		if (display_message_count_ >= message_line_) {
-			for (int line = 0; line < message_line_ - 1; ++line) {
-				message_[line] = message_[line + 1];
-			}
-			message_[message_.size() - 1] = message;
-			return;
-		}
-		message_[display_message_count_] = message;
-		++display_message_count_;
-	}
+	void setMessgae(const std::string& message);
 
 };

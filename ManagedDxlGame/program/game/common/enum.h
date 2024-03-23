@@ -34,7 +34,6 @@ enum class eMapData {
 	ENEMY			// 敵
 };
 
-
 // セルの場所
 enum class ePlace {
 	WALL = 0,		// 壁
@@ -42,10 +41,48 @@ enum class ePlace {
 	ROOM,			// 部屋
 };
 
+// キャラの行動状態
+enum class eActState {
+	IDLE,
+	MOVE,
+	USE_MAGIC,
+	ATTACK,
+	LEVEL_UP,
+	END
+};
+
 // 敵の種類
 enum class eEnemyType {
 	NONE = -1,
 	PUMPKIN = 0,
 	SKELETON,
+	MAX
+};
+
+// 攻撃タイプ
+enum class eMagicType {
+	NONE = 0,		// 通常攻撃
+	FIRE,			// 炎攻撃
+};
+
+// 二択のコマンド
+enum class eTwoSelectCmd : const int {
+	YES = 0,
+	NO,
+	MAX
+};
+
+// メインメニューの選択コマンド一覧
+enum class eMainMenuCmd {
+	MAGIC_SELECT = 0,
+	CHECK_CELL,
+	CHECK_STATUS,
+	CLOSE,
+	MAX
+};
+
+enum class eMagicTarget {
+	OWNER = 0,
+	OTHER,
 	MAX
 };
