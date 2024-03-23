@@ -1,12 +1,23 @@
 #include "../../dxlib_ext/dxlib_ext.h"
 #include "../manager/gm_manager.h"
+#include "magic_base.h"
 #include "character_base.h"
 
-Character::Character() : name_(""), status_(CharaStatus()), atk_effect_(Animation()), is_alive_(true) {
+Character::Character() : name_(""), status_(CharaStatus()), magic_list_(0), atk_target_(nullptr), atk_effect_(Animation()), act_state_{0}, is_alive_(true)
+{
 
 }
 
+// =====================================================================================
+// 魔法一覧を返す
+// =====================================================================================
+const std::vector<std::shared_ptr<MagicBase>>& Character::getMagicList() const {
+	return magic_list_;
+}
+
+// =====================================================================================
 // ダメージを受ける
+// =====================================================================================
 void Character::takeDamage(int damage) {
 	status_.takeDamage(damage);
 
@@ -15,7 +26,9 @@ void Character::takeDamage(int damage) {
 	}
 }
 
+// =====================================================================================
 // 指定した位置がフィールドの中か判定
+// =====================================================================================
 bool Character::isInField(const tnl::Vector3& pos) {
 	if (pos.x < 0) return false;
 	if (pos.y < 0) return false;

@@ -69,6 +69,9 @@
     <Filter Include="program\[003] game\object\character\enemy">
       <UniqueIdentifier>{ae5add53-9d02-4b37-a6ad-384ac9929cd1}</UniqueIdentifier>
     </Filter>
+    <Filter Include="program\[003] game\magic">
+      <UniqueIdentifier>{dc6f5ffa-e697-4fa5-84f9-6cec70567e0b}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="ManagedDxlGame.cpp">
@@ -278,9 +281,6 @@
     <ClCompile Include="program\game\object\character\player.cpp">
       <Filter>program\[003] game\object\character</Filter>
     </ClCompile>
-    <ClCompile Include="program\game\object\character\enemy\pumpkin.cpp">
-      <Filter>program\[003] game\object\character\enemy</Filter>
-    </ClCompile>
     <ClCompile Include="program\game\object\character\enemy\skeleton.cpp">
       <Filter>program\[003] game\object\character\enemy</Filter>
     </ClCompile>
@@ -289,6 +289,18 @@
     </ClCompile>
     <ClCompile Include="program\game\common\animation.cpp">
       <Filter>program\[003] game\common</Filter>
+    </ClCompile>
+    <ClCompile Include="program\game\base\magic_base.cpp">
+      <Filter>program\[003] game\base</Filter>
+    </ClCompile>
+    <ClCompile Include="program\game\magic\fire_magic.cpp">
+      <Filter>program\[003] game\magic</Filter>
+    </ClCompile>
+    <ClCompile Include="program\game\magic\heal_magic.cpp">
+      <Filter>program\[003] game\magic</Filter>
+    </ClCompile>
+    <ClCompile Include="program\game\object\character\enemy\pumpkin.cpp">
+      <Filter>program\[003] game\object\character\enemy</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -554,14 +566,23 @@
     <ClInclude Include="program\game\object\character\player.h">
       <Filter>program\[003] game\object\character</Filter>
     </ClInclude>
-    <ClInclude Include="program\game\object\character\enemy\pumpkin.h">
-      <Filter>program\[003] game\object\character\enemy</Filter>
-    </ClInclude>
     <ClInclude Include="program\game\object\character\enemy\skeleton.h">
       <Filter>program\[003] game\object\character\enemy</Filter>
     </ClInclude>
     <ClInclude Include="program\game\common\animation.h">
       <Filter>program\[003] game\common</Filter>
+    </ClInclude>
+    <ClInclude Include="program\game\base\magic_base.h">
+      <Filter>program\[003] game\base</Filter>
+    </ClInclude>
+    <ClInclude Include="program\game\magic\fire_magic.h">
+      <Filter>program\[003] game\magic</Filter>
+    </ClInclude>
+    <ClInclude Include="program\game\magic\heal_magic.h">
+      <Filter>program\[003] game\magic</Filter>
+    </ClInclude>
+    <ClInclude Include="program\game\object\character\enemy\pumpkin.h">
+      <Filter>program\[003] game\object\character\enemy</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

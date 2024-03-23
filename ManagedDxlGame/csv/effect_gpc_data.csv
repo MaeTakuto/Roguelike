@@ -1,3 +1,4 @@
 "攻撃エフェクト	画像パス",画像パス,横方向の分割数,縦方向の分割数,画像の幅,画像の高さ
 "打撃エフェクト	",graphics/physical_attack.png,6,1,240,240
 炎攻撃エフェクト,graphics/fire_attack.png,10,1,120,120
+回復エフェクト,graphics/recovery.png,10,1,120,120

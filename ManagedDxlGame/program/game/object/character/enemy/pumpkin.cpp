@@ -45,8 +45,9 @@ Pumpkin::Pumpkin() {
 	status_.setStatus(
 		status_data[GameManager::CSV_CELL_ROW_START][1].getInt(),		// レベル 
 		status_data[GameManager::CSV_CELL_ROW_START][2].getInt(),		// HP
-		status_data[GameManager::CSV_CELL_ROW_START][3].getInt(),		// ATK
-		status_data[GameManager::CSV_CELL_ROW_START][4].getInt(),		// DEF
+		status_data[GameManager::CSV_CELL_ROW_START][3].getInt(),		// MP
+		status_data[GameManager::CSV_CELL_ROW_START][4].getInt(),		// ATK
+		status_data[GameManager::CSV_CELL_ROW_START][5].getInt(),		// DEF
 		status_data[GameManager::CSV_CELL_ROW_START][5].getInt()		// EXP
 	);
 
@@ -123,9 +124,10 @@ void Pumpkin::setEnemyLevel(int lv) {
 	status_.setStatus(
 		status_data[lv][1].getInt(),		// レベル 
 		status_data[lv][2].getInt(),		// HP
-		status_data[lv][3].getInt(),		// ATK
-		status_data[lv][4].getInt(),		// DEF
-		status_data[lv][5].getInt()			// EXP
+		status_data[lv][3].getInt(),		// MP
+		status_data[lv][4].getInt(),		// ATK
+		status_data[lv][5].getInt(),		// DEF
+		status_data[lv][6].getInt()			// EXP
 	);
 }
 
@@ -141,7 +143,37 @@ bool Pumpkin::canLevelUp() {
 // =====================================================================================
 void Pumpkin::decideAction() {
 
-	decideActionForLv_1();
+	auto scene_play = scene_play_.lock();
+	if (scene_play == nullptr) {
+		return;
+	}
+
+	// 周囲 8マスにプレイヤーがいるか確認
+	eDir_8 player_dir = findPlayerDir_8();
+	if (player_dir != eDir_8::NONE) {
+
+		is_find_player_ = true;
+
+		// プレイヤーのいる方向が攻撃可能か判定
+		if (canAttackInDir(player_dir)) {
+			changeToAttackAction(player_dir);
+			return;
+		}
+	}
+
+	// プレイヤーを見つけた場合、追跡を行う
+	if (is_find_player_) {
+		trackingPlayer();
+		return;
+	}
+
+	// 通路にいる場合、通路での行動処理を行う
+	if (scene_play->getPlace(pos_) == ePlace::CORRIDOR) {
+		actionInCorridor();
+	}
+	else {
+		actionInRoom();
+	}
 }
 
 // =====================================================================================
@@ -227,51 +259,6 @@ bool Pumpkin::seqAttack(const float delta_time) {
 		sequence_.change(&Pumpkin::seqIdle);
 	}
 	return true;
-}
-
-// =====================================================================================
-// レベル１モンスターの行動を決める
-// =====================================================================================
-void Pumpkin::decideActionForLv_1() {
-
-	auto scene_play = scene_play_.lock();
-	if (scene_play == nullptr) {
-		return;
-	}
-
-	// 周囲 8マスにプレイヤーがいるか確認
-	eDir_8 player_dir = findPlayerDir_8();
-	if (player_dir != eDir_8::NONE) {
-
-		is_find_player_ = true;
-
-		// プレイヤーのいる方向が攻撃可能か判定
-		if (canAttackInDir(player_dir)) {
-			changeToAttackAction(player_dir);
-			return;
-		}
-	}
-
-	// プレイヤーを見つけた場合、追跡を行う
-	if (is_find_player_) {
-		trackingPlayer();
-		return;
-	}
-
-	// 通路にいる場合、通路での行動処理を行う
-	if (scene_play->getPlace(pos_) == ePlace::CORRIDOR) {
-		actionInCorridor();
-	}
-	else {
-		actionInRoom();
-	}
-}
-
-// =====================================================================================
-// レベル１モンスターの行動を決める
-// =====================================================================================
-void Pumpkin::decideActionForLv_2() {
-
 }
 
 // =====================================================================================

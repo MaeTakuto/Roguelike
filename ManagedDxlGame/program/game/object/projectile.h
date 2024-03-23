@@ -15,9 +15,35 @@ public:
 	// 描画
 	void draw(const std::shared_ptr<Camera> camera);
 
+private:
+	// 現在位置
+	tnl::Vector3 pos_;
+	// 移動する方向
+	eDir_8 move_dir_;
+
+	// 目標の位置
+	tnl::Vector3 target_pos_;
+	// 発射体がヒットしたキャラクター
+	std::shared_ptr<Character> hit_character_;
+
+	// 有効か判定
+	bool is_enable_;
+	// 投擲物の画像
+	int projectile_gpc_hdl_;
+	// 発射体が届く最大セル数
+	int max_cell_reach_;
+	// 
+	int cell_count_;
+
+public:
+	void launchProjectile(const tnl::Vector3& start_pos, eDir_8 move_dir, int max_cell_reach);
+	void checkCellInMoveDir(const tnl::Vector3& pos);
+
 	// -------------- ゲッター ------------------
 	// 有効になっているか判定
 	inline bool isEnable() { return is_enable_; }
+	// 発射体に当たったキャラクターを取得、いなければ "nullptr" を返す。
+	inline std::shared_ptr<Character> getHitCharacter() { return hit_character_; }
 
 	// -------------- セッター ------------------
 	// 投擲物の位置をセット
@@ -28,15 +54,4 @@ public:
 	inline void setProjectileGpcHdl(int gpc_hdl) { projectile_gpc_hdl_ = gpc_hdl; }
 	// 有効にするか設定
 	inline void setEnable(bool is_enable) { is_enable_ = is_enable; }
-
-private:
-	// 現在位置
-	tnl::Vector3 pos_;
-	// 目標の位置
-	tnl::Vector3 target_pos_;
-	// 有効か判定
-	bool is_enable_;
-	// 投擲物の画像
-	int projectile_gpc_hdl_;
-
 };

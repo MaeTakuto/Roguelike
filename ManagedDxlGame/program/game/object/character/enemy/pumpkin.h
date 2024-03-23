@@ -37,6 +37,8 @@ public:
 	void startLevelUp() override;
 	// 敵をデスさせる
 	void death() override;
+	//// 
+	//bool tryUseMagic(int magic_index) override { return false; };
 
 private:
 	// =================== 行動シーケンス ===================
@@ -49,10 +51,10 @@ private:
 
 	// ============= プロトタイプ宣言 =============
 
-	// レベル１モンスターの行動を決める
-	void decideActionForLv_1() override;
-	// レベル２モンスターの行動を決める
-	void decideActionForLv_2() override;
+	//// レベル１モンスターの行動を決める
+	//void decideActionForLv_1() override;
+	//// レベル２モンスターの行動を決める
+	//void decideActionForLv_2() override;
 	// 目標の位置に向かって 1マス移動する
 	void setNextPosToTarget();
 	// プレイヤーを追跡する

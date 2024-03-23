@@ -23,6 +23,8 @@ private:
 
 	// エフェクト画像
 	std::vector<int> anim_gpc_hdl_;
+	// ブレンドモード
+	int blend_mode_;
 
 	// 有効か判定
 	bool is_enable_;
@@ -50,6 +52,9 @@ public:
 		width_ = size.x;
 		height_ = size.y;
 	}
+
+	// 画像のブレンドモードを設定する
+	inline void setBlendMode(int blend_mode) { blend_mode_ = blend_mode; }
 
 	// アニメーション画像を設定
 	void setAnimGraphicHandle(const std::vector<int>& anim_gpc_hdl);

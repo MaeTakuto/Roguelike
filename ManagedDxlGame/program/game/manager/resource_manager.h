@@ -29,7 +29,7 @@ public:
 		int all_size, int x_size, int y_size, int anim_hdl_width, int anim_hdl_height);
 
 	// アニメーションの削除
-	void deleteAnimation(const std::string& anim_hdl_path, int all_size);
+	void deleteAnimation(const std::string& anim_hdl_path);
 
 	// ============================================================
 	// サウンド関連 

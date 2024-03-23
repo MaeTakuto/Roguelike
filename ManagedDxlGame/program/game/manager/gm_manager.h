@@ -4,6 +4,10 @@ class SceneBase;
 
 using CsvData = std::vector< std::vector<tnl::CsvCell> >;
 
+// 各方向のベクトル
+const tnl::Vector3 DIR_POS[8]
+	= { { 0, -1, 0 }, { 0, 1, 0 }, { -1, 0, 0 }, { 1, 0 , 0 }, { -1, -1, 0 }, { 1, -1, 0 }, { -1, 1, 0 }, { 1, 1, 0 } };
+
 class GameManager {
 public:
 	// デストラクタ
