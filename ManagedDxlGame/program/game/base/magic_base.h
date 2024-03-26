@@ -31,8 +31,9 @@ public:
 	inline const std::string& getMagicName() const { return magic_name_; }
 	inline eMagicTarget getMagicTarget() const { return magic_target_; }
 
-	virtual void startDrawEffectOnOwner(tnl::Vector2i pos, tnl::Vector2i size) {};
-	virtual void startDrawEffectOnOther(tnl::Vector2i pos, tnl::Vector2i size, eDir_8 other_dir) {};
+	virtual void setupToUseMagic(const std::shared_ptr<Character> user) = 0;
+	virtual void startDrawEffectOnOwner(const tnl::Vector2i& pos, const tnl::Vector2i& size) {};
+	virtual void startDrawEffectOnOther(const tnl::Vector2i& pos, const tnl::Vector2i& size, eDir_8 other_dir) {};
 	virtual void useMagic(std::shared_ptr<Character> owner) = 0;
 
 };

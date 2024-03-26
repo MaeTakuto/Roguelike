@@ -78,7 +78,7 @@ ScenePlay::ScenePlay() : level_up_character_(nullptr), dungeon_bgm_hdl_(0), dung
 
 	// ------------- UI_Managerクラスの初期設定 -------------------------
 	ui_mgr_->setUITargetCharacter(player_);
-	ui_mgr_->setHP_BarStatus();
+	ui_mgr_->updateStatusBar();
 	ui_mgr_->setFloor(dungeon_floor_);
 }
 
@@ -163,9 +163,10 @@ void ScenePlay::draw() {
 
 		player_->draw(camera_);
 		enemy_mgr_->draw(camera_);
-		ui_mgr_->draw(camera_);
 
 		player_->drawEffect(camera_);
+
+		ui_mgr_->draw(camera_);
 	}
 	SetDrawBlendMode(DX_BLENDMODE_ALPHA, alpha_);
 	DrawExtendGraph(0, 0, DXE_WINDOW_WIDTH, DXE_WINDOW_HEIGHT, fade_gpc_hdl_, true);
@@ -251,10 +252,27 @@ void ScenePlay::executeLevelUpProcess(std::shared_ptr<Character> chara) {
 	level_up_character_ = chara;
 
 	if (chara.get() == player_.get()) {
-		ui_mgr_->setHP_BarStatus();
+		ui_mgr_->updateStatusBar();
 	}
 
 	dungeon_sequence_.change(&ScenePlay::seqCharaLevelUp);
+}
+
+// 魔法が使えるか確認する
+void ScenePlay::checkToUseMagic() {
+
+	if (player_->tryUseMagic(ui_mgr_->getSelectedIndexFromMagicListCmd())) {
+		dungeon_sequence_.change(&ScenePlay::seqEnemyAct);
+		player_->setupMagic();
+		ui_mgr_->updateStatusBar();
+	}
+	else {
+		ui_mgr_->setMessage("MPが足りない", DRAW_TIME_DUNGEON_NAME);
+		dungeon_sequence_.change(&ScenePlay::seqPlayerAct);
+	}
+	ui_mgr_->executeSletctToUseMagicEnd();
+	ui_mgr_->closeMagicListWindow();
+	ui_mgr_->closeMainMenu();
 }
 
 // ====================================================
@@ -536,7 +554,7 @@ bool ScenePlay::seqPlayerAction(const float delta_time) {
 	charaUpdate(delta_time);
 
 	if (player_->getActState() != eActState::END) return true;
-	ui_mgr_->setHP_BarStatus();
+	ui_mgr_->updateStatusBar();
 
 	if (player_->canLevelUp()) {
 		executeLevelUpProcess(player_);
@@ -572,7 +590,7 @@ bool ScenePlay::seqCharacterAttack(const float delta_time) {
 	// 攻撃対象がいる場合、ダメージ処理シーケンスに移動
 	if (!atk_targets_.empty()) {
 		applyDamage(attackers_.front(), atk_targets_.front(), attackers_.front()->getStatus().getAtk());
-		ui_mgr_->setHP_BarStatus();
+		ui_mgr_->updateStatusBar();
 		dungeon_sequence_.change(&ScenePlay::seqTargetDamaged);
 		return true;
 	}
@@ -594,7 +612,6 @@ bool ScenePlay::seqTargetDamaged(const float delta_time) {
 			executeGameOverProcess();
 			return true;
 		}
-		defeatCharacter(attackers_.front(), atk_targets_.front());
 	}
 
 	atk_targets_.pop();
@@ -602,7 +619,7 @@ bool ScenePlay::seqTargetDamaged(const float delta_time) {
 	// 攻撃対象が残っている場合、もう一度攻撃対象のダメージ処理を行う
 	if (!atk_targets_.empty()) {
 		applyDamage(attackers_.front(), atk_targets_.front(), attackers_.front()->getStatus().getAtk());
-		ui_mgr_->setHP_BarStatus();
+		ui_mgr_->updateStatusBar();
 		return true;
 	}
 
@@ -659,7 +676,7 @@ bool ScenePlay::seqCharaMove(const float delta_time) {
 bool ScenePlay::seqActEndProcess(const float delta_time) {
 
 	charaUpdate(delta_time);
-	ui_mgr_->setHP_BarStatus();
+	ui_mgr_->updateStatusBar();
 	player_->beginAction();
 
 	// プレイヤーの位置が階段だった時
@@ -681,7 +698,7 @@ bool ScenePlay::seqStairSelect(const float delta_time) {
 
 	if (tnl::Input::IsKeyDownTrigger(eKeys::KB_RETURN)) {
 
-		if (ui_mgr_->getSelectedStairSelectCmdIndex() == std::underlying_type<eTwoSelectCmd>::type( eTwoSelectCmd::YES ) ) {
+		if (ui_mgr_->getSelectedIndexFromTwoSelectCmd() == std::underlying_type<eTwoSelectCmd>::type( eTwoSelectCmd::YES ) ) {
 			ResourceManager::getInstance()->playSound(button_enter_se_hdl_path_, DX_PLAYTYPE_BACK);
 			changeProcessNextFloor();
 		}
@@ -712,30 +729,37 @@ bool ScenePlay::seqGameOver(const float delta_time) {
 // ====================================================
 bool ScenePlay::seqSelectMainMenu(const float delta_time) {
 
+	// メインメニューを閉じる
 	if ( tnl::Input::IsKeyDownTrigger( eKeys::KB_ESCAPE ) ) {
 		ResourceManager::getInstance()->playSound(cancel_se_hdl_path_, DX_PLAYTYPE_BACK);
 		dungeon_sequence_.change(&ScenePlay::seqPlayerAct);
 		ui_mgr_->closeMainMenu();
 		return true;
 	}
+
+	// メニューコマンドを決定する
 	if ( tnl::Input::IsKeyDownTrigger( eKeys::KB_RETURN ) ) {
-		if (ui_mgr_->getSelectedMainMenuCmdIndex() == std::underlying_type<eMainMenuCmd>::type(eMainMenuCmd::MAGIC_SELECT)) {
+		// 魔法選択ウィンドウに移動
+		if (ui_mgr_->getSelectedIndexFromMainMenuCmd() == std::underlying_type<eMainMenuCmd>::type(eMainMenuCmd::MAGIC_SELECT)) {
 			ui_mgr_->openMagicListWindow();
 			dungeon_sequence_.change(&ScenePlay::seqSelectMagicList);
 			ResourceManager::getInstance()->playSound(button_enter_se_hdl_path_, DX_PLAYTYPE_BACK);
 			return true;
 		}
-		if (ui_mgr_->getSelectedMainMenuCmdIndex() == std::underlying_type<eMainMenuCmd>::type(eMainMenuCmd::CHECK_CELL)) {
+		// 足元を確認
+		else if (ui_mgr_->getSelectedIndexFromMainMenuCmd() == std::underlying_type<eMainMenuCmd>::type(eMainMenuCmd::CHECK_CELL)) {
 			checkPlayerCell();
 			return true;
 		}
-		else if (ui_mgr_->getSelectedMainMenuCmdIndex() == std::underlying_type<eMainMenuCmd>::type(eMainMenuCmd::CHECK_STATUS)) {
+		// ステータス確認ウィンドウを開く
+		else if (ui_mgr_->getSelectedIndexFromMainMenuCmd() == std::underlying_type<eMainMenuCmd>::type(eMainMenuCmd::CHECK_STATUS)) {
 			ui_mgr_->displayStatusWindow();
 			dungeon_sequence_.change(&ScenePlay::seqDrawStatusWindow);
 			ResourceManager::getInstance()->playSound(button_enter_se_hdl_path_, DX_PLAYTYPE_BACK);
 			return true;
 		}
-		else if (ui_mgr_->getSelectedMainMenuCmdIndex() == std::underlying_type<eMainMenuCmd>::type(eMainMenuCmd::CLOSE)) {
+		// メインメニューを閉じる
+		else if (ui_mgr_->getSelectedIndexFromMainMenuCmd() == std::underlying_type<eMainMenuCmd>::type(eMainMenuCmd::CLOSE)) {
 			ResourceManager::getInstance()->playSound(cancel_se_hdl_path_, DX_PLAYTYPE_BACK);
 			dungeon_sequence_.change(&ScenePlay::seqPlayerAct);
 			ui_mgr_->closeMainMenu();
@@ -761,22 +785,38 @@ bool ScenePlay::seqSelectMagicList(const float delta_time) {
 
 	// 選択した魔法を使用する
 	if (tnl::Input::IsKeyDownTrigger(eKeys::KB_RETURN)) {
-		if (player_->tryUseMagic(ui_mgr_->getSelectedMagicListCmdIndex())) {
-			player_->setupMagic();
-			ui_mgr_->closeMagicListWindow();
-			ui_mgr_->closeMainMenu();
-			dungeon_sequence_.change(&ScenePlay::seqEnemyAct);
-			return true;
-		}
-		else {
-			ui_mgr_->closeMagicListWindow();
-			ui_mgr_->closeMainMenu();
-			ui_mgr_->setMessage("MPが足りない", DRAW_TIME_DUNGEON_NAME);
-			dungeon_sequence_.change(&ScenePlay::seqPlayerAct);
-			return true;
-		}
+		dungeon_sequence_.change(&ScenePlay::seqSelectToUseMagic);
+		ui_mgr_->executeSletctToUseMagic();
+		ResourceManager::getInstance()->playSound(button_enter_se_hdl_path_, DX_PLAYTYPE_BACK);
 	}
 
+	return true;
+}
+
+// ====================================================
+// 選択した魔法を使用するか選択するシーケンス
+// ====================================================
+bool ScenePlay::seqSelectToUseMagic(const float delta_time) {
+
+	// メインメニューに戻る
+	if (tnl::Input::IsKeyDownTrigger(eKeys::KB_ESCAPE)) {
+		dungeon_sequence_.change(&ScenePlay::seqSelectMagicList);
+		ui_mgr_->executeSletctToUseMagicEnd();
+		ResourceManager::getInstance()->playSound(cancel_se_hdl_path_, DX_PLAYTYPE_BACK);
+		return true;
+	}
+
+	// 選択した魔法を使用する
+	if (tnl::Input::IsKeyDownTrigger(eKeys::KB_RETURN)) {
+		if ( ui_mgr_->getSelectedIndexFromTwoSelectCmd() == std::underlying_type<eTwoSelectCmd>::type( eTwoSelectCmd::YES ) ) {
+			checkToUseMagic();
+		}
+		else {
+			dungeon_sequence_.change(&ScenePlay::seqSelectMagicList);
+			ui_mgr_->executeSletctToUseMagicEnd();
+			ResourceManager::getInstance()->playSound(cancel_se_hdl_path_, DX_PLAYTYPE_BACK);
+		}
+	}
 	return true;
 }
 

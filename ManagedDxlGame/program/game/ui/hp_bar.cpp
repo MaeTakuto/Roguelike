@@ -3,24 +3,32 @@
 #include "hp_bar.h"
 
 
-HP_Bar::HP_Bar() {
+StatusBar::StatusBar() : status_bar_pos_(450, 50), status_bar_size_( 500, 40 ), status_text_pos_( status_bar_pos_ - tnl::Vector2i( 150, -5 ) ),
+	max_status_(1), now_status_(1), status_type_text_("ê›íËÇµÇƒÇ≠ÇæÇ≥Ç¢"), status_text_(""), message_font_size_(30)
+{
 
-	updateHP_Text();
+	updateStatus_Text(max_status_, now_status_);
 }
 
-HP_Bar::~HP_Bar() {
+StatusBar::~StatusBar() {
 
 }
 
-void HP_Bar::update(float delta_time) {
+void StatusBar::update(float delta_time) {
 
 }
 
-void HP_Bar::draw(const std::shared_ptr<Camera> camera) {
+void StatusBar::draw(const std::shared_ptr<Camera> camera) {
 
 	SetFontSize(message_font_size_);
-	DrawStringEx(hp_text_pos_.x, hp_text_pos_.y, -1, hp_text_.c_str());
+	DrawStringEx(status_text_pos_.x, status_text_pos_.y, -1, status_text_.c_str());
 
-	DrawBox(hp_bar_pos_.x, hp_bar_pos_.y, hp_bar_pos_.x + HP_BAR_MAX_WIDTH, hp_bar_pos_.y + HP_BAR_MAX_HEIGHT, GetColor(50, 50, 50), true);
-	DrawBox(hp_bar_pos_.x, hp_bar_pos_.y, hp_bar_pos_.x + HP_BAR_MAX_WIDTH * hp_/ max_hp_, hp_bar_pos_.y + HP_BAR_MAX_HEIGHT, GetColor(0, 192, 255), true);
+	DrawBox(status_bar_pos_.x, status_bar_pos_.y, status_bar_pos_.x + status_bar_size_.x, status_bar_pos_.y + status_bar_size_.y, GetColor(50, 50, 50), true);
+	DrawBox(status_bar_pos_.x, status_bar_pos_.y, status_bar_pos_.x + status_bar_size_.x * now_status_ / max_status_, status_bar_pos_.y + status_bar_size_.y, GetColor(0, 192, 255), true);
+}
+
+void StatusBar::updateStatus_Text(int max_status, int now_status) {
+	max_status_ = max_status;
+	now_status_ = now_status;
+	status_text_ = status_type_text_ + "ÅF" + std::to_string(now_status_) + "/" + std::to_string(max_status_);
 }

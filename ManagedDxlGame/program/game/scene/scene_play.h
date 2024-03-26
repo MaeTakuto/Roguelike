@@ -173,33 +173,6 @@ public:
 	inline const std::shared_ptr<Player> getPlayer() const { return player_; }
 
 private:
-	//// ========= デバッグ ============
-
-	////  
-	//void debugMapData() {
-
-	//	tnl::DebugTrace("============== map_data_ ===============\n");
-
-	//	for (int y = 0; y < field_.size(); y++) {
-	//		for (int x = 0; x < field_[y].size(); x++) {
-	//			tnl::DebugTrace("%d", static_cast<int>(field_[y][x].map_data));
-	//		}
-	//		tnl::DebugTrace("\n");
-	//	}
-	//}
-
-	//void debugPlaceData() {
-
-	//	tnl::DebugTrace("============== field_.place ===============\n");
-
-	//	for (int y = 0; y < field_.size(); y++) {
-	//		for (int x = 0; x < field_[y].size(); x++) {
-	//			tnl::DebugTrace("%d", static_cast<int>(field_[y][x].place));
-	//		}
-	//		tnl::DebugTrace("\n");
-	//	}
-	//}
-
 	// キャラクターアップデート
 	void charaUpdate(float delta_time);
 	// キャラクターを倒したときの処理
@@ -208,8 +181,8 @@ private:
 	void changeAttacker();
 	// レベルアップ処理をする
 	void executeLevelUpProcess(std::shared_ptr<Character> chara);
-	//// 次の攻撃者を確認する
-	//void checkNextAttacker(std::queue< std::shared_ptr<Character> >& attacker);
+	// 魔法が使えるか確認する
+	void checkToUseMagic();
 	// 次のフロアに変える処理を行う
 	void changeProcessNextFloor();
 	// ゲームオーバー処理を実行
@@ -227,31 +200,19 @@ private:
 	bool seqMain(const float delta_time);
 
 	// =========== ダンジョン探索中のシーケンス ===========
-	// プレイヤーの入力シーケンス
 	bool seqPlayerAct(const float delta_time);
-	// 敵の行動を決めるシーケンス
 	bool seqEnemyAct(const float delta_time);
-	// プレイヤーのみ移動するシーケンス
 	bool seqPlayerAction(const float delta_time);
-	// 攻撃シーケンス（ "attacker_"に登録されているキャラ ）
 	bool seqCharacterAttack(const float delta_time);
-	// ダメージ処理シーケンス
 	bool seqTargetDamaged(const float delta_time);
-	// レベルアップ処理シーケンス
 	bool seqCharaLevelUp(const float delta_time);
-	// 全キャラクターの移動シーケンス
 	bool seqCharaMove(const float delta_time);
-	// ターン終了シーケンス
 	bool seqActEndProcess(const float delta_time);
-	// 階段選択シーケンス
 	bool seqStairSelect(const float delta_time);
-	// ゲームオーバーシーケンス
 	bool seqGameOver(const float delta_time);
-	// メニュー選択シーケンス
 	bool seqSelectMainMenu(const float delta_time);
-	// 魔法選択シーケンス
 	bool seqSelectMagicList(const float delta_time);
-	// プレイヤーステータス表示シーケンス
+	bool seqSelectToUseMagic(const float delta_time);
 	bool seqDrawStatusWindow(const float delta_time);
 
 };

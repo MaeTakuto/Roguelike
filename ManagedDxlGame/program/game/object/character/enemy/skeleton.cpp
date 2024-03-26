@@ -213,7 +213,8 @@ void Skeleton::startAttack() {
 	bone_->setEnable(true);
 	bone_->setPos(pos_);
 	bone_->setTargetPos(target_pos_);
-	bone_->launchProjectile(pos_, bone_throw_dir_, 32);
+	bone_->setupToLaunchProjectile(pos_, bone_throw_dir_, 32);
+	bone_->startToLaunchProjectile();
 	ResourceManager::getInstance()->playSound(SKELETON_ATK_SE_HDL_PATH, DX_PLAYTYPE_BACK);
 	sequence_.change(&Skeleton::seqAttack);
 }
