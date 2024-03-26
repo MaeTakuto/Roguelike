@@ -2,10 +2,10 @@
 #include "../../dxlib_ext/dxlib_ext.h"
 #include "../common/enum.h"
 #include "../common/chara_status.h"
-#include "../common/animation.h"
 
 class Camera;
 class MagicBase;
+class Animation;
 
 // =====================================================================================
 // キャラクターのベースクラス
@@ -55,7 +55,7 @@ protected:
 	// 攻撃対象のキャラクタークラス
 	std::shared_ptr<Character> atk_target_;
 	// 攻撃エフェクトのアニメーション
-	Animation atk_effect_;
+	std::shared_ptr<Animation> atk_effect_;
 	// 攻撃エフェクト画像
 	std::vector<int> atk_effect_gpc_hdls_;
 
@@ -66,6 +66,8 @@ protected:
 	tnl::Vector3 next_pos_ = { 0, 0, 0 };
 	// ------------------------------------------
 
+	// 現在見ている方向
+	eDir_8 looking_dir_;
 	// キャラのアニメ方向
 	eDir_4 anim_dir_ = eDir_4::DOWN;
 
@@ -99,6 +101,8 @@ public:
 	inline CharaStatus& getStatus() { return status_; }
 	// 魔法一覧を取得
 	const std::vector<std::shared_ptr<MagicBase>>& getMagicList() const;
+	// キャラクターの見ている方向を取得
+	inline eDir_8 getLookingDir() { return looking_dir_; }
 
 	// ================= 関数のプロトタイプ =================
 
@@ -117,7 +121,6 @@ public:
 	virtual void startAttack() = 0;
 	// レベルアップ処理を行う
 	virtual void startLevelUp() = 0;
-	// virtual bool tryUseMagic(int magic_index) { return true; };
 
 protected:
 	// 指定した位置がフィールドの中か判定

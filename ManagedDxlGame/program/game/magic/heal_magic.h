@@ -17,7 +17,8 @@ private:
 	float effect_draw_time_;
 
 public:
-	void startDrawEffectOnOwner(tnl::Vector2i pos, tnl::Vector2i size) override;
+	void setupToUseMagic(const std::shared_ptr<Character> user) override;
+	void startDrawEffectOnOwner(const tnl::Vector2i& pos, const tnl::Vector2i& size) override;
 	void useMagic(std::shared_ptr<Character> owner) override;
 
 };

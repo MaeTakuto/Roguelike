@@ -66,14 +66,17 @@ void Projectile::draw(const std::shared_ptr<Camera> camera) {
 		projectile_gpc_hdl_, true);
 }
 
-void Projectile::launchProjectile(const tnl::Vector3& start_pos, eDir_8 move_dir, int max_cell_reach) {
-	is_enable_ = true;
+void Projectile::setupToLaunchProjectile(const tnl::Vector3& start_pos, eDir_8 move_dir, int max_cell_reach) {
 	pos_ = start_pos;
 	move_dir_ = move_dir;
 	hit_character_ = nullptr;
 	max_cell_reach_ = max_cell_reach;
 	cell_count_ = 1;
-	checkCellInMoveDir(pos_ + DIR_POS[std::underlying_type<eDir_8>::type(move_dir_) ]);
+	checkCellInMoveDir(pos_ + DIR_POS[std::underlying_type<eDir_8>::type(move_dir_)]);
+}
+
+void Projectile::startToLaunchProjectile() {
+	is_enable_ = true;
 }
 
 void Projectile::checkCellInMoveDir(const tnl::Vector3& pos) {

@@ -76,6 +76,10 @@ void SelectWindow::draw(const std::shared_ptr<Camera> camera) {
 void SelectWindow::setWindowPos(const tnl::Vector2i& pos) {
 	window_pos_ = pos;
 	mess_str_pos_ = pos + tnl::Vector2i(20, 20);
+
+	for (int i = 0; i < command_names_.size(); ++i) {
+		selected_cmd_ui_pos_[i] = tnl::Vector2i(window_pos_.x + seleted_cmd_ui_space_.x, mess_str_pos_.y + (message_space_ * i));
+	}
 }
 
 void SelectWindow::setWindowSize(const tnl::Vector2i& size) {

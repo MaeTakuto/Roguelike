@@ -5,7 +5,7 @@
 // =====================================================================================
 // コンストラクタ
 // =====================================================================================
-Animation::Animation() : pos_(0, 0), anim_frame_(0), blend_mode_(DX_BLENDMODE_NOBLEND), is_enable_(false), frame_elapsed_(0.0f), frame_change_interval_(3.0f)
+Animation::Animation() : pos_(0, 0), anim_frame_(0), blend_mode_(DX_BLENDMODE_NOBLEND), is_enable_(false), frame_elapsed_(0.0f), frame_change_interval_(0.5f)
 {
 
 }

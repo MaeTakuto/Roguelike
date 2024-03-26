@@ -15,7 +15,7 @@ HealMagic::HealMagic() : heal_amount_(0), draw_elapsed_time_(0.0f), effect_draw_
 
 	CsvData& atk_effect_data = ResourceManager::getInstance()->loadCsvData("csv/effect_gpc_data.csv");
 
-	std::vector<tnl::CsvCell> start_cell = atk_effect_data[GameManager::CSV_CELL_ROW_START + 2];
+	std::vector<tnl::CsvCell> start_cell = atk_effect_data[GameManager::CSV_CELL_ROW_START + 3];
 
 	// -------------------------- 魔法エフェクトの設定 -----------------------------------------
 	magic_effect_gpc_hdl_ = ResourceManager::getInstance()->loadAnimation(
@@ -50,7 +50,11 @@ void HealMagic::draw(const std::shared_ptr<Camera> camera) {
 	magic_effect_->draw(camera);
 }
 
-void HealMagic::startDrawEffectOnOwner(tnl::Vector2i pos, tnl::Vector2i size) {
+void HealMagic::setupToUseMagic(const std::shared_ptr<Character> user) {
+
+}
+
+void HealMagic::startDrawEffectOnOwner(const tnl::Vector2i& pos, const tnl::Vector2i& size) {
 	is_draw_effect_ = true;
 	magic_effect_->startAnimation();
 	magic_effect_->setDrawPos(pos);

@@ -50,11 +50,19 @@ void FireMagic::draw(const std::shared_ptr<Camera> camera) {
 // =====================================================================================
 // エフェクトを表示する
 // =====================================================================================
-void FireMagic::startDrawEffectOnOther(tnl::Vector2i pos, tnl::Vector2i size, eDir_8 other_dir) {
+void FireMagic::setupToUseMagic(const std::shared_ptr<Character> user) {
+
+	fire_ball_->setProjectileGpcHdl(fire_ball_gpc_hdl_[std::underlying_type<eDir_8>::type(user->getLookingDir())]);
+	fire_ball_->setupToLaunchProjectile(user->getPos(), user->getLookingDir(), 10);
+}
+
+// =====================================================================================
+// エフェクトを表示する
+// =====================================================================================
+void FireMagic::startDrawEffectOnOther(const tnl::Vector2i& pos, const tnl::Vector2i& size, eDir_8 other_dir) {
 
 	is_draw_effect_ = true;
-	fire_ball_->setProjectileGpcHdl( fire_ball_gpc_hdl_[ std::underlying_type<eDir_8>::type( other_dir ) ] );
-	fire_ball_->launchProjectile( tnl::Vector3(pos.x, pos.y, 0.0f), other_dir, 10 );
+	fire_ball_->startToLaunchProjectile();
 }
 
 // =====================================================================================
@@ -73,6 +81,5 @@ void FireMagic::useMagic(std::shared_ptr<Character> owner) {
 
 	int damage = owner->getStatus().getAtk() * 1.15f;
 	scene_play->applyDamage(owner, atk_target_, damage);
-	scene_play->setMessage(atk_target_->getName() + "に" + std::to_string(damage) + "ダメージ与えた。");
 
 }

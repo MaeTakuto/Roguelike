@@ -1,37 +1,43 @@
 #pragma once
 
 
-class HP_Bar {
+class StatusBar {
 public:
-	HP_Bar();
-	~HP_Bar();
+	StatusBar();
+	~StatusBar();
 
 	void update(float delta_time);
 	void draw(const std::shared_ptr<Camera> camera);
 
 private:
-	const int HP_BAR_MAX_WIDTH = 500;
-	const int HP_BAR_MAX_HEIGHT = 40;
+	tnl::Vector2i status_bar_pos_;
+	tnl::Vector2i status_bar_size_;
+	tnl::Vector2i status_text_pos_;
 
-	tnl::Vector2i hp_bar_pos_ = { 450, 50 };
-	tnl::Vector2i hp_text_pos_ = hp_bar_pos_ - tnl::Vector2i(150, -5);
+	int max_status_;
+	int now_status_;
 
-	int max_hp_ = 1;
-	int hp_ = 1;
+	std::string status_type_text_;
+	std::string status_text_;
 
-	std::string hp_text_ = "";
-
-	// HPバーの幅
-	int width_ = HP_BAR_MAX_WIDTH;
-
-	int message_font_size_ = 30;
+	int message_font_size_;
 
 public:
-	inline void setMaxHP(int max_hp) { max_hp_ = max_hp; }
-	inline void setHP(int hp) { hp_ = hp; }
-
-	inline void updateHP_Text() {
-		hp_text_ = "HP：" + std::to_string(hp_) + "/" + std::to_string(max_hp_);
+	// ステータスバーの位置を設定
+	inline void setStatusBarPos(const tnl::Vector2i& pos) { 
+		status_bar_pos_ = pos;
+		status_text_pos_ = status_bar_pos_ - tnl::Vector2i(150, -5);
 	}
+	// ステータスバーのサイズを設定
+	inline void setStatusBarSize(const tnl::Vector2i& size) { status_bar_size_ = size; }
+	// 表示するステータスのタイプを設定（ HP, MPなど ）
+	inline void setStatusTypeText(const std::string& status_type_text) { status_type_text_ = status_type_text; }
+	// ステータスの最大値を設定
+	inline void setMaxStatus(int max_status) { max_status_ = max_status; }
+	// 現在のステータスの値を設定
+	inline void setStatus(int now_status) { now_status_ = now_status; }
+
+	// ステータスバーを現在の値に更新
+	void updateStatus_Text(int max_status, int now_status);
 
 };

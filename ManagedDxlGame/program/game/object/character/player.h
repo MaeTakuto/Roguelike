@@ -7,7 +7,7 @@ class Projectile;
 // 最大レベル
 const int MAX_LEVEL = 6;
 // 経験値テーブル
-const int LEVEL_TABLE[MAX_LEVEL - 1] = { 12, 30, 55, 80, 110 };
+const int LEVEL_TABLE[MAX_LEVEL - 1] = { 12, 50, 100, 180, 280 };
 
 // =====================================================================================
 // プレイヤークラス
@@ -36,14 +36,12 @@ private:
 	// プレイヤーの行動シーケンス
 	tnl::Sequence<Player> sequence_;
 
+	std::shared_ptr<Animation> magic_chanting_effect_;
+
 	// 魔法を使用しているか判定
 	bool is_use_magic_;
 	// 使用する魔法のリスト番号
 	int use_magic_index_;
-
-	// 現在見ている方向
-	eDir_8 looking_dir_;
-
 	// 攻撃
 	//tnl::Vector3 attack_dir_ = { 0, 0, 0 };
 
@@ -58,7 +56,7 @@ public:
 	bool canLevelUp() override;
 	// 攻撃開始
 	void startAttack() override;
-	// 魔法発動の準備設定をする
+	// 魔法の使用準備をする
 	void setupMagic();
 	// 魔法の使用開始
 	void startMagic();
@@ -76,10 +74,10 @@ private:
 	bool seqMove(const float delta_time);
 	// 攻撃シーケンス
 	bool seqAttack(const float delta_time);
-	// ダメージを与えるシーケンス
-	bool seqApplyDamage(const float delta_time);
 	// レベルアップシーケンス
 	bool seqLevellUp(const float delta_time);
+	// 魔法詠唱シーケンス
+	bool seqMagicChanting(const float delta_time);
 	// 魔法攻撃シーケンス
 	bool seqUseMagic(const float delta_time);
 

@@ -36,7 +36,8 @@ private:
 	int cell_count_;
 
 public:
-	void launchProjectile(const tnl::Vector3& start_pos, eDir_8 move_dir, int max_cell_reach);
+	void setupToLaunchProjectile(const tnl::Vector3& start_pos, eDir_8 move_dir, int max_cell_reach);
+	void startToLaunchProjectile();
 	void checkCellInMoveDir(const tnl::Vector3& pos);
 
 	// -------------- ÉQÉbÉ^Å[ ------------------

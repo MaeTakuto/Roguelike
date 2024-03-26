@@ -6,11 +6,12 @@
 #include "../../base/enemy_base.h"
 #include "../../magic/heal_magic.h"
 #include "../../magic/fire_magic.h"
+#include "../../common/animation.h"
 #include "../projectile.h"
 #include "player.h"
 
 
-Player::Player() : regenerating_mp_(1), sequence_(tnl::Sequence<Player>(this, &Player::seqIdle)), is_use_magic_(false), use_magic_index_(0), looking_dir_{1},
+Player::Player() : regenerating_mp_(1), sequence_(tnl::Sequence<Player>(this, &Player::seqIdle)), magic_chanting_effect_(nullptr), is_use_magic_(false), use_magic_index_(0),
 	select_cell_blue_gpc_hdl_(0), select_cell_red_gpc_hdl_(0)
 {
 
@@ -40,12 +41,14 @@ Player::Player() : regenerating_mp_(1), sequence_(tnl::Sequence<Player>(this, &P
 	select_cell_blue_gpc_hdl_ = rm_instance->loadGraph("graphics/blue.bmp");
 	select_cell_red_gpc_hdl_ = rm_instance->loadGraph("graphics/red.bmp");
 
-	// ------------------- 攻撃エフェクトの設定 -------------------------------------------------------------------
-	CsvData& atk_effect_data = rm_instance->loadCsvData("csv/effect_gpc_data.csv");
+	// ------------------- エフェクトの設定 -------------------------------------------------------------------
+	CsvData& effect_data = rm_instance->loadCsvData("csv/effect_gpc_data.csv");
 
-	std::vector<tnl::CsvCell> start_cell = atk_effect_data[GameManager::CSV_CELL_ROW_START + 1];
+	std::vector<tnl::CsvCell> start_cell = effect_data[GameManager::CSV_CELL_ROW_START + 1];
 
-	atk_effect_.setAnimGraphicHandle(
+	magic_chanting_effect_ = std::make_shared<Animation>();
+
+	magic_chanting_effect_->setAnimGraphicHandle(
 		rm_instance->loadAnimation(
 			start_cell[1].getString(),								// 画像パス,
 			start_cell[2].getInt() * start_cell[3].getInt(),		// フレーム総数
@@ -56,7 +59,26 @@ Player::Player() : regenerating_mp_(1), sequence_(tnl::Sequence<Player>(this, &P
 		)
 	);
 
-	atk_effect_.setFrameChangeInterval(0.025f);
+	magic_chanting_effect_->setBlendMode(DX_BLENDMODE_ADD);
+	magic_chanting_effect_->setFrameChangeInterval(0.05f);
+
+	// ------------------- エフェクトの設定 -------------------------------------------------------------------
+	start_cell = effect_data[GameManager::CSV_CELL_ROW_START + 2];
+
+	atk_effect_ = std::make_shared<Animation>();
+
+	atk_effect_->setAnimGraphicHandle(
+		rm_instance->loadAnimation(
+			start_cell[1].getString(),								// 画像パス,
+			start_cell[2].getInt() * start_cell[3].getInt(),		// フレーム総数
+			start_cell[2].getInt(),									// 横方向の分割数
+			start_cell[3].getInt(),									// 縦方向の分割数
+			start_cell[4].getInt(),									// 横方向の分割サイズ
+			start_cell[5].getInt()									// 縦方向の分割サイズ
+		)
+	);
+
+	atk_effect_->setFrameChangeInterval(0.025f);
 
 	// ------------------- ステータスセット -----------------------------------------------------------------------
 	CsvData& status_data = rm_instance->loadCsvData("csv/player_status_data.csv");
@@ -74,6 +96,7 @@ Player::Player() : regenerating_mp_(1), sequence_(tnl::Sequence<Player>(this, &P
 	magic_list_.emplace_back(std::make_shared<HealMagic>());
 	magic_list_.emplace_back(std::make_shared<FireMagic>());
 
+	looking_dir_ = eDir_8::DOWN;
 	anim_dir_ = eDir_4::DOWN;
 	act_state_ = eActState::IDLE;
 
@@ -86,7 +109,8 @@ Player::~Player() {
 void Player::update(float delta_time) {
 
 	sequence_.update(delta_time);
-	atk_effect_.update(delta_time);
+	magic_chanting_effect_->update(delta_time);
+	atk_effect_->update(delta_time);
 	
 	if (is_use_magic_) {
 		magic_list_[use_magic_index_]->update(delta_time);
@@ -149,18 +173,14 @@ void Player::draw(std::shared_ptr<Camera> camera) {
 // ====================================================
 void Player::drawEffect(std::shared_ptr<Camera> camera) {
 
+	// ------------------ 魔法詠唱エフェクト --------------
+	if (magic_chanting_effect_->isEnable()) {
+		magic_chanting_effect_->draw(camera);
+	}
+
 	// ------------------ 攻撃エフェクト ------------------
-	if (atk_effect_.isEnable()) {
-		tnl::Vector3 attack_pos = pos_ + DIR_POS[std::underlying_type<eDir_8>::type(looking_dir_)];
-
-		tnl::Vector3 effect_draw_pos = attack_pos * GameManager::DRAW_CHIP_SIZE
-			+ tnl::Vector3(DXE_WINDOW_WIDTH >> 1, DXE_WINDOW_HEIGHT >> 1, 0);
-
-		tnl::Vector3 effect_draw_size = tnl::Vector3(GameManager::DRAW_CHIP_SIZE, GameManager::DRAW_CHIP_SIZE, 0);
-
-		atk_effect_.setDrawPos(tnl::Vector2i(static_cast<int>(effect_draw_pos.x), static_cast<int>(effect_draw_pos.y)));
-		atk_effect_.setDrawSize(tnl::Vector2i(static_cast<int>(effect_draw_size.x), static_cast<int>(effect_draw_size.y)));
-		atk_effect_.draw(camera);
+	if (atk_effect_->isEnable()) {
+		atk_effect_->draw(camera);
 	}
 	if (is_use_magic_) {
 		magic_list_[use_magic_index_]->draw(camera);
@@ -194,27 +214,30 @@ bool Player::canLevelUp() {
 // 攻撃開始
 // ====================================================
 void Player::startAttack() {
+	tnl::Vector3 attack_pos = pos_ + DIR_POS[std::underlying_type<eDir_8>::type(looking_dir_)];
+
+	tnl::Vector3 effect_draw_pos = attack_pos * GameManager::DRAW_CHIP_SIZE
+		+ tnl::Vector3(DXE_WINDOW_WIDTH >> 1, DXE_WINDOW_HEIGHT >> 1, 0);
+
+	tnl::Vector3 effect_draw_size = tnl::Vector3(GameManager::DRAW_CHIP_SIZE, GameManager::DRAW_CHIP_SIZE, 0);
+
+	atk_effect_->setDrawPos(tnl::Vector2i(static_cast<int>(effect_draw_pos.x), static_cast<int>(effect_draw_pos.y)));
+	atk_effect_->setDrawSize(tnl::Vector2i(static_cast<int>(effect_draw_size.x), static_cast<int>(effect_draw_size.y)));
+
 	sequence_.change(&Player::seqAttack);
 }
 
 // ====================================================
-// 魔法使用開始
+// 使用する魔法の準備
 // ====================================================
 void Player::setupMagic() {
+	std::shared_ptr<ScenePlay> scene_play = std::dynamic_pointer_cast<ScenePlay>(GameManager::GetInstance()->getSceneInstance());
 
-	tnl::Vector2i effect_draw_pos = tnl::Vector2i(static_cast<int>(pos_.x), static_cast<int>(pos_.y)) * GameManager::DRAW_CHIP_SIZE
-		+ tnl::Vector2i(DXE_WINDOW_WIDTH >> 1, DXE_WINDOW_HEIGHT >> 1);
-
-	tnl::Vector2i effect_draw_size = tnl::Vector2i(GameManager::DRAW_CHIP_SIZE, GameManager::DRAW_CHIP_SIZE);
-
-	if (magic_list_[use_magic_index_]->getMagicTarget() == eMagicTarget::OWNER) {
-		magic_list_[use_magic_index_]->startDrawEffectOnOwner(effect_draw_pos, effect_draw_size);
+	if (!scene_play) {
+		return;
 	}
-	else if (magic_list_[use_magic_index_]->getMagicTarget() == eMagicTarget::OTHER) {
-		int index = std::underlying_type<eDir_8>::type(looking_dir_);
-		effect_draw_pos = tnl::Vector2i(static_cast<int>(pos_.x), static_cast<int>(pos_.y));
-		magic_list_[use_magic_index_]->startDrawEffectOnOther(effect_draw_pos, effect_draw_size, looking_dir_);
-	}
+
+	magic_list_[use_magic_index_]->setupToUseMagic(scene_play->getPlayer());
 }
 
 // ====================================================
@@ -222,8 +245,25 @@ void Player::setupMagic() {
 // ====================================================
 void Player::startMagic() {
 
-	is_use_magic_ = true;
-	sequence_.change(&Player::seqUseMagic);
+	std::shared_ptr<ScenePlay> scene_play = std::dynamic_pointer_cast<ScenePlay>(GameManager::GetInstance()->getSceneInstance());
+	if (!scene_play) {
+		return;
+	}
+
+	tnl::Vector2i effect_draw_pos = tnl::Vector2i(static_cast<int>(pos_.x), static_cast<int>(pos_.y)) * GameManager::DRAW_CHIP_SIZE
+		+ tnl::Vector2i(DXE_WINDOW_WIDTH >> 1, DXE_WINDOW_HEIGHT >> 1);
+
+	tnl::Vector2i effect_draw_size = tnl::Vector2i(GameManager::DRAW_CHIP_SIZE, GameManager::DRAW_CHIP_SIZE);
+
+	std::string message = magic_list_[use_magic_index_]->getMagicName() + "の魔法を唱えた。";
+	scene_play->setMessage(message);
+
+	magic_chanting_effect_->setDrawPos(effect_draw_pos);
+	magic_chanting_effect_->setDrawSize(effect_draw_size);
+	magic_chanting_effect_->startAnimation();
+	ResourceManager::getInstance()->playSound("sound/springin/magic_chanting.mp3", DX_PLAYTYPE_BACK);
+
+	sequence_.change(&Player::seqMagicChanting);
 }
 
 // ====================================================
@@ -235,7 +275,9 @@ void Player::startLevelUp() {
 	act_state_ = eActState::LEVEL_UP;
 }
 
-
+// ====================================================
+// 魔法が使用できるか試す
+// ====================================================
 bool Player::tryUseMagic(int magic_index) {
 	if (magic_index < 0 || magic_index >= magic_list_.size()) {
 		return false;
@@ -460,12 +502,12 @@ bool Player::seqMove(const float delta_time) {
 // ====================================================
 bool Player::seqAttack(const float delta_time) {
 	if (sequence_.isStart()) {
-		atk_effect_.startAnimation();
+		atk_effect_->startAnimation();
 		ResourceManager::getInstance()->playSound("sound/springin/fire.mp3", DX_PLAYTYPE_BACK);
 	}
 
 	// 攻撃エフェクト再生中の場合はここまで
-	if (atk_effect_.isEnable()) {
+	if (atk_effect_->isEnable()) {
 		return true;
 	}
 
@@ -485,6 +527,34 @@ bool Player::seqAttack(const float delta_time) {
 
 	act_state_ = eActState::END;
 	sequence_.change(&Player::seqIdle);
+	return true;
+}
+
+// ====================================================
+// 魔法詠唱シーケンス
+// ====================================================
+bool Player::seqMagicChanting(const float delta_time) {
+	
+	if (magic_chanting_effect_->isEnable()) {
+		return true;
+	}
+
+	tnl::Vector2i effect_draw_pos = tnl::Vector2i(static_cast<int>(pos_.x), static_cast<int>(pos_.y)) * GameManager::DRAW_CHIP_SIZE
+		+ tnl::Vector2i(DXE_WINDOW_WIDTH >> 1, DXE_WINDOW_HEIGHT >> 1);
+
+	tnl::Vector2i effect_draw_size = tnl::Vector2i(GameManager::DRAW_CHIP_SIZE, GameManager::DRAW_CHIP_SIZE);
+
+	if (magic_list_[use_magic_index_]->getMagicTarget() == eMagicTarget::OWNER) {
+		magic_list_[use_magic_index_]->startDrawEffectOnOwner(effect_draw_pos, effect_draw_size);
+	}
+	else if (magic_list_[use_magic_index_]->getMagicTarget() == eMagicTarget::OTHER) {
+		int index = std::underlying_type<eDir_8>::type(looking_dir_);
+		effect_draw_pos = tnl::Vector2i(static_cast<int>(pos_.x), static_cast<int>(pos_.y));
+		magic_list_[use_magic_index_]->startDrawEffectOnOther(effect_draw_pos, effect_draw_size, looking_dir_);
+	}
+
+	is_use_magic_ = true;
+	sequence_.change(&Player::seqUseMagic);
 	return true;
 }
 

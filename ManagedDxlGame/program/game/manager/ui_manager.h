@@ -3,7 +3,7 @@
 class Camera;
 class MessageWindow;
 class SelectWindow;
-class HP_Bar;
+class StatusBar;
 class Charater;
 
 class UI_Manager {
@@ -27,8 +27,12 @@ private:
 	std::shared_ptr<SelectWindow> magic_select_window_;
 	// 二択の選択ウィンドウ（ はい、いいえか ）
 	std::shared_ptr<SelectWindow> two_select_window_;
+	// 二択コマンドのコマンド名
+	std::vector<std::vector<std::string>> two_select_cmd_names_;
 	// プレイヤーのHPバー
-	std::shared_ptr<HP_Bar> hp_bar_;
+	std::shared_ptr<StatusBar> hp_bar_;
+	// プレイヤーのMPバー
+	std::shared_ptr<StatusBar> mp_bar_;
 
 	// UIのステータス参照用
 	std::weak_ptr<Character> ui_target_;
@@ -42,24 +46,28 @@ public:
 	}
 
 	// 階段選択の現在選択中のインデックスを返す
-	int getSelectedStairSelectCmdIndex();
+	int getSelectedIndexFromTwoSelectCmd();
 
 	// ---------------- メインメニュー関連関数 -------------------------
 
-	// メインメニューの現在選択中のインデックスを返す
-	int getSelectedMainMenuCmdIndex();
+	// メインメニューコマンドの選択しているインデックスを返す
+	int getSelectedIndexFromMainMenuCmd();
 	// メインメニューを開く
 	void openMainMenu();
 	// メインメニューを閉じる
 	void closeMainMenu();
 	// 魔法選択ウィンドウの一覧更新
 	void updateMagicList();
-	// メインメニューの現在選択中のインデックスを返す
-	int getSelectedMagicListCmdIndex();
+	// 魔法リストの選択しているインデックスを返す
+	int getSelectedIndexFromMagicListCmd();
 	// 魔法選択ウィンドウを開く
 	void openMagicListWindow();
 	// 魔法選択ウィンドウを閉じる
 	void closeMagicListWindow();
+	// 魔法を使うか選択するウィンドウを表示
+	void executeSletctToUseMagic();
+	// 魔法を使うか選択するウィンドウを閉じる
+	void executeSletctToUseMagicEnd();
 	// ステータスウィンドウを表示する
 	void displayStatusWindow();
 	// ステータスウィンドウを非表示にする
@@ -78,7 +86,7 @@ public:
 	void clearMessage();
 
 	// HPバーにステータスをセット
-	void setHP_BarStatus();
+	void updateStatusBar();
 
 	// 現在の階数をセット
 	void setFloor(int floor) { floor_ = floor; }
