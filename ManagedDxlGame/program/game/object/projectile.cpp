@@ -71,7 +71,7 @@ void Projectile::setupToLaunchProjectile(const tnl::Vector3& start_pos, eDir_8 m
 	move_dir_ = move_dir;
 	hit_character_ = nullptr;
 	max_cell_reach_ = max_cell_reach;
-	cell_count_ = 1;
+	cell_count_ = 0;
 	checkCellInMoveDir(pos_ + DIR_POS[std::underlying_type<eDir_8>::type(move_dir_)]);
 }
 

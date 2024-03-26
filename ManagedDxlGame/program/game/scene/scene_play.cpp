@@ -186,6 +186,10 @@ void ScenePlay::charaUpdate(float delta_time) {
 	enemy_mgr_->update(delta_time);
 }
 
+// ====================================================
+// 指定した位置の敵を取得する。
+// いなければ、"nullptr" を返す
+// ====================================================
 std::shared_ptr<EnemyBase> ScenePlay::findEnemy(const tnl::Vector3& pos) {
 
 	std::shared_ptr<EnemyBase> enemy = enemy_mgr_->findEnemy(pos);
@@ -258,7 +262,9 @@ void ScenePlay::executeLevelUpProcess(std::shared_ptr<Character> chara) {
 	dungeon_sequence_.change(&ScenePlay::seqCharaLevelUp);
 }
 
+// ====================================================
 // 魔法が使えるか確認する
+// ====================================================
 void ScenePlay::checkToUseMagic() {
 
 	if (player_->tryUseMagic(ui_mgr_->getSelectedIndexFromMagicListCmd())) {
@@ -300,6 +306,10 @@ bool ScenePlay::checkPlayerCell() {
 		ResourceManager::getInstance()->playSound(open_select_window_se_hdl_path_, DX_PLAYTYPE_BACK);
 		return true;
 	}
+	dungeon_sequence_.change(&ScenePlay::seqPlayerAct);
+	ui_mgr_->closeMainMenu();
+	ui_mgr_->setMessage("何もない", MESSAGE_DRAW_TIME);
+
 	return false;
 }
 

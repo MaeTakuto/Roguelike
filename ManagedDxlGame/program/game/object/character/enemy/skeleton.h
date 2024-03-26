@@ -16,7 +16,7 @@ private:
 	// 敵の行動シーケンスの管理
 	tnl::Sequence<Skeleton> sequence_;
 
-	eDir_8 bone_throw_dir_;
+	//eDir_8 bone_throw_dir_;
 	// 投擲物
 	std::shared_ptr<Projectile> bone_;
 
