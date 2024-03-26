@@ -17,7 +17,7 @@ namespace {
 // =====================================================================================
 // コンストラクタ
 // =====================================================================================
-Skeleton::Skeleton() : sequence_(tnl::Sequence<Skeleton>(this, &Skeleton::seqIdle)), bone_throw_dir_{0}, bone_(std::make_shared<Projectile>()), bone_gpc_hdl_(0) {
+Skeleton::Skeleton() : sequence_(tnl::Sequence<Skeleton>(this, &Skeleton::seqIdle)), bone_(std::make_shared<Projectile>()), bone_gpc_hdl_(0) {
 
 	// リソースマネージャーのインスタンスを取得
 	auto rm_instance = ResourceManager::getInstance();
@@ -175,7 +175,7 @@ void Skeleton::decideAction() {
 		eDir_8 player_dir = findPlayerDir_8();
 		if (player_dir != eDir_8::NONE) {
 			target_pos_ = pos_ + DIR_POS[std::underlying_type<eDir_8>::type(player_dir)];
-			bone_throw_dir_ = player_dir;
+			bone_->setupToLaunchProjectile(pos_, player_dir, 32);
 			changeToAttackAction(player_dir);
 			return;
 		}
@@ -192,7 +192,7 @@ void Skeleton::decideAction() {
 
 		// 骨投げ攻撃ができるか判定
 		if (tryCanBoneAttack(player_dir)) {
-			bone_throw_dir_ = player_dir;
+			bone_->setupToLaunchProjectile(pos_, player_dir, 32);
 			changeToAttackAction(player_dir);
 			return;
 		}
@@ -213,7 +213,6 @@ void Skeleton::startAttack() {
 	bone_->setEnable(true);
 	bone_->setPos(pos_);
 	bone_->setTargetPos(target_pos_);
-	bone_->setupToLaunchProjectile(pos_, bone_throw_dir_, 32);
 	bone_->startToLaunchProjectile();
 	ResourceManager::getInstance()->playSound(SKELETON_ATK_SE_HDL_PATH, DX_PLAYTYPE_BACK);
 	sequence_.change(&Skeleton::seqAttack);

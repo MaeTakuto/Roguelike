@@ -9,9 +9,25 @@
 
 
 FireMagic::FireMagic() : atk_target_(nullptr), fire_ball_(std::make_shared<Projectile>()) {
-	magic_name_ = "ファイア";
+
+	CsvData& magic_data = ResourceManager::getInstance()->loadCsvData("csv/magic_data.csv");
+
+	int index = GameManager::CSV_CELL_ROW_START + std::underlying_type<eMagicName>::type(eMagicName::FIRE);
+
+	magic_name_ = magic_data[index][0].getString();
+	consumed_mp_ = magic_data[index][1].getInt();
+	magic_explantion_[0] = "消費MP：" + std::to_string(consumed_mp_);
+	std::string str, s;
+	str = magic_data[index][2].getString();
+
+	std::stringstream ss{ str };
+
+	for (int i = 1; std::getline(ss, s, '/'); ++i) {
+		magic_explantion_[i] = s;
+	}
+
 	magic_target_ = eMagicTarget::OTHER;
-	consumed_mp_ = 7;
+
 
 	fire_ball_gpc_hdl_.resize( std::underlying_type<eDir_8>::type( eDir_8::MAX ) );
 	fire_ball_gpc_hdl_ = ResourceManager::getInstance()->loadAnimation(
@@ -63,6 +79,7 @@ void FireMagic::startDrawEffectOnOther(const tnl::Vector2i& pos, const tnl::Vect
 
 	is_draw_effect_ = true;
 	fire_ball_->startToLaunchProjectile();
+	ResourceManager::getInstance()->playSound("sound/springin/fire.mp3", DX_PLAYTYPE_BACK);
 }
 
 // =====================================================================================

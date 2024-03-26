@@ -81,8 +81,15 @@ enum class eMainMenuCmd {
 	MAX
 };
 
+// –‚–@Œø‰Ê‚Ì‘ÎÛ
 enum class eMagicTarget {
 	OWNER = 0,
 	OTHER,
 	MAX
+};
+
+// –‚–@ˆê——
+enum class eMagicName {
+	HEAL = 0,
+	FIRE,
 };

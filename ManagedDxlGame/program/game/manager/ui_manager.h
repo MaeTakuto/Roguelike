@@ -5,7 +5,11 @@ class MessageWindow;
 class SelectWindow;
 class StatusBar;
 class Charater;
+class MagicBase;
 
+// =====================================================================================
+// ゲーム内のUIを管理するクラス
+// =====================================================================================
 class UI_Manager {
 public:
 	UI_Manager();
@@ -21,6 +25,8 @@ private:
 	std::shared_ptr<MessageWindow> message_window_;
 	// ステータスを確認するウィンドウ
 	std::shared_ptr<MessageWindow> view_status_window_;
+	// 魔法説明のウィンドウ
+	std::shared_ptr<MessageWindow> magic_explation_window_;
 	// メインメニューの選択ウィンドウ
 	std::shared_ptr<SelectWindow> main_menu_select_window_;
 	// 魔法一覧の選択ウィンドウ
@@ -64,6 +70,8 @@ public:
 	void openMagicListWindow();
 	// 魔法選択ウィンドウを閉じる
 	void closeMagicListWindow();
+	// 魔法の説明を更新
+	void updateMagicExplation();
 	// 魔法を使うか選択するウィンドウを表示
 	void executeSletctToUseMagic();
 	// 魔法を使うか選択するウィンドウを閉じる

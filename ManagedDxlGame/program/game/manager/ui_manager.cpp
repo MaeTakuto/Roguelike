@@ -23,7 +23,7 @@ namespace {
 	const int FLOOR_STR_FONT_SIZE = 40;
 
 	// ウィンドウとウィンドウの間隔
-	tnl::Vector2i WINDOW_SPACE = { 25, 0 };
+	tnl::Vector2i WINDOW_SPACE = { 25, 25 };
 
 	// 表示するコマンド名のフォントサイズ
 	const int SELECT_WINDOW_CMD_FONT_SIZE = 30;
@@ -31,24 +31,28 @@ namespace {
 	const int SELECT_WINDOW_CMD_SPACE = SELECT_WINDOW_CMD_FONT_SIZE + 5;
 
 	// ================= 2択選択ウィンドウ（はい、いいえ）の設定 =================
+
 	// 階段選択ウィンドウの表示位置
 	const tnl::Vector2i STAIR_SELECT_WINDOW_POS = { 950, 450 };
 	// 2択ウィンドウの表示サイズ
 	const tnl::Vector2i TWO_SELECT_WINDOW_SIZE = { 160, 70 };
 
 	// ================= メインメニューの設定 ====================================
+
 	// 選択ウィンドウの表示位置
 	const tnl::Vector2i MAIN_MENU_WINDOW_POS = { 100, 150 };
 	// 選択ウィンドウの表示位置
 	const tnl::Vector2i MAIN_MENU_WINDOW_SIZE = { 300, 70 };
 
 	// ================= サブメニューの設定 ======================================
+
 	// サブメニューの表示位置
-	const tnl::Vector2i SUB_WINDOW_POS = tnl::Vector2i( MAIN_MENU_WINDOW_POS.x + MAIN_MENU_WINDOW_SIZE.x, MAIN_MENU_WINDOW_POS.y ) + WINDOW_SPACE;
+	const tnl::Vector2i SUB_WINDOW_POS = tnl::Vector2i( MAIN_MENU_WINDOW_POS.x + MAIN_MENU_WINDOW_SIZE.x + WINDOW_SPACE.x, MAIN_MENU_WINDOW_POS.y );
 	// 魔法選択メニューの表示サイズ
 	const tnl::Vector2i MAGIC_WINDOW_SIZE = { 300, 70 };
+	// 
+	const tnl::Vector2i MAGIC_EXPLANTION_WINDOW_SIZE = { 450, 150 };
 
-	// ================= ステータスバーの設定 ====================================
 	// ステータスバーの始点位置
 	const tnl::Vector2i STATUS_BAR_TOP_POS = { 450, 25 };
 	// ステータスバーの表示サイズ
@@ -61,7 +65,7 @@ namespace {
 // =====================================================================================
 // コンストラクタ
 // =====================================================================================
-UI_Manager::UI_Manager() : message_window_(std::make_shared<MessageWindow>()), view_status_window_(std::make_shared<MessageWindow>()),
+UI_Manager::UI_Manager() : message_window_(std::make_shared<MessageWindow>()), view_status_window_(std::make_shared<MessageWindow>()), magic_explation_window_(std::make_shared<MessageWindow>()),
 	two_select_window_(std::make_shared<SelectWindow>()), main_menu_select_window_(std::make_shared<SelectWindow>()), magic_select_window_(std::make_shared<SelectWindow>()),
 	hp_bar_(std::make_shared<StatusBar>()), mp_bar_(std::make_shared<StatusBar>()), floor_(0)
 {
@@ -113,6 +117,15 @@ UI_Manager::UI_Manager() : message_window_(std::make_shared<MessageWindow>()), v
 	magic_select_window_->setFontSize( SELECT_WINDOW_CMD_FONT_SIZE );
 	magic_select_window_->setMessageSpace( SELECT_WINDOW_CMD_SPACE );
 
+	magic_explation_window_->setWindowPos( SUB_WINDOW_POS 
+		+ tnl::Vector2i( MAGIC_WINDOW_SIZE.x, TWO_SELECT_WINDOW_SIZE.y  + SELECT_WINDOW_CMD_SPACE * ( two_select_cmd_names_.size() - 1 ) )
+		+ WINDOW_SPACE
+	);
+
+	magic_explation_window_->setWindowSize( MAGIC_EXPLANTION_WINDOW_SIZE );
+	magic_explation_window_->setMessageLine(3);
+	magic_explation_window_->setMessageTopPos(tnl::Vector2i(20, 20));
+
 	// ------------------------- ステータスバーの初期化 --------------------------------
 	hp_bar_->setStatusBarPos(STATUS_BAR_TOP_POS);
 	hp_bar_->setStatusBarSize(STATUS_BAR_SIZE);
@@ -137,10 +150,22 @@ UI_Manager::~UI_Manager() {
 // =====================================================================================
 void UI_Manager::update(float delta_time) {
 
-	if (message_window_->isEnable()) message_window_->update(delta_time);
-	if (two_select_window_->isOperate()) two_select_window_->update(delta_time);
-	if(main_menu_select_window_->isOperate()) main_menu_select_window_->update(delta_time);
-	if (magic_select_window_->isOperate()) magic_select_window_->update(delta_time);
+	if (message_window_->isEnable()) {
+		message_window_->update(delta_time);
+	}
+	if (two_select_window_->isOperate()) {
+		two_select_window_->update(delta_time);
+	}
+	if (main_menu_select_window_->isOperate()) {
+		main_menu_select_window_->update(delta_time);
+	}
+	if (magic_select_window_->isOperate()) {
+		magic_select_window_->update(delta_time);
+	}
+	if (magic_explation_window_->isEnable()) {
+		magic_explation_window_->update(delta_time);
+		updateMagicExplation();
+	}
 	if(view_status_window_->isEnable()) view_status_window_->update(delta_time);
 }
 
@@ -149,11 +174,24 @@ void UI_Manager::update(float delta_time) {
 // =====================================================================================
 void UI_Manager::draw(const std::shared_ptr<Camera> camera) {
 
-	if (message_window_->isEnable()) message_window_->draw(camera);
-	if (two_select_window_->isDrawing()) two_select_window_->draw(camera);
-	if (main_menu_select_window_->isDrawing()) main_menu_select_window_->draw(camera);
-	if (magic_select_window_->isDrawing()) magic_select_window_->draw(camera);
-	if (view_status_window_->isEnable()) view_status_window_->draw(camera);
+	if (message_window_->isEnable()) {
+		message_window_->draw(camera);
+	}
+	if (two_select_window_->isDrawing()) {
+		two_select_window_->draw(camera);
+	}
+	if (main_menu_select_window_->isDrawing()) {
+		main_menu_select_window_->draw(camera);
+	}
+	if (magic_select_window_->isDrawing()) {
+		magic_select_window_->draw(camera);
+	}
+	if (magic_explation_window_->isEnable()) {
+		magic_explation_window_->draw(camera);
+	}
+	if (view_status_window_->isEnable()) {
+		view_status_window_->draw(camera);
+	}
 	hp_bar_->draw(camera);
 	mp_bar_->draw(camera);
 	SetFontSize(FLOOR_STR_FONT_SIZE);
@@ -215,38 +253,62 @@ int UI_Manager::getSelectedIndexFromMagicListCmd() {
 }
 
 // =====================================================================================
-// 魔法選択ウィンドウの一覧を更新
+// 魔法選択ウィンドウを開く
 // =====================================================================================
 void UI_Manager::openMagicListWindow() {
+	
+	std::shared_ptr<Character> target = ui_target_.lock();
+	if (!target) {
+		return;
+	}
+
 	updateMagicList();
 	magic_select_window_->setDrawing(true);
 	magic_select_window_->setOperate(true);
 	main_menu_select_window_->setOperate(false);
+
+
+	auto& magic_list = target->getMagicList();
+	magic_explation_window_->setEnable(true);
+	magic_explation_window_->setAllLineMessage( magic_list[magic_select_window_->getSelectedCmdIndex()]->getMagicExplantion() );
 }
 
 // =====================================================================================
-// 魔法選択ウィンドウの一覧を更新
+// 魔法選択ウィンドウを閉じる
 // =====================================================================================
 void UI_Manager::closeMagicListWindow() {
 	magic_select_window_->setDrawing(false);
 	magic_select_window_->setOperate(false);
 	main_menu_select_window_->setOperate(true);
+	magic_explation_window_->setEnable(false);
+}
+
+void UI_Manager::updateMagicExplation() {
+	
+	if (tnl::Input::IsKeyDownTrigger(eKeys::KB_W, eKeys::KB_S, eKeys::KB_UP, eKeys::KB_DOWN)) {
+		std::shared_ptr<Character> target = ui_target_.lock();
+		if (!target) {
+			return;
+		}
+		auto& magic_list = target->getMagicList();
+		magic_explation_window_->setAllLineMessage(magic_list[magic_select_window_->getSelectedCmdIndex()]->getMagicExplantion());
+	}
 }
 
 // =====================================================================================
-// 魔法選択ウィンドウの一覧を更新
+// 魔法を使用するか選択するウィンドウを開く
 // =====================================================================================
 void UI_Manager::executeSletctToUseMagic() {
 	magic_select_window_->setOperate(false);
 	two_select_window_->setCommandNames(two_select_cmd_names_[1]);
 	two_select_window_->setDrawing(true);
 	two_select_window_->setOperate(true);
-	two_select_window_->setWindowPos( SUB_WINDOW_POS + tnl::Vector2i( MAGIC_WINDOW_SIZE.x, 0 ) + WINDOW_SPACE );
+	two_select_window_->setWindowPos( SUB_WINDOW_POS + tnl::Vector2i( MAGIC_WINDOW_SIZE.x + WINDOW_SPACE.x, 0 ) );
 
 }
 
 // =====================================================================================
-// 魔法選択ウィンドウの一覧を更新
+// 魔法を使用するか選択するウィンドウを閉じる
 // =====================================================================================
 void UI_Manager::executeSletctToUseMagicEnd() {
 	magic_select_window_->setOperate(true);

@@ -2,7 +2,7 @@
 
 class Camera;
 
-// ダンジョンで起きた出来事をメッセージとして表示するクラス
+// メッセージを表示するウィンドウクラス
 class MessageWindow {
 public:
 	MessageWindow();
@@ -12,13 +12,14 @@ public:
 	void draw(const std::shared_ptr<Camera> camera);
 
 private:
-	const tnl::Vector2i MESS_STR_POS = { 30, 20 };
 	// メッセージウィンドウの位置
 	tnl::Vector2i window_pos_ = { 250, 450 };
 	tnl::Vector2i window_size_ = { 800, 200 };
 
 	// メッセージの位置
-	tnl::Vector2i mess_str_pos_ = window_pos_ + MESS_STR_POS;
+	tnl::Vector2i mess_str_top_pos_ = { 30, 20 };
+	tnl::Vector2i mess_str_pos_ = window_pos_ + mess_str_top_pos_;
+
 
 	// 表示しているか判定
 	bool is_enable_ = false;
@@ -30,7 +31,7 @@ private:
 	float time_limit_ = 0.0f;
 
 	// 表示するメッセージ
-	std::vector<std::string> command_names_;
+	std::vector<std::string> message_;
 
 	// 表示しているメッセージ数
 	int display_message_count_ = 0;
@@ -51,11 +52,17 @@ public:
 	// ウィンドウの位置を設定
 	inline void setWindowPos(const tnl::Vector2i& pos) { 
 		window_pos_ = pos;
-		mess_str_pos_ = window_pos_ + MESS_STR_POS;
+		mess_str_pos_ = window_pos_ + mess_str_top_pos_;
 	}
 
 	// ウィンドウのサイズを設定
 	inline void setWindowSize(const tnl::Vector2i& size) { window_size_ = size; }
+
+	// メッセージの表示位置の始点を決める
+	inline void setMessageTopPos(const tnl::Vector2i pos) { 
+		mess_str_top_pos_ = pos;
+		mess_str_pos_ = window_pos_ + mess_str_top_pos_;
+	}
 
 	// メッセージのフォントサイズを設定
 	inline void setFontSize(int size) { message_font_size_ = size; }
@@ -63,7 +70,7 @@ public:
 	// メッセージの最大行数を変更
 	inline void setMessageLine(int line) {
 		message_line_ = line;
-		command_names_.resize(message_line_);
+		message_.resize(message_line_);
 	}
 
 	// 表示時間を設定する
@@ -87,5 +94,8 @@ public:
 
 	// メッセージをセットする
 	void setMessgae(const std::string& message);
+
+	// 全ての行のメッセージをセットする。（ 最大行をはみ出した行はセットされない。 ）
+	void setAllLineMessage(const std::vector<std::string>& messages);
 
 };

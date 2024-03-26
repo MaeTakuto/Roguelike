@@ -9,9 +9,17 @@
 #include "heal_magic.h"
 
 HealMagic::HealMagic() : heal_amount_(0), draw_elapsed_time_(0.0f), effect_draw_time_(1.0f){
-	magic_name_ = "ƒq[ƒ‹";
+
+	CsvData& magic_data = ResourceManager::getInstance()->loadCsvData("csv/magic_data.csv");
+
+	int index = GameManager::CSV_CELL_ROW_START + std::underlying_type<eMagicName>::type(eMagicName::HEAL);
+
+	magic_name_ = magic_data[index][0].getString();
+	consumed_mp_ = magic_data[index][1].getInt();
+	magic_explantion_[0] = "Á”ïMPF" + std::to_string(consumed_mp_);
+	magic_explantion_[1] = magic_data[index][2].getString();
+
 	magic_target_ = eMagicTarget::OWNER;
-	consumed_mp_ = 6;
 
 	CsvData& atk_effect_data = ResourceManager::getInstance()->loadCsvData("csv/effect_gpc_data.csv");
 
@@ -59,6 +67,7 @@ void HealMagic::startDrawEffectOnOwner(const tnl::Vector2i& pos, const tnl::Vect
 	magic_effect_->startAnimation();
 	magic_effect_->setDrawPos(pos);
 	magic_effect_->setDrawSize(size);
+	ResourceManager::getInstance()->playSound("sound/springin/level_up.mp3", DX_PLAYTYPE_BACK);
 }
 
 void HealMagic::useMagic(std::shared_ptr<Character> owner) {
