@@ -58,15 +58,24 @@ void HealMagic::draw(const std::shared_ptr<Camera> camera) {
 	magic_effect_->draw(camera);
 }
 
-void HealMagic::setupToUseMagic(const std::shared_ptr<Character> user) {
+void HealMagic::setupToUseMagic(const std::shared_ptr<Character> owner) {
 
+	auto& owner_pos = owner->getPos();
+
+	// エフェクトの表示位置を設定
+	tnl::Vector2i effect_draw_pos = tnl::Vector2i(static_cast<int>(owner_pos.x), static_cast<int>(owner_pos.y)) * GameManager::DRAW_CHIP_SIZE
+		+ tnl::Vector2i(DXE_WINDOW_WIDTH >> 1, DXE_WINDOW_HEIGHT >> 1);
+
+	tnl::Vector2i effect_draw_size = tnl::Vector2i(GameManager::DRAW_CHIP_SIZE, GameManager::DRAW_CHIP_SIZE);
+
+	magic_effect_->setDrawPos(effect_draw_pos);
+	magic_effect_->setDrawSize(effect_draw_size);
 }
 
-void HealMagic::startDrawEffectOnOwner(const tnl::Vector2i& pos, const tnl::Vector2i& size) {
+void HealMagic::startDrawEffect() {
+	
 	is_draw_effect_ = true;
 	magic_effect_->startAnimation();
-	magic_effect_->setDrawPos(pos);
-	magic_effect_->setDrawSize(size);
 	ResourceManager::getInstance()->playSound("sound/springin/level_up.mp3", DX_PLAYTYPE_BACK);
 }
 

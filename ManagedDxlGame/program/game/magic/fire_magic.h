@@ -12,8 +12,8 @@ public:
 	void update(float delta_time) override;
 	void draw(const std::shared_ptr<Camera> camera) override;
 
-	void setupToUseMagic(const std::shared_ptr<Character> user) override;
-	void startDrawEffectOnOther(const tnl::Vector2i& pos, const tnl::Vector2i& size, eDir_8 other_dir) override;
+	void setupToUseMagic(const std::shared_ptr<Character> owner) override;
+	void startDrawEffect() override;
 	void useMagic(std::shared_ptr<Character> owner) override;
 
 private:

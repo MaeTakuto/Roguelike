@@ -30,6 +30,8 @@ public:
 	std::shared_ptr<EnemyBase> createClone() const override;
 	// 敵のレベルを設定する
 	void setEnemyLevel(int lv) override;
+	// 指定した目標位置にキャラクターを移動させる
+	void moveToTargetPos(const tnl::Vector3& target_pos) override;
 	// レベルが上がるが判定
 	bool canLevelUp() override;
 	// 行動を決定する。
@@ -53,10 +55,6 @@ private:
 	bool seqAttack(const float delta_time);
 
 	// ============= プロトタイプ宣言 =============
-	//// レベル１モンスターの行動を決める
-	//void decideActionForLv_1() override;
-	//// レベル２モンスターの行動を決める
-	//void decideActionForLv_2() override;
 	// 目標の位置に向かって 1マス移動する
 	void setNextPosToTarget();
 	// プレイヤーを追跡する
@@ -71,11 +69,11 @@ private:
 	bool tryCanBoneAttack(eDir_8& dir);
 	// プレイヤーがいるか確認する。
 	bool isPlayerDir(const tnl::Vector3& pos, eDir_8 dir, bool is_loop = false) const;
-	// 指定した方向が攻撃可能か
+	// 指定した方向が攻撃可能か判定をする
 	bool canAttackInDir(eDir_8 dir) override;
-	// 通路での行動
+	// 通路での行動処理をする
 	void actionInCorridor() override;
-	// 部屋での行動
+	// 部屋での行動処理をする
 	void actionInRoom() override;
 
 };

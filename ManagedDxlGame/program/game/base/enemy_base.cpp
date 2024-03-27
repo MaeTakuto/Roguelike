@@ -19,6 +19,23 @@ EnemyBase::~EnemyBase() {
 // =====================================================================================
 // 周囲の上下左右のマスから、指定した "eMapData" が存在する方向を返す
 // =====================================================================================
+void EnemyBase::resetEnemyInMapData() {
+
+	auto scene_play = scene_play_.lock();
+	if (!scene_play) {
+		return;
+	}
+
+	scene_play->setMapData(pos_, eMapData::ENEMY);
+	if (scene_play->getMapData(next_pos_) == eMapData::ENEMY) {
+		scene_play->setMapData(next_pos_, scene_play->getTerrainData(next_pos_));
+	}
+	next_pos_ = pos_;
+}
+
+// =====================================================================================
+// 周囲の上下左右のマスから、指定した "eMapData" が存在する方向を返す
+// =====================================================================================
 std::vector<eDir_4> EnemyBase::getMapDataDir_4(eMapData map_data) {
 
 	std::vector<eDir_4> directions;

@@ -45,9 +45,8 @@ public:
 
 	// 各敵の行動を決める
 	void desideAction();
-
-	//// 攻撃状態の敵を取得
-	//void getEnemyToAttackAction();
+	// 敵の行動を修正する
+	void modifyEnemiesAction();
 
 	// 移動を行う敵の行動を開始させる
 	void beginActionToMove();

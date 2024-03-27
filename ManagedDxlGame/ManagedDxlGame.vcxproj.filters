@@ -302,6 +302,9 @@
     <ClCompile Include="program\game\object\character\enemy\pumpkin.cpp">
       <Filter>program\[003] game\object\character\enemy</Filter>
     </ClCompile>
+    <ClCompile Include="program\game\magic\magnetism.cpp">
+      <Filter>program\[003] game\magic</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="ManagedDxlGame.rc">
@@ -583,6 +586,9 @@
     </ClInclude>
     <ClInclude Include="program\game\object\character\enemy\pumpkin.h">
       <Filter>program\[003] game\object\character\enemy</Filter>
+    </ClInclude>
+    <ClInclude Include="program\game\magic\magnetism_magic.h">
+      <Filter>program\[003] game\magic</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

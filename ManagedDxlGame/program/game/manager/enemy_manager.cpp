@@ -144,7 +144,29 @@ void EnemyManager::desideAction() {
 			continue;
 		}
 		if (enemies_[i]->isAlive() == false) continue;
+		enemies_[i]->decideAction();
+		// ƒV[ƒ“ƒvƒŒƒC‚ÌUŒ‚s“®Ò‚É“o˜^
+		if (enemies_[i]->getActState() == eActState::ATTACK) {
+			scene_play->addAttacker(enemies_[i]);
+		}
+	}
+}
 
+// “G‚Ìs“®‚ğC³‚·‚é
+void EnemyManager::modifyEnemiesAction() {
+	std::shared_ptr<ScenePlay> scene_play
+		= std::dynamic_pointer_cast<ScenePlay>(GameManager::GetInstance()->getSceneInstance());
+
+	if (!scene_play) {
+		tnl::DebugTrace("EnemyManager::desideAction() : scene_play ‚ğæ“¾‚Å‚«‚Ü‚¹‚ñ‚Å‚µ‚½");
+	}
+
+	for (int i = 0; i < enemies_.size(); i++) {
+		if (!enemies_[i]) {
+			continue;
+		}
+		if (enemies_[i]->isAlive() == false) continue;
+		enemies_[i]->resetEnemyInMapData();
 		enemies_[i]->decideAction();
 		// ƒV[ƒ“ƒvƒŒƒC‚ÉUŒ‚s“®Ò‚ğ“o˜^
 		if (enemies_[i]->getActState() == eActState::ATTACK) {

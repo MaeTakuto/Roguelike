@@ -25,6 +25,8 @@ public:
 	std::shared_ptr<EnemyBase> createClone() const override;
 	// 敵のレベルを設定する
 	void setEnemyLevel(int lv) override;
+	// 指定した目標位置にキャラクターを移動させる
+	void moveToTargetPos(const tnl::Vector3& target_pos) override;
 	// レベルが上がるか判定
 	bool canLevelUp() override;
 	// 行動を決定する。
