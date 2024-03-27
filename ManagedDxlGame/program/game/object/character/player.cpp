@@ -6,9 +6,18 @@
 #include "../../base/enemy_base.h"
 #include "../../magic/heal_magic.h"
 #include "../../magic/fire_magic.h"
+#include "../../magic/magnetism_magic.h"
 #include "../../common/animation.h"
 #include "../projectile.h"
 #include "player.h"
+
+
+namespace {
+	// 最大レベル
+	const int MAX_LEVEL = 6;
+	// 経験値テーブル
+	const int LEVEL_TABLE[MAX_LEVEL - 1] = { 12, 50, 100, 180, 280 };
+}
 
 
 Player::Player() : regenerating_mp_(1), sequence_(tnl::Sequence<Player>(this, &Player::seqIdle)), magic_chanting_effect_(nullptr), is_use_magic_(false), use_magic_index_(0),
@@ -95,6 +104,7 @@ Player::Player() : regenerating_mp_(1), sequence_(tnl::Sequence<Player>(this, &P
 
 	magic_list_.emplace_back(std::make_shared<HealMagic>());
 	magic_list_.emplace_back(std::make_shared<FireMagic>());
+	magic_list_.emplace_back(std::make_shared<MagnetismMagic>());
 
 	looking_dir_ = eDir_8::DOWN;
 	anim_dir_ = eDir_4::DOWN;
@@ -192,6 +202,22 @@ void Player::drawEffect(std::shared_ptr<Camera> camera) {
 // ====================================================
 void Player::beginAction() {
 	act_state_ = eActState::IDLE;
+}
+
+// ====================================================
+// 指定した目標位置にキャラクターを移動させる
+// ====================================================
+void Player::moveToTargetPos(const tnl::Vector3& target_pos) {
+
+	std::shared_ptr<ScenePlay> scene_play = std::dynamic_pointer_cast<ScenePlay>(GameManager::GetInstance()->getSceneInstance());
+	if (!scene_play) {
+		return;
+	}
+	next_pos_ = target_pos;
+	act_state_ = eActState::MOVE;
+	sequence_.change(&Player::seqMoveToTarget);
+	scene_play->setMapData(pos_, scene_play->getTerrainData(pos_));
+	scene_play->setMapData(next_pos_, eMapData::PLAYER);
 }
 
 // ====================================================
@@ -298,7 +324,9 @@ bool Player::tryUseMagic(int magic_index) {
 bool Player::checkMapDataFromPos(const tnl::Vector3& pos, eMapData map_data) {
 
 	std::shared_ptr<ScenePlay> scene_play = std::dynamic_pointer_cast<ScenePlay>(GameManager::GetInstance()->getSceneInstance());
-	if (!scene_play) return false;
+	if (!scene_play) {
+		return false;
+	}
 
 	return scene_play->getMapData(pos) == map_data;
 }
@@ -498,6 +526,24 @@ bool Player::seqMove(const float delta_time) {
 }
 
 // ====================================================
+// 目標に移動するシーケンス 
+// seqMove関数を修正する時間がなかったために用意した関数なので、あまり良くない実装です。
+// ====================================================
+bool Player::seqMoveToTarget(const float delta_time) {
+
+	if (abs(next_pos_.y - pos_.y) > 0.1f || abs(next_pos_.x - pos_.x) > 0.1f) {
+		pos_ += DIR_POS[std::underlying_type<eDir_8>::type(looking_dir_)] * 10.0f * delta_time;
+	}
+	else {
+		pos_ = next_pos_;
+		act_state_ = eActState::END;
+		sequence_.change(&Player::seqIdle);
+	}
+
+	return true;
+}
+
+// ====================================================
 // 攻撃シーケンス
 // ====================================================
 bool Player::seqAttack(const float delta_time) {
@@ -539,20 +585,7 @@ bool Player::seqMagicChanting(const float delta_time) {
 		return true;
 	}
 
-	tnl::Vector2i effect_draw_pos = tnl::Vector2i(static_cast<int>(pos_.x), static_cast<int>(pos_.y)) * GameManager::DRAW_CHIP_SIZE
-		+ tnl::Vector2i(DXE_WINDOW_WIDTH >> 1, DXE_WINDOW_HEIGHT >> 1);
-
-	tnl::Vector2i effect_draw_size = tnl::Vector2i(GameManager::DRAW_CHIP_SIZE, GameManager::DRAW_CHIP_SIZE);
-
-	if (magic_list_[use_magic_index_]->getMagicTarget() == eMagicTarget::OWNER) {
-		magic_list_[use_magic_index_]->startDrawEffectOnOwner(effect_draw_pos, effect_draw_size);
-	}
-	else if (magic_list_[use_magic_index_]->getMagicTarget() == eMagicTarget::OTHER) {
-		int index = std::underlying_type<eDir_8>::type(looking_dir_);
-		effect_draw_pos = tnl::Vector2i(static_cast<int>(pos_.x), static_cast<int>(pos_.y));
-		magic_list_[use_magic_index_]->startDrawEffectOnOther(effect_draw_pos, effect_draw_size, looking_dir_);
-	}
-
+	magic_list_[use_magic_index_]->startDrawEffect();
 	is_use_magic_ = true;
 	sequence_.change(&Player::seqUseMagic);
 	return true;
@@ -573,11 +606,10 @@ bool Player::seqUseMagic(const float delta_time) {
 		return true;
 	}
 
-	magic_list_[use_magic_index_]->useMagic(scene_play->getPlayer());
-	
-	is_use_magic_ = false;
 	act_state_ = eActState::END;
+	is_use_magic_ = false;
 	sequence_.change(&Player::seqIdle);
+	magic_list_[use_magic_index_]->useMagic(scene_play->getPlayer());
 	return true;
 }
 

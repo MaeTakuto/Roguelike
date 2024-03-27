@@ -153,6 +153,15 @@ void Skeleton::setEnemyLevel(int lv) {
 }
 
 // =====================================================================================
+// 指定した目標位置にキャラクターを移動させる
+// =====================================================================================
+void Skeleton::moveToTargetPos(const tnl::Vector3& target_pos) {
+	next_pos_ = target_pos;
+	act_state_ = eActState::MOVE;
+	sequence_.change(&Skeleton::seqMove);
+}
+
+// =====================================================================================
 // レベルが上がるか判定
 // =====================================================================================
 bool Skeleton::canLevelUp() {
@@ -210,9 +219,6 @@ void Skeleton::decideAction() {
 // =====================================================================================
 void Skeleton::startAttack() {
 	
-	bone_->setEnable(true);
-	bone_->setPos(pos_);
-	bone_->setTargetPos(target_pos_);
 	bone_->startToLaunchProjectile();
 	ResourceManager::getInstance()->playSound(SKELETON_ATK_SE_HDL_PATH, DX_PLAYTYPE_BACK);
 	sequence_.change(&Skeleton::seqAttack);

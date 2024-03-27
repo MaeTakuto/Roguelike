@@ -3,6 +3,7 @@
 
 class SceneBase {
 public:
+	SceneBase();
 	virtual ~SceneBase() {};
 
 	// ƒV[ƒ“‘JˆÚ‚Ìˆ—‚ªŠ®—¹‚µ‚Ä‚¢‚é‚©‚ğ•Ô‚·B

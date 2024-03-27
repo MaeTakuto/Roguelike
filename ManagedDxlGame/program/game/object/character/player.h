@@ -4,11 +4,6 @@
 class Camera;
 class Projectile;
 
-// 最大レベル
-const int MAX_LEVEL = 6;
-// 経験値テーブル
-const int LEVEL_TABLE[MAX_LEVEL - 1] = { 12, 50, 100, 180, 280 };
-
 // =====================================================================================
 // プレイヤークラス
 // =====================================================================================
@@ -42,8 +37,6 @@ private:
 	bool is_use_magic_;
 	// 使用する魔法のリスト番号
 	int use_magic_index_;
-	// 攻撃
-	//tnl::Vector3 attack_dir_ = { 0, 0, 0 };
 
 	// 選択中のセルの画像
 	int select_cell_blue_gpc_hdl_;
@@ -52,6 +45,8 @@ private:
 public:
 	// 行動を開始する
 	void beginAction() override;
+	// 指定した目標位置にキャラクターを移動させる
+	void moveToTargetPos(const tnl::Vector3& target_pos) override;
 	// レベルアップできるか判定
 	bool canLevelUp() override;
 	// 攻撃開始
@@ -72,6 +67,9 @@ private:
 	bool seqIdle(const float delta_time);
 	// 移動シーケンス
 	bool seqMove(const float delta_time);
+	// 目標に移動するシーケンス 
+	// ( seqMove関数を修正する時間がなかったために用意した関数なので、あまり良くない実装です。今後、修正予定 )
+	bool seqMoveToTarget(const float delta_time);
 	// 攻撃シーケンス
 	bool seqAttack(const float delta_time);
 	// レベルアップシーケンス

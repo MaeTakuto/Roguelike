@@ -12,26 +12,26 @@ namespace {
 	const float PROJECTILE_SPEED = 10.0f;
 }
 
-// ====================================================
+// =====================================================================================
 // コンストラクタ
-// ====================================================
+// =====================================================================================
 Projectile::Projectile() : pos_(0, 0, 0), move_dir_{0}, hit_character_(nullptr), target_pos_(0, 0, 0), projectile_gpc_hdl_(0), is_enable_(false),
-	max_cell_reach_(0), cell_count_(0)
+	is_collision_(false), max_cell_reach_(0), cell_count_(0)
 {
 
 }
 
-// ====================================================
+// =====================================================================================
 // デストラクタ
-// ====================================================
+// =====================================================================================
 Projectile::~Projectile() {
 
 	tnl::DebugTrace("Projectileのデストラクタが実行されました。\n");
 }
 
-// ====================================================
+// =====================================================================================
 // アップデート
-// ====================================================
+// =====================================================================================
 void Projectile::update(float delta_time) {
 
 	if (!is_enable_) {
@@ -45,13 +45,14 @@ void Projectile::update(float delta_time) {
 
 	if ( (target_pos_ - pos_).length() < 0.1f ) {
 		is_enable_ = false;
+		pos_ = target_pos_;
 	}
 
 }
 
-// ====================================================
+// =====================================================================================
 // 描画
-// ====================================================
+// =====================================================================================
 void Projectile::draw(const std::shared_ptr<Camera> camera) {
 
 	if (!is_enable_) {
@@ -66,7 +67,11 @@ void Projectile::draw(const std::shared_ptr<Camera> camera) {
 		projectile_gpc_hdl_, true);
 }
 
+// =====================================================================================
+// 
+// =====================================================================================
 void Projectile::setupToLaunchProjectile(const tnl::Vector3& start_pos, eDir_8 move_dir, int max_cell_reach) {
+	is_collision_ = false;
 	pos_ = start_pos;
 	move_dir_ = move_dir;
 	hit_character_ = nullptr;
@@ -75,10 +80,16 @@ void Projectile::setupToLaunchProjectile(const tnl::Vector3& start_pos, eDir_8 m
 	checkCellInMoveDir(pos_ + DIR_POS[std::underlying_type<eDir_8>::type(move_dir_)]);
 }
 
+// =====================================================================================
+// 
+// =====================================================================================
 void Projectile::startToLaunchProjectile() {
 	is_enable_ = true;
 }
 
+// =====================================================================================
+// 
+// =====================================================================================
 void Projectile::checkCellInMoveDir(const tnl::Vector3& pos) {
 
 	std::shared_ptr<ScenePlay> scene_play = std::dynamic_pointer_cast<ScenePlay>(GameManager::GetInstance()->getSceneInstance());
@@ -94,6 +105,7 @@ void Projectile::checkCellInMoveDir(const tnl::Vector3& pos) {
 	++cell_count_;
 
 	if (scene_play->getMapData(pos) == eMapData::WALL) {
+		is_collision_ = true;
 		target_pos_ = pos - DIR_POS[ std::underlying_type<eDir_8>::type( move_dir_ ) ];
 		return;
 	}
@@ -104,10 +116,12 @@ void Projectile::checkCellInMoveDir(const tnl::Vector3& pos) {
 		if (!enemy) {
 			return;
 		}
+		is_collision_ = true;
 		hit_character_ = std::dynamic_pointer_cast<Character>(enemy);
 		return;
 	}
 	if (scene_play->getMapData(pos) == eMapData::PLAYER) {
+		is_collision_ = true;
 		target_pos_ = pos;
 		hit_character_ = scene_play->getPlayer();
 		return;

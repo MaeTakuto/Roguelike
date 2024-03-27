@@ -20,8 +20,9 @@ protected:
 	std::vector<int> magic_effect_gpc_hdl_;
 	// 魔法名
 	std::string magic_name_;
+	// 魔法の効果対象
 	eMagicTarget magic_target_;
-
+	// エフェクトの表示フラグ
 	bool is_draw_effect_;
 	// 消費MP
 	int consumed_mp_;
@@ -39,9 +40,8 @@ public:
 	inline const std::vector<std::string>& getMagicExplantion() const { return magic_explantion_; }
 
 	// 使う魔法の準備をする
-	virtual void setupToUseMagic(const std::shared_ptr<Character> user) = 0;
-	virtual void startDrawEffectOnOwner(const tnl::Vector2i& pos, const tnl::Vector2i& size) {};
-	virtual void startDrawEffectOnOther(const tnl::Vector2i& pos, const tnl::Vector2i& size, eDir_8 other_dir) {};
+	virtual void setupToUseMagic(const std::shared_ptr<Character> owner) = 0;
+	virtual void startDrawEffect() = 0;
 	virtual void useMagic(std::shared_ptr<Character> owner) = 0;
 
 };

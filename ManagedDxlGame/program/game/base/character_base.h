@@ -113,6 +113,8 @@ public:
 
 	// ================= 仮想関数 =================
 
+	// 指定した目標位置にキャラクターを移動させる
+	virtual void moveToTargetPos(const tnl::Vector3& target_pos) = 0;
 	// レベルが上がるが判定
 	virtual bool canLevelUp() = 0;
 	// 行動を開始させる

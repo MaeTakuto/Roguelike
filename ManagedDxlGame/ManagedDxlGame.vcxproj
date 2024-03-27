@@ -196,6 +196,7 @@
     <ClCompile Include="program\game\gm_main.cpp" />
     <ClCompile Include="program\game\magic\fire_magic.cpp" />
     <ClCompile Include="program\game\magic\heal_magic.cpp" />
+    <ClCompile Include="program\game\magic\magnetism.cpp" />
     <ClCompile Include="program\game\manager\enemy_manager.cpp" />
     <ClCompile Include="program\game\manager\gm_manager.cpp" />
     <ClCompile Include="program\game\manager\resource_manager.cpp" />
@@ -287,6 +288,7 @@
     <ClInclude Include="program\game\gm_main.h" />
     <ClInclude Include="program\game\magic\fire_magic.h" />
     <ClInclude Include="program\game\magic\heal_magic.h" />
+    <ClInclude Include="program\game\magic\magnetism_magic.h" />
     <ClInclude Include="program\game\manager\enemy_manager.h" />
     <ClInclude Include="program\game\manager\gm_manager.h" />
     <ClInclude Include="program\game\manager\resource_manager.h" />

@@ -28,6 +28,8 @@ private:
 
 	// 有効か判定
 	bool is_enable_;
+	// 衝突したか判定
+	bool is_collision_;
 	// 投擲物の画像
 	int projectile_gpc_hdl_;
 	// 発射体が届く最大セル数
@@ -43,16 +45,15 @@ public:
 	// -------------- ゲッター ------------------
 	// 有効になっているか判定
 	inline bool isEnable() { return is_enable_; }
+	// 投擲物がオブジェクトに衝突したか判定を返す
+	inline bool isCollision() { return is_collision_; }
 	// 発射体に当たったキャラクターを取得、いなければ "nullptr" を返す。
-	inline std::shared_ptr<Character> getHitCharacter() { return hit_character_; }
+	inline const std::shared_ptr<Character> getHitCharacter() { return hit_character_; }
+	// 投擲物の位置を返す
+	inline const tnl::Vector3& getPos() { return pos_; }
 
 	// -------------- セッター ------------------
-	// 投擲物の位置をセット
-	inline void setPos(const tnl::Vector3& pos) { pos_ = pos; }
-	// 目標の位置
-	inline void setTargetPos(const tnl::Vector3& target_pos) { target_pos_ = target_pos; }
 	// 投擲物の画像をセット
 	inline void setProjectileGpcHdl(int gpc_hdl) { projectile_gpc_hdl_ = gpc_hdl; }
-	// 有効にするか設定
-	inline void setEnable(bool is_enable) { is_enable_ = is_enable; }
+	
 };

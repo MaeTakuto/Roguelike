@@ -1,3 +1,4 @@
+#include <queue>
 #include "../../dxlib_ext/dxlib_ext.h"
 #include "../manager/gm_manager.h"
 #include "../manager/resource_manager.h"
@@ -185,6 +186,18 @@ void ScenePlay::charaUpdate(float delta_time) {
 	player_->update(delta_time);
 	enemy_mgr_->update(delta_time);
 }
+
+// ====================================================
+// 敵の行動内容を修正する
+// ====================================================
+void ScenePlay::modifyEnemyAction() {
+
+	while (!attackers_.empty()) {
+		attackers_.pop();
+	}
+	enemy_mgr_->modifyEnemiesAction();
+}
+
 
 // ====================================================
 // 指定した位置の敵を取得する。

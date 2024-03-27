@@ -63,6 +63,8 @@ public:
 	virtual std::shared_ptr<EnemyBase> createClone() const = 0;
 	// 敵のレベルを設定する
 	virtual void setEnemyLevel(int lv) = 0;
+	// 指定した目標位置にキャラクターを移動させる
+	virtual void moveToTargetPos(const tnl::Vector3& target_pos) = 0;
 	// レベルが上がるが判定
 	virtual bool canLevelUp() = 0;
 	// 行動を決定する。
@@ -75,6 +77,10 @@ public:
 	virtual void startLevelUp() = 0;
 	// 敵をデスさせる
 	virtual void death() = 0;
+
+	// ============= プロトタイプ宣言 =============
+	// 現在のダンジョン上の敵の位置を再設定
+	void resetEnemyInMapData();
 
 protected:
 	// ================= 仮想関数 =================
@@ -112,7 +118,7 @@ protected:
 	// 部屋での行動
 	virtual void actionInRoom() {}
 	// ============= プロトタイプ宣言 =============
-
+	
 	// 周囲の上下左右のマスから、指定した "eMapData" が存在する方向を返す
 	std::vector<eDir_4> getMapDataDir_4(eMapData map_data);
 

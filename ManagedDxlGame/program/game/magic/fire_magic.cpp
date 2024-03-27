@@ -64,18 +64,19 @@ void FireMagic::draw(const std::shared_ptr<Camera> camera) {
 }
 
 // =====================================================================================
-// エフェクトを表示する
+// 魔法発動の準備する
 // =====================================================================================
-void FireMagic::setupToUseMagic(const std::shared_ptr<Character> user) {
+void FireMagic::setupToUseMagic(const std::shared_ptr<Character> owner) {
 
-	fire_ball_->setProjectileGpcHdl(fire_ball_gpc_hdl_[std::underlying_type<eDir_8>::type(user->getLookingDir())]);
-	fire_ball_->setupToLaunchProjectile(user->getPos(), user->getLookingDir(), 10);
+	// 火の玉の画像と発射位置を設定する
+	fire_ball_->setProjectileGpcHdl(fire_ball_gpc_hdl_[std::underlying_type<eDir_8>::type(owner->getLookingDir())]);
+	fire_ball_->setupToLaunchProjectile(owner->getPos(), owner->getLookingDir(), 10);
 }
 
 // =====================================================================================
-// エフェクトを表示する
+// 火の玉エフェクトを発射する
 // =====================================================================================
-void FireMagic::startDrawEffectOnOther(const tnl::Vector2i& pos, const tnl::Vector2i& size, eDir_8 other_dir) {
+void FireMagic::startDrawEffect() {
 
 	is_draw_effect_ = true;
 	fire_ball_->startToLaunchProjectile();

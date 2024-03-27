@@ -92,4 +92,5 @@ enum class eMagicTarget {
 enum class eMagicName {
 	HEAL = 0,
 	FIRE,
+	MAGNETISM,
 };
