@@ -187,8 +187,10 @@ private:
 	void checkToUseMagic();
 	// 次のフロアに変える処理を行う
 	void changeProcessNextFloor();
-	// ゲームオーバー処理を実行
+	// ゲームオーバー処理を実行する
 	void executeGameOverProcess();
+	// ゲームクリアの処理を実行する
+	void executeGameClearProcess();
 	// プレイヤーがいるセルを確認する
 	bool checkPlayerCell();
 

@@ -215,7 +215,7 @@ void Player::moveToTargetPos(const tnl::Vector3& target_pos) {
 	}
 	next_pos_ = target_pos;
 	act_state_ = eActState::MOVE;
-	sequence_.change(&Player::seqMoveToTarget);
+	sequence_.change(&Player::seqMove);
 	scene_play->setMapData(pos_, scene_play->getTerrainData(pos_));
 	scene_play->setMapData(next_pos_, eMapData::PLAYER);
 }
@@ -336,14 +336,27 @@ bool Player::checkMapDataFromPos(const tnl::Vector3& pos, eMapData map_data) {
 // ====================================================
 void Player::setNextPosInDir(eDir_8 dir) {
 
+	std::shared_ptr<ScenePlay> scene_play = std::dynamic_pointer_cast<ScenePlay>(GameManager::GetInstance()->getSceneInstance());
+	if (!scene_play) {
+		return;
+	}
+
 	int index = static_cast<int>(dir);
 	if (index < 0 || index >= static_cast<int>(eDir_8::MAX)) {
 		return;
 	}
 
+	next_pos_ = pos_ + DIR_POS[index];
 	anim_dir_ = ANIM_DIR[index];
 	looking_dir_ = dir;
-	next_pos_ = pos_ + DIR_POS[index];
+	if (scene_play->getMapData(next_pos_) == eMapData::ENEMY || scene_play->getMapData(next_pos_) == eMapData::WALL) {
+		next_pos_ = pos_;
+		return;
+	}
+
+	act_state_ = eActState::MOVE;
+	sequence_.change(&Player::seqMove);
+	status_.recoveryMP(regenerating_mp_);
 }
 
 // ====================================================
@@ -426,32 +439,24 @@ bool Player::seqIdle(const float delta_time) {
 		if (tnl::Input::IsKeyDown(eKeys::KB_W) && tnl::Input::IsKeyDown(eKeys::KB_A)) {
 			if (canActionToCell(eDir_8::UP_LEFT)) {
 				setNextPosInDir(eDir_8::UP_LEFT);
-				act_state_ = eActState::MOVE;
-				sequence_.change(&Player::seqMove);
 				return true;
 			}
 		}
 		else if (tnl::Input::IsKeyDown(eKeys::KB_W) && tnl::Input::IsKeyDown(eKeys::KB_D)) {
 			if (canActionToCell(eDir_8::UP_RIGHT)) {
 				setNextPosInDir(eDir_8::UP_RIGHT);
-				act_state_ = eActState::MOVE;
-				sequence_.change(&Player::seqMove);
 				return true;
 			}
 		}
 		else if (tnl::Input::IsKeyDown(eKeys::KB_S) && tnl::Input::IsKeyDown(eKeys::KB_A)) {
 			if (canActionToCell(eDir_8::DOWN_LEFT)) {
 				setNextPosInDir(eDir_8::DOWN_LEFT);
-				act_state_ = eActState::MOVE;
-				sequence_.change(&Player::seqMove);
 				return true;
 			}
 		}
 		else if (tnl::Input::IsKeyDown(eKeys::KB_S) && tnl::Input::IsKeyDown(eKeys::KB_D)) {
 			if (canActionToCell(eDir_8::DOWN_RIGHT)) {
 				setNextPosInDir(eDir_8::DOWN_RIGHT);
-				act_state_ = eActState::MOVE;
-				sequence_.change(&Player::seqMove);
 				return true;
 			}
 		}
@@ -460,26 +465,18 @@ bool Player::seqIdle(const float delta_time) {
 	else {
 		if (tnl::Input::IsKeyDown(eKeys::KB_W)) {
 			setNextPosInDir(eDir_8::UP);
-			act_state_ = eActState::MOVE;
-			sequence_.change(&Player::seqMove);
 			return true;
 		}
 		if (tnl::Input::IsKeyDown(eKeys::KB_S)) {
 			setNextPosInDir(eDir_8::DOWN);
-			act_state_ = eActState::MOVE;
-			sequence_.change(&Player::seqMove);
 			return true;
 		}
 		if (tnl::Input::IsKeyDown(eKeys::KB_A)) {
 			setNextPosInDir(eDir_8::LEFT);
-			act_state_ = eActState::MOVE;
-			sequence_.change(&Player::seqMove);
 			return true;
 		}
 		if (tnl::Input::IsKeyDown(eKeys::KB_D)) {
 			setNextPosInDir(eDir_8::RIGHT);
-			act_state_ = eActState::MOVE;
-			sequence_.change(&Player::seqMove);
 			return true;
 		}
 	}
@@ -488,6 +485,7 @@ bool Player::seqIdle(const float delta_time) {
 	if (tnl::Input::IsKeyDown(eKeys::KB_Z)) {
 		act_state_ = eActState::MOVE;
 		sequence_.change(&Player::seqMove);
+		status_.recoveryMP(regenerating_mp_);
 		return true;
 	}
 
@@ -510,29 +508,7 @@ bool Player::seqIdle(const float delta_time) {
 bool Player::seqMove(const float delta_time) {
 
 	if (abs(next_pos_.y - pos_.y) > 0.1f || abs(next_pos_.x - pos_.x) > 0.1f) {
-		pos_ += (next_pos_ - pos_ ) * MOVE_SPEED;
-	}
-	else {
-		status_.recoveryMP(regenerating_mp_);
-		pos_ = next_pos_;
-		act_state_ = eActState::END;
-		sequence_.change(&Player::seqIdle);
-	}
-	//if (abs(next_pos_.x - pos_.x) > 0.1f) {
-	//	pos_.x += MOVE_SPEED;
-	//}
-
-	return true;
-}
-
-// ====================================================
-// 目標に移動するシーケンス 
-// seqMove関数を修正する時間がなかったために用意した関数なので、あまり良くない実装です。
-// ====================================================
-bool Player::seqMoveToTarget(const float delta_time) {
-
-	if (abs(next_pos_.y - pos_.y) > 0.1f || abs(next_pos_.x - pos_.x) > 0.1f) {
-		pos_ += DIR_POS[std::underlying_type<eDir_8>::type(looking_dir_)] * 10.0f * delta_time;
+		pos_ += DIR_POS[std::underlying_type<eDir_8>::type(looking_dir_)] * MOVE_SPEED * delta_time;
 	}
 	else {
 		pos_ = next_pos_;
@@ -616,12 +592,8 @@ bool Player::seqUseMagic(const float delta_time) {
 // ====================================================
 // レベルアップシーケンス
 // レベルアップしたときのエフェクトを表示する。
-// 現在は、用意していないので一定時間、待機。
-// 今後実装、予定です。
 // ====================================================
 bool Player::seqLevellUp(const float delta_time) {
-
-	/* ToDo:レベルアップしたときのエフェクトを今後出そうと思います。*/
 
 	if (sequence_.getProgressTime() > SEQUENCE_WAIT_TIME) {
 		act_state_ = eActState::END;

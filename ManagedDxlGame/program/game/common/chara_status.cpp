@@ -45,6 +45,7 @@ void CharaStatus::recoveryMP(int amount) {
 	if (max_mp_ <= mp_) {
 		return;
 	}
+	tnl::DebugTrace("mp = %d, recovery = %d\n", mp_, amount);
 
 	mp_ += amount;
 	if (mp_ >= max_mp_) {

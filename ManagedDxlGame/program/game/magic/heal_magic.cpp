@@ -90,7 +90,7 @@ void HealMagic::useMagic(std::shared_ptr<Character> owner) {
 		return;
 	}
 
-	heal_amount_ = owner->getStatus().getMaxHP() * 0.4f;
+	heal_amount_ = owner->getStatus().getMaxHP() * 0.6f;
 	owner->getStatus().healHP(heal_amount_);
 	scene_play->setMessage(owner->getName() + "‚Í" + std::to_string(heal_amount_) + "‰ñ•œ‚µ‚½");
 

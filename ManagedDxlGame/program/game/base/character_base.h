@@ -29,7 +29,7 @@ protected:
 	const float SEQUENCE_WAIT_TIME = 0.75f;
 
 	// 移動させるスピード
-	const float MOVE_SPEED = 0.25f;
+	const float MOVE_SPEED = 7.5f;
 
 	// 各方向の表示画像の方向
 	const eDir_4 ANIM_DIR[static_cast<int>(eDir_8::MAX)] 
