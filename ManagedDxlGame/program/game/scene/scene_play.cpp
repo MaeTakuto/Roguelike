@@ -26,6 +26,9 @@ namespace {
 	// タイトルのフォントサイズ
 	const int DUNGEON_NAME_FONT_SIZE = 60;
 
+	// クリア階数
+	const int CLEAR_FLOOR = 5;
+
 	// メッセージの表示時間
 	const float MESSAGE_DRAW_TIME = 3.0f;
 }
@@ -253,9 +256,16 @@ void ScenePlay::applyDamage(std::shared_ptr<Character> attacker, std::shared_ptr
 // 次のフロアに変える処理
 // ====================================================
 void ScenePlay::changeProcessNextFloor() {
+
+	ui_mgr_->executeStairSelectEnd();
+
+	// 階数がクリア階数だった場合
+	if ( dungeon_floor_ >= CLEAR_FLOOR ) {
+		executeGameClearProcess();
+		return;
+	}
 	main_seq_.change(&ScenePlay::seqFadeOut);
 	dungeon_sequence_.change(&ScenePlay::seqPlayerAct);
-	ui_mgr_->executeStairSelectEnd();
 	++dungeon_floor_;
 	is_created_dungeon_ = false;
 }
@@ -300,6 +310,16 @@ void ScenePlay::checkToUseMagic() {
 void ScenePlay::executeGameOverProcess() {
 	ui_mgr_->clearMessage();
 	std::string message = player_->getName() + "はやられてしまった";
+	ui_mgr_->setMessage(message);
+	dungeon_sequence_.immediatelyChange(&ScenePlay::seqGameOver);
+}
+
+// ====================================================
+// ゲームクリアの処理を実行する
+// ====================================================
+void ScenePlay::executeGameClearProcess() {
+	ui_mgr_->clearMessage();
+	std::string message = "ダンジョンを制覇しました！";
 	ui_mgr_->setMessage(message);
 	dungeon_sequence_.immediatelyChange(&ScenePlay::seqGameOver);
 }
@@ -511,18 +531,10 @@ bool ScenePlay::seqPlayerAct(const float delta_time) {
 
 	if (player_->getActState() != eActState::IDLE && player_->getActState() != eActState::END) {
 		
-		if ( getMapData( player_->getNextPos() ) ==  eMapData::WALL )  { 
-			player_->collisionProcess(); 
-		}
-		else if (getMapData(player_->getNextPos()) == eMapData::ENEMY) { 
-			player_->collisionProcess();
-		}
-		else {
-			dungeon_sequence_.change(&ScenePlay::seqEnemyAct);
+		dungeon_sequence_.change(&ScenePlay::seqEnemyAct);
 
-			setMapData(player_->getPos(), getTerrainData(player_->getPos()));
-			setMapData(player_->getNextPos(), eMapData::PLAYER);
-		}
+		setMapData(player_->getPos(), getTerrainData(player_->getPos()));
+		setMapData(player_->getNextPos(), eMapData::PLAYER);
 		return true;
 	}
 

@@ -25,7 +25,7 @@ public:
 	}
 
 private:
-	// 毎ターン回復させる HP
+	// 毎ターン回復させる MP
 	int regenerating_mp_;
 
 	// プレイヤーの行動シーケンス
@@ -67,9 +67,6 @@ private:
 	bool seqIdle(const float delta_time);
 	// 移動シーケンス
 	bool seqMove(const float delta_time);
-	// 目標に移動するシーケンス 
-	// ( seqMove関数を修正する時間がなかったために用意した関数なので、あまり良くない実装です。今後、修正予定 )
-	bool seqMoveToTarget(const float delta_time);
 	// 攻撃シーケンス
 	bool seqAttack(const float delta_time);
 	// レベルアップシーケンス

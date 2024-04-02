@@ -98,7 +98,7 @@ void MagnetismMagic::startDrawEffect() {
 
 	is_draw_effect_ = true;
 	magic_bullet_->startToLaunchProjectile();
-	ResourceManager::getInstance()->playSound("sound/springin/fire.mp3", DX_PLAYTYPE_BACK);
+	ResourceManager::getInstance()->playSound("sound/springin/magnetism.mp3", DX_PLAYTYPE_BACK);
 }
 
 // =====================================================================================

@@ -233,7 +233,7 @@ bool Pumpkin::seqIdle(const float delta_time) {
 bool Pumpkin::seqMove(const float delta_time) {
 
 	if (abs(next_pos_.y - pos_.y) > 0.1f || abs(next_pos_.x - pos_.x) > 0.1f) {
-		pos_ += (next_pos_ - pos_) * MOVE_SPEED;
+		pos_ += DIR_POS[std::underlying_type<eDir_8>::type(looking_dir_)] * MOVE_SPEED * delta_time;
 	}
 	else {
 		pos_ = next_pos_;
@@ -356,6 +356,7 @@ void Pumpkin::decideNextPosFromCellCost() {
 	if (index != -1) {
 		next_pos_ = tnl::Vector3(cells_[index].pos_.x, cells_[index].pos_.y, 0);
 		anim_dir_ = ANIM_DIR[index];
+		looking_dir_ = static_cast<eDir_8>(index);
 	}
 	else {
 		next_pos_ = pos_;
@@ -439,13 +440,17 @@ void Pumpkin::actionInCorridor() {
 	}
 	// ˆÚ“®‚Å‚«‚é•ûŒü‚ª 1‚Â‚Ìê‡
 	else if (directions.size() == 1) {
-		next_pos_ = pos_ + DIR_POS[std::underlying_type<eDir_4>::type(directions[0])];
+		int dir_num = std::underlying_type<eDir_4>::type(directions[0]);
+		next_pos_ = pos_ + DIR_POS[dir_num];
+		looking_dir_ = static_cast<eDir_8>(dir_num);
 		anim_dir_ = directions[0];
 	}
 	// ˆÚ“®‚Å‚«‚é•ûŒü‚ª•¡”‚ ‚éê‡Aƒ‰ƒ“ƒ_ƒ€‚É‘I‚Ô
 	else {
 		int index = rand() % directions.size();
-		next_pos_ = pos_ + DIR_POS[std::underlying_type<eDir_4>::type(directions[index])];
+		int dir_num = std::underlying_type<eDir_4>::type(directions[index]);
+		next_pos_ = pos_ + DIR_POS[dir_num];
+		looking_dir_ = static_cast<eDir_8>(dir_num);
 		anim_dir_ = directions[index];
 	}
 
