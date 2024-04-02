@@ -11,7 +11,7 @@ public:
 	~SelectWindow();
 
 	void update(float delta_time);
-	void draw(const std::shared_ptr<Camera> camera);
+	void draw();
 
 private:
 	// 選択ウィンドウの位置

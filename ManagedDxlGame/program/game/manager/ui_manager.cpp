@@ -2,7 +2,7 @@
 #include "../common/enum.h"
 #include "../ui/message_window.h"
 #include "../ui/select_window.h"
-#include "../ui/hp_bar.h"
+#include "../ui/status_bar.h"
 #include "../common/chara_status.h"
 #include "../base/character_base.h"
 #include "../base/magic_base.h"
@@ -175,25 +175,25 @@ void UI_Manager::update(float delta_time) {
 void UI_Manager::draw(const std::shared_ptr<Camera> camera) {
 
 	if (message_window_->isEnable()) {
-		message_window_->draw(camera);
+		message_window_->draw();
 	}
 	if (two_select_window_->isDrawing()) {
-		two_select_window_->draw(camera);
+		two_select_window_->draw();
 	}
 	if (main_menu_select_window_->isDrawing()) {
-		main_menu_select_window_->draw(camera);
+		main_menu_select_window_->draw();
 	}
 	if (magic_select_window_->isDrawing()) {
-		magic_select_window_->draw(camera);
+		magic_select_window_->draw();
 	}
 	if (magic_explation_window_->isEnable()) {
-		magic_explation_window_->draw(camera);
+		magic_explation_window_->draw();
 	}
 	if (view_status_window_->isEnable()) {
-		view_status_window_->draw(camera);
+		view_status_window_->draw();
 	}
-	hp_bar_->draw(camera);
-	mp_bar_->draw(camera);
+	hp_bar_->draw();
+	mp_bar_->draw();
 	SetFontSize(FLOOR_STR_FONT_SIZE);
 	DrawStringEx(FLOOR_STR_POS.x, FLOOR_STR_POS.y, -1, "%dF", floor_);
 }

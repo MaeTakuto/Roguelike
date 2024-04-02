@@ -28,7 +28,7 @@ Player::Player() : regenerating_mp_(1), sequence_(tnl::Sequence<Player>(this, &P
 	auto rm_instance = ResourceManager::getInstance();
 
 	// ------------------- プレイヤー画像を設定 --------------------------------------------------------------------
-	CsvData& gpc_hdl_data = rm_instance->loadCsvData("csv/player_gpc_data.csv");
+	CsvData& gpc_hdl_data = rm_instance->loadCsvData("csv/player/player_gpc_data.csv");
 
 	chara_gpc_hdl_.resize(gpc_hdl_data[GameManager::CSV_CELL_ROW_START].size() - GameManager::CSV_CELL_ROW_START);
 
@@ -90,7 +90,7 @@ Player::Player() : regenerating_mp_(1), sequence_(tnl::Sequence<Player>(this, &P
 	atk_effect_->setFrameChangeInterval(0.025f);
 
 	// ------------------- ステータスセット -----------------------------------------------------------------------
-	CsvData& status_data = rm_instance->loadCsvData("csv/player_status_data.csv");
+	CsvData& status_data = rm_instance->loadCsvData("csv/player/player_status_data.csv");
 
 	name_ = status_data[GameManager::CSV_CELL_ROW_START][1].getString();
 	status_.setStatus(

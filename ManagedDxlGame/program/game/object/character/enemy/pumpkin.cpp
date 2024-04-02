@@ -16,7 +16,7 @@ Pumpkin::Pumpkin() {
 	// リソースマネージャーのインスタンスを取得
 	auto rm_instance = ResourceManager::getInstance();
 
-	CsvData& gpc_hdl_data = rm_instance->loadCsvData("csv/enemy_gpc_data.csv");
+	CsvData& gpc_hdl_data = rm_instance->loadCsvData("csv/enemy_data/enemy_gpc_data.csv");
 
 	chara_gpc_hdl_.resize(static_cast<int>(eDir_4::MAX));
 

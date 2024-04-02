@@ -44,7 +44,7 @@ void MessageWindow::update(float delta_time) {
 // =====================================================================================
 // •`‰æ
 // =====================================================================================
-void MessageWindow::draw(std::shared_ptr<Camera> canmera) {
+void MessageWindow::draw() {
 
 	SetDrawBlendMode(DX_BLENDMODE_ALPHA, 192);
 	DrawBox(window_pos_.x, window_pos_.y, window_pos_.x + window_size_.x, window_pos_.y + window_size_.y, GetColor(0, 0, 128), true);
