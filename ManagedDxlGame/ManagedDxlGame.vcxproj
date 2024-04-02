@@ -206,9 +206,10 @@
     <ClCompile Include="program\game\object\character\enemy\skeleton.cpp" />
     <ClCompile Include="program\game\object\character\player.cpp" />
     <ClCompile Include="program\game\object\projectile.cpp" />
+    <ClCompile Include="program\game\scene\scene_game_clear.cpp" />
     <ClCompile Include="program\game\scene\scene_play.cpp" />
     <ClCompile Include="program\game\scene\scene_title.cpp" />
-    <ClCompile Include="program\game\ui\hp_bar.cpp" />
+    <ClCompile Include="program\game\ui\status_bar.cpp" />
     <ClCompile Include="program\game\ui\message_window.cpp" />
     <ClCompile Include="program\game\ui\select_window.cpp" />
     <ClCompile Include="program\library\json11.cpp" />
@@ -298,9 +299,10 @@
     <ClInclude Include="program\game\object\character\enemy\skeleton.h" />
     <ClInclude Include="program\game\object\character\player.h" />
     <ClInclude Include="program\game\object\projectile.h" />
+    <ClInclude Include="program\game\scene\scene_game_clear.h" />
     <ClInclude Include="program\game\scene\scene_play.h" />
     <ClInclude Include="program\game\scene\scene_title.h" />
-    <ClInclude Include="program\game\ui\hp_bar.h" />
+    <ClInclude Include="program\game\ui\status_bar.h" />
     <ClInclude Include="program\game\ui\message_window.h" />
     <ClInclude Include="program\game\ui\select_window.h" />
     <ClInclude Include="program\library\json11.hpp" />

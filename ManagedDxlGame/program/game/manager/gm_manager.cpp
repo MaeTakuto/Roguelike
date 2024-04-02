@@ -78,9 +78,6 @@ bool GameManager::seqWait(const float delta_time) {
 
 	if (sequence_.getProgressTime() <= fade_time_wait_) return true;
 
-	// 現在のシーンクラスの遷移処理が終わっていない時は、ここまで
-	if (now_scene_->isTransitionProcess() == false) return true;
-
 	now_scene_ = nullptr;
 	now_scene_ = next_scene_;
 

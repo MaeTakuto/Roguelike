@@ -263,7 +263,7 @@
     <ClCompile Include="program\game\ui\message_window.cpp">
       <Filter>program\[003] game\ui</Filter>
     </ClCompile>
-    <ClCompile Include="program\game\ui\hp_bar.cpp">
+    <ClCompile Include="program\game\ui\status_bar.cpp">
       <Filter>program\[003] game\ui</Filter>
     </ClCompile>
     <ClCompile Include="program\game\ui\select_window.cpp">
@@ -304,6 +304,9 @@
     </ClCompile>
     <ClCompile Include="program\game\magic\magnetism.cpp">
       <Filter>program\[003] game\magic</Filter>
+    </ClCompile>
+    <ClCompile Include="program\game\scene\scene_game_clear.cpp">
+      <Filter>program\[003] game\scene</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -551,7 +554,7 @@
     <ClInclude Include="program\game\ui\message_window.h">
       <Filter>program\[003] game\ui</Filter>
     </ClInclude>
-    <ClInclude Include="program\game\ui\hp_bar.h">
+    <ClInclude Include="program\game\ui\status_bar.h">
       <Filter>program\[003] game\ui</Filter>
     </ClInclude>
     <ClInclude Include="program\game\ui\select_window.h">
@@ -589,6 +592,9 @@
     </ClInclude>
     <ClInclude Include="program\game\magic\magnetism_magic.h">
       <Filter>program\[003] game\magic</Filter>
+    </ClInclude>
+    <ClInclude Include="program\game\scene\scene_game_clear.h">
+      <Filter>program\[003] game\scene</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

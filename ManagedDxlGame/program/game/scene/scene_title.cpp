@@ -22,7 +22,6 @@ SceneTitle::SceneTitle() : sequence_(tnl::Sequence<SceneTitle>(this, &SceneTitle
 
 	tnl::DebugTrace("SceneTitleのコンストラクタが実行されました\n");
 	SetBackgroundColor(32, 32, 32);
-	is_transition_process_ = false;
 	back_ground_gpc_hdl_ = ResourceManager::getInstance()->loadGraph("graphics/title_background.jpg");
 	sunlight_gpc_hdl_ = ResourceManager::getInstance()->loadGraph("graphics/sunlight.png");
 	title_bgm_hdl_ = ResourceManager::getInstance()->loadSound(title_bgm_hdl_path_);
@@ -83,7 +82,6 @@ bool SceneTitle::seqRun(const float delta_time) {
 	}
 
 	if (tnl::Input::IsKeyDownTrigger(eKeys::KB_RETURN)) {
-		is_transition_process_ = true;
 		GameManager::GetInstance()->changeScene(std::make_shared<ScenePlay>());
 	}
 

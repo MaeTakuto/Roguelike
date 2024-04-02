@@ -17,8 +17,6 @@ public:
 	ScenePlay();
 	~ScenePlay();
 
-	inline bool isTransitionProcess() override { return is_transition_process_; }
-
 	void update(float delta_time) override;
 	void draw() override;
 
@@ -34,15 +32,15 @@ private:
 
 	// ---------------- シーンプレイ内で使用する各クラス -------------------
 	// カメラクラス
-	std::shared_ptr<Camera> camera_ = nullptr;
+	std::shared_ptr<Camera> camera_;
 	// プレイヤー
-	std::shared_ptr<Player> player_ = nullptr;
+	std::shared_ptr<Player> player_;
 	// ダンジョンの生成処理を行うクラス
-	std::shared_ptr<DungeonManager> dungeon_mgr_ = nullptr;
+	std::shared_ptr<DungeonManager> dungeon_mgr_;
 	// ダンジョンに生成される敵の生成、行動制御などを管理するクラス
-	std::shared_ptr<EnemyManager> enemy_mgr_ = nullptr;
+	std::shared_ptr<EnemyManager> enemy_mgr_ ;
 	// シーンプレイの表示されるUIの管理をするクラス
-	std::shared_ptr<UI_Manager> ui_mgr_ = nullptr;
+	std::shared_ptr<UI_Manager> ui_mgr_;
 
 	// -------------------------- 戦闘関連 ---------------------------------
 	// 攻撃するキャラクター
@@ -60,23 +58,25 @@ private:
 	// 地形データ
 	std::vector< std::vector<Cell> > field_;
 	// 現在の階数
-	int dungeon_floor_ = 1;
+	int dungeon_floor_;
 	// マップチップのCSVデータ
 	std::vector< std::vector<tnl::CsvCell> > gpc_hdl_data_;
 	// マップチップの画像格納
 	std::vector<int> mapchip_gpc_hdl_;
 	// ダンジョンを生成したか
-	bool is_created_dungeon_ = false;
+	bool is_created_dungeon_;
 	// ダンジョンを表示しているか
-	bool is_drawing_dng_title_ = true;
+	bool is_drawing_dng_title_;
+	// ゲームクリアか判定
+	bool is_game_clear_;
 
 	// --------------------------- フェード演出関連 -------------------------
 	// フェード演出の画像
-	int fade_gpc_hdl_ = 0;
+	int fade_gpc_hdl_;
 	// 透明度
-	int alpha_ = 0;
+	int alpha_;
 	// フェード演出時間
-	float fade_time_ = 0.5f;
+	float fade_time_;
 
 	// --------------------------- BGM, SE関連 ------------------------------
 	// ダンジョンのBGMパス

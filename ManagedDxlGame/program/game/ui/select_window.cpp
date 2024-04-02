@@ -46,7 +46,7 @@ void SelectWindow::update(float delta_time) {
 // =====================================================================================
 // •`‰æ
 // =====================================================================================
-void SelectWindow::draw(const std::shared_ptr<Camera> camera) {
+void SelectWindow::draw() {
 
 	if (!is_drawing_) {
 		return;

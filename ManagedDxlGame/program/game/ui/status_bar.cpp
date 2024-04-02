@@ -1,6 +1,6 @@
 #include "../../dxlib_ext/dxlib_ext.h"
 #include "../common/camera.h"
-#include "hp_bar.h"
+#include "status_bar.h"
 
 
 StatusBar::StatusBar() : status_bar_pos_(450, 50), status_bar_size_( 500, 40 ), status_text_pos_( status_bar_pos_ - tnl::Vector2i( 150, -5 ) ),
@@ -18,7 +18,7 @@ void StatusBar::update(float delta_time) {
 
 }
 
-void StatusBar::draw(const std::shared_ptr<Camera> camera) {
+void StatusBar::draw() {
 
 	SetFontSize(message_font_size_);
 	DrawStringEx(status_text_pos_.x, status_text_pos_.y, -1, status_text_.c_str());

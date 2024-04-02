@@ -2,7 +2,6 @@
 #include "../../dxlib_ext/dxlib_ext.h"
 #include "../manager/gm_manager.h"
 #include "../manager/resource_manager.h"
-#include "scene_title.h"
 #include "../dungeon/dungeon_manager.h"
 #include "../manager/enemy_manager.h"
 #include "../base/enemy_base.h"
@@ -10,6 +9,8 @@
 #include "../common/camera.h"
 #include "../base/character_base.h"
 #include "../object/character/player.h"
+#include "scene_title.h"
+#include "scene_game_clear.h"
 #include "scene_play.h"
 
 
@@ -27,13 +28,16 @@ namespace {
 	const int DUNGEON_NAME_FONT_SIZE = 60;
 
 	// クリア階数
-	const int CLEAR_FLOOR = 5;
+	const int CLEAR_FLOOR = 1;
 
 	// メッセージの表示時間
 	const float MESSAGE_DRAW_TIME = 3.0f;
 }
 
-ScenePlay::ScenePlay() : level_up_character_(nullptr), dungeon_bgm_hdl_(0), dungeon_bgm_hdl_path_("sound/dungeon02.mp3"),
+ScenePlay::ScenePlay() : camera_(nullptr), player_(nullptr), dungeon_mgr_(nullptr),  enemy_mgr_(nullptr), ui_mgr_(nullptr), 
+	dungeon_floor_(1), is_created_dungeon_(false), is_drawing_dng_title_(true), is_game_clear_(false),
+	fade_gpc_hdl_(0), alpha_(0), fade_time_(0.5f),
+	level_up_character_(nullptr), dungeon_bgm_hdl_(0), dungeon_bgm_hdl_path_("sound/dungeon02.mp3"),
 	damage_se_hdl_path_("sound/damaged.mp3"), open_select_window_se_hdl_path_("sound/springin/open_window.mp3"), level_up_se_hdl_path_("sound/springin/level_up.mp3"), 
 	button_enter_se_hdl_path_("sound/button_enter.mp3"), cancel_se_hdl_path_("sound/springin/cancel.mp3")
 {
@@ -77,8 +81,6 @@ ScenePlay::ScenePlay() : level_up_character_(nullptr), dungeon_bgm_hdl_(0), dung
 	ResourceManager::getInstance()->loadSound(open_select_window_se_hdl_path_);
 	ResourceManager::getInstance()->loadSound(level_up_se_hdl_path_);
 	ResourceManager::getInstance()->loadSound(cancel_se_hdl_path_);
-
-	is_transition_process_ = false;
 
 	// ------------- UI_Managerクラスの初期設定 -------------------------
 	ui_mgr_->setUITargetCharacter(player_);
@@ -321,6 +323,7 @@ void ScenePlay::executeGameClearProcess() {
 	ui_mgr_->clearMessage();
 	std::string message = "ダンジョンを制覇しました！";
 	ui_mgr_->setMessage(message);
+	is_game_clear_ = true;
 	dungeon_sequence_.immediatelyChange(&ScenePlay::seqGameOver);
 }
 
@@ -753,8 +756,12 @@ bool ScenePlay::seqStairSelect(const float delta_time) {
 bool ScenePlay::seqGameOver(const float delta_time) {
 
 	if (tnl::Input::IsKeyDownTrigger(eKeys::KB_RETURN)) {
-		is_transition_process_ = true;
-		GameManager::GetInstance()->changeScene(std::make_shared<SceneTitle>());
+		if (is_game_clear_) {
+			GameManager::GetInstance()->changeScene(std::make_shared<SceneGameClear>());
+		}
+		else {
+			GameManager::GetInstance()->changeScene(std::make_shared<SceneTitle>());
+		}
 	}
 	return true;
 }
