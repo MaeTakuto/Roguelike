@@ -93,7 +93,7 @@ bool SceneGameClear::seqEnd(const float delta_time) {
 	}
 
 	if (tnl::Input::IsKeyDownTrigger(eKeys::KB_RETURN)) {
-		GameManager::GetInstance()->changeScene(std::make_shared<SceneTitle>());
+		GameManager::GetInstance()->changeScene(std::make_shared<SceneTitle>(), 2.0f);
 	}
 
 	return true;

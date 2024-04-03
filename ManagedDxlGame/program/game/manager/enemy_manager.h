@@ -14,13 +14,14 @@ public:
 	EnemyManager();
 	~EnemyManager();
 
+	// 敵の最大数
+	static constexpr int ENEMY_MAX = 6;
+
 	void update(float delta_time);
 	void draw(const std::shared_ptr<Camera> camera);
 
+
 private:
-	// 敵の最大数
-	const int ENEMY_MAX = 10;
-	
 	// ダンジョンに生成する敵
 	std::vector< std::shared_ptr<EnemyBase> > enemies_;
 
@@ -34,6 +35,9 @@ private:
 	std::unordered_map< std::string, int > now_floor_enemy_data_;
 
 public:
+	// 生存している敵の数を取得
+	int getAliveEnemyNum();
+
 	// 階層の敵データを現在のフロアの敵データに更新
 	void updateEnemyDataToNowFloor(int floor);
 

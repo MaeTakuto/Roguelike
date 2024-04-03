@@ -28,7 +28,7 @@ namespace {
 	const int DUNGEON_NAME_FONT_SIZE = 60;
 
 	// クリア階数
-	const int CLEAR_FLOOR = 1;
+	const int CLEAR_FLOOR = 5;
 
 	// メッセージの表示時間
 	const float MESSAGE_DRAW_TIME = 3.0f;
@@ -359,6 +359,11 @@ void ScenePlay::defeatCharacter(std::shared_ptr<Character> attacker, std::shared
 	std::string message = target->getName() + "を倒した";
 	ui_mgr_->setMessage(message, MESSAGE_DRAW_TIME);
 	tnl::DebugTrace("倒した\n");
+
+	if (enemy_mgr_->getAliveEnemyNum() <= 0) {
+		std::string message = "敵の気配がなくなった";
+		ui_mgr_->setMessage(message, MESSAGE_DRAW_TIME);
+	}
 }
 
 // ====================================================
@@ -757,7 +762,7 @@ bool ScenePlay::seqGameOver(const float delta_time) {
 
 	if (tnl::Input::IsKeyDownTrigger(eKeys::KB_RETURN)) {
 		if (is_game_clear_) {
-			GameManager::GetInstance()->changeScene(std::make_shared<SceneGameClear>());
+			GameManager::GetInstance()->changeScene(std::make_shared<SceneGameClear>(), 2.0f);
 		}
 		else {
 			GameManager::GetInstance()->changeScene(std::make_shared<SceneTitle>());

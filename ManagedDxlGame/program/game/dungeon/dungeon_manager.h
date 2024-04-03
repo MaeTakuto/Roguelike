@@ -90,7 +90,6 @@ public:
 	const int AREA_SPACE = 3;
 	const int ROOM_AND_ROAD_SPACE = 2;
 	const int MAX_ROOM_ENTRANCE = 3;
-	const int ENEMY_MAX_INIT_SPAWN = 6;
 
 	// ======= ƒ_ƒ“ƒWƒ‡ƒ“¶¬AÄ¶¬ ======
 	void generateDungeon();
