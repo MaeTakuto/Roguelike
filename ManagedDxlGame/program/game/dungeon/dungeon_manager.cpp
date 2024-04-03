@@ -1,6 +1,7 @@
 #include "../../dxlib_ext/dxlib_ext.h"
 #include "../manager/gm_manager.h"
 #include "dungeon_manager.h"
+#include "../manager/enemy_manager.h"
 #include "../common/camera.h"
 
 
@@ -623,7 +624,7 @@ void DungeonManager::spawnEnemy() {
 
 	int spawn_num = 0;
 
-	while (spawn_num < ENEMY_MAX_INIT_SPAWN) {
+	while (spawn_num < EnemyManager::ENEMY_MAX) {
 		int area_index = rand() % area_count_;
 
 		int spawn_x = rand() % areas_[area_index].room.width + areas_[area_index].room.x;
