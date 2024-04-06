@@ -1,3 +1,4 @@
+#include <queue>
 #include "../../dxlib_ext/dxlib_ext.h"
 #include "../manager/gm_manager.h"
 #include "../manager/resource_manager.h"
@@ -15,8 +16,11 @@ namespace {
 	const tnl::Vector2i MESSAGE_WINDOW_SIZE = { 900, 200 };
 }
 
-SceneGameClear::SceneGameClear() : sequence_(tnl::Sequence<SceneGameClear>(this, &SceneGameClear::seqSceneTransition)), 
-	message_window_(std::make_shared<MessageWindow>()), now_page_(0), back_ground_gpc_hdl_(0)
+// =====================================================================================
+// コンストラクタ
+// =====================================================================================
+SceneGameClear::SceneGameClear() : sequence_(tnl::Sequence<SceneGameClear>(this, &SceneGameClear::seqSceneStart)), 
+	message_window_(std::make_shared<MessageWindow>()), now_page_(0), is_playing_se_(false), back_ground_gpc_hdl_(0)
 {
 	back_ground_gpc_hdl_ = ResourceManager::getInstance()->loadGraph("graphics/ClearScene_background.jpg");
 
@@ -30,10 +34,16 @@ SceneGameClear::SceneGameClear() : sequence_(tnl::Sequence<SceneGameClear>(this,
 
 	for (int y = GameManager::CSV_CELL_ROW_START; y < scenario_data.size(); ++y) {
 		
+		// メッセージページに効果音パスが入っていたら追加する
+		if (scenario_data[y][0].getString() != "") {
+			std::pair<int, std::string> se_pair = std::make_pair( y - 1, scenario_data[y][0].getString() );
+			se_path_to_message_page_.push(se_pair);
+		}
+
 		event_messages_[y - 1].resize(scenario_data.size());
 		
-		for (int x = 0; x < scenario_data[y].size(); ++x) {
-			event_messages_[y - 1][x] = scenario_data[y][x].getString();
+		for (int x = 0; x < scenario_data[y].size() - 1; ++x) {
+			event_messages_[y - 1][x] = scenario_data[y][x + 1].getString();
 		}
 	}
 
@@ -41,15 +51,24 @@ SceneGameClear::SceneGameClear() : sequence_(tnl::Sequence<SceneGameClear>(this,
 
 }
 
+// =====================================================================================
+// デストラクタ
+// =====================================================================================
 SceneGameClear::~SceneGameClear() {
 
 }
 
+// =====================================================================================
+// シーンの更新
+// =====================================================================================
 void SceneGameClear::update(float delta_time) {
 
 	sequence_.update(delta_time);
 }
 
+// =====================================================================================
+// シーンの描画
+// =====================================================================================
 void SceneGameClear::draw() {
 	
 	DrawExtendGraph(BACKGROUND_POS.x, BACKGROUND_POS.y, BACKGROUND_POS.x + DXE_WINDOW_WIDTH, BACKGROUND_POS.y + DXE_WINDOW_HEIGHT, back_ground_gpc_hdl_, true);
@@ -59,7 +78,27 @@ void SceneGameClear::draw() {
 	}
 }
 
-bool SceneGameClear::seqSceneTransition(const float delta_time) {
+// =====================================================================================
+// SEを再生するか確認
+// =====================================================================================
+void SceneGameClear::checkToPlaySE()
+{
+	if (se_path_to_message_page_.empty()) {
+		return;
+	}
+
+	if (se_path_to_message_page_.front().first == now_page_) {
+		ResourceManager::getInstance()->playSound(se_path_to_message_page_.front().second, DX_PLAYTYPE_BACK);
+		is_playing_se_ = true;
+	}
+
+	return;
+}
+
+// =====================================================================================
+// シーンスタートシーケンス
+// =====================================================================================
+bool SceneGameClear::seqSceneStart(const float delta_time) {
 
 	if (!GameManager::GetInstance()->isTransition()) {
 		message_window_->setEnable(true);
@@ -69,10 +108,22 @@ bool SceneGameClear::seqSceneTransition(const float delta_time) {
 	return true;
 }
 
+// =====================================================================================
+// メッセージイベントシーケンス
+// =====================================================================================
 bool SceneGameClear::seqMessageEvent(const float delta_time) {
 
+	// SEを再生しているか確認し、再生が終わったらSEパスを "pop" する
+	if (is_playing_se_) {
+		if (!ResourceManager::getInstance()->checkSound(se_path_to_message_page_.front().second)) {
+			is_playing_se_ = false;
+			se_path_to_message_page_.pop();
+		}
+		return true;
+	}
+
 	if (now_page_ >= event_messages_.size() - 1) {
-		sequence_.change(&SceneGameClear::seqEnd);
+		sequence_.change(&SceneGameClear::seqSceneEnd);
 		return true;
 	}
 
@@ -81,12 +132,17 @@ bool SceneGameClear::seqMessageEvent(const float delta_time) {
 		message_window_->clearMessage();
 		message_window_->setAllLineMessage(event_messages_[now_page_]);
 		message_window_->setEnable(true);
+
+		checkToPlaySE();
 	}
 
 	return true;
 }
 
-bool SceneGameClear::seqEnd(const float delta_time) {
+// =====================================================================================
+// シーン終了シーケンス
+// =====================================================================================
+bool SceneGameClear::seqSceneEnd(const float delta_time) {
 
 	if (GameManager::GetInstance()->isTransition()) {
 		return true;

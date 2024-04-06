@@ -324,6 +324,7 @@ void ScenePlay::executeGameClearProcess() {
 	std::string message = "ƒ_ƒ“ƒWƒ‡ƒ“‚ð§”e‚µ‚Ü‚µ‚½I";
 	ui_mgr_->setMessage(message);
 	is_game_clear_ = true;
+	GameManager::GetInstance()->setGameClear(true);
 	dungeon_sequence_.immediatelyChange(&ScenePlay::seqGameOver);
 }
 

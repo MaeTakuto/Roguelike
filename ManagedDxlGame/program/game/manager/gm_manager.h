@@ -41,7 +41,13 @@ public:
 	inline std::shared_ptr<SceneBase> getSceneInstance() { return now_scene_; }	
 
 	// フェード演出フラグを返す。
-	inline bool isTransition() { return is_transition_; }
+	inline bool isTransition() const { return is_transition_; }
+
+	// ゲームをクリアしたか判定を返す
+	inline bool isGameClear() const { return is_game_clear_; }
+
+	// "is_game_clear_" の値を設定する
+	inline void setGameClear(bool is_game_clear) { is_game_clear_ = is_game_clear; }
 
 private:
 	// コンストラクタ
@@ -65,6 +71,9 @@ private:
 	float fade_time_wait_;
 	// フェード演出フラグ
 	bool is_transition_;
+
+	// ゲームをクリアしたか判定
+	bool is_game_clear_;
 
 	// ゲームマネージャーのシーケンス
 	tnl::Sequence<GameManager> sequence_;
