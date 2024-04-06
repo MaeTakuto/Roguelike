@@ -13,11 +13,17 @@ namespace {
 
 	// ゲームタイトル名
 	const std::string TITLE = "不思議な森";
+
+	// ゲームメニューの表示位置
+	const tnl::Vector2i TITLE_MENU_POS = { 500, 500 };
+
+	// ゲームメニュー名
+	const std::string TITLE_MENU_STR = "Start Enter";
 }
 
 
 SceneTitle::SceneTitle() : sequence_(tnl::Sequence<SceneTitle>(this, &SceneTitle::seqSceneTransition)), back_ground_gpc_hdl_(0), sunlight_gpc_hdl_(0), 
-	title_bgm_hdl_path_("sound/title.ogg"), title_bgm_hdl_(0), bgm_end_freqency_(2722464), sunlight_alpha_(0), alpha_center_(176), sin_range_(32), scene_elapsed_time_(0.0f)
+	title_bgm_hdl_path_("sound/title.ogg"), title_bgm_hdl_(0), bgm_end_freqency_(2722464), title_menu_alpha_(0), sunlight_alpha_(0), alpha_center_(176), sin_range_(32), scene_elapsed_time_(0.0f)
 {
 
 	tnl::DebugTrace("SceneTitleのコンストラクタが実行されました\n");
@@ -63,6 +69,11 @@ void SceneTitle::draw() {
 	SetDrawBlendMode( DX_BLENDMODE_NOBLEND, 255 );
 
 	DrawStringEx(TITLE_POS.x, TITLE_POS.y, -1, TITLE.c_str());
+	SetFontSize(30);
+	SetDrawBlendMode(DX_BLENDMODE_ALPHA, title_menu_alpha_);
+	DrawStringEx(TITLE_MENU_POS.x, TITLE_MENU_POS.y, -1, TITLE_MENU_STR.c_str());
+	SetDrawBlendMode(DX_BLENDMODE_NOBLEND, 255);
+
 }
 
 bool SceneTitle::seqSceneTransition(const float delta_time) {
@@ -76,6 +87,8 @@ bool SceneTitle::seqSceneTransition(const float delta_time) {
 }
 
 bool SceneTitle::seqRun(const float delta_time) {
+
+	title_menu_alpha_ = 255 * sin(2 * tnl::PI * sequence_.getProgressTime() / 2.5f);
 
 	if (GameManager::GetInstance()->isTransition()) {
 		return true;

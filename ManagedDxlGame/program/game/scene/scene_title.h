@@ -29,6 +29,9 @@ private:
 	// BGMの終了地点のサンプリング周波数
 	int bgm_end_freqency_;
 
+	// タイトルメニューの透明度
+	int title_menu_alpha_;
+
 	// 日差し画像の透明度
 	int sunlight_alpha_;
 

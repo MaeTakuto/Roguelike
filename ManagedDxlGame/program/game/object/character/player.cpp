@@ -308,6 +308,13 @@ bool Player::tryUseMagic(int magic_index) {
 	if (magic_index < 0 || magic_index >= magic_list_.size()) {
 		return false;
 	}
+
+	if (GameManager::GetInstance()->isGameClear()) {
+		use_magic_index_ = magic_index;
+		act_state_ = eActState::USE_MAGIC;
+		return true;
+	}
+
 	// MP‚ðŠm”F‚·‚é
 	if ( !status_.tryConsumeMP(magic_list_[magic_index]->getConsumedMP() ) ) {
 		return false;
