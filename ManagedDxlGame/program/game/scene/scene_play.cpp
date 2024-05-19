@@ -28,7 +28,7 @@ namespace {
 	const int DUNGEON_NAME_FONT_SIZE = 60;
 
 	// クリア階数
-	const int CLEAR_FLOOR = 5;
+	const int CLEAR_FLOOR = 1;
 
 	// メッセージの表示時間
 	const float MESSAGE_DRAW_TIME = 3.0f;
@@ -36,7 +36,8 @@ namespace {
 
 ScenePlay::ScenePlay() : camera_(nullptr), player_(nullptr), dungeon_mgr_(nullptr),  enemy_mgr_(nullptr), ui_mgr_(nullptr), 
 	dungeon_floor_(1), is_created_dungeon_(false), is_drawing_dng_title_(true), is_game_clear_(false),
-	fade_gpc_hdl_(0), alpha_(0), fade_time_(0.5f),
+	is_display_mini_map_(true), mini_map_pos_(750, 180), mini_map_size_(8), mini_map_cell_gpc_hdl_(0),
+	is_opened_menu_(false), fade_gpc_hdl_(0), alpha_(0), fade_time_(0.5f),
 	level_up_character_(nullptr), dungeon_bgm_hdl_(0), dungeon_bgm_hdl_path_("sound/dungeon02.mp3"),
 	damage_se_hdl_path_("sound/damaged.mp3"), open_select_window_se_hdl_path_("sound/springin/open_window.mp3"), level_up_se_hdl_path_("sound/springin/level_up.mp3"), 
 	button_enter_se_hdl_path_("sound/button_enter.mp3"), cancel_se_hdl_path_("sound/springin/cancel.mp3")
@@ -72,6 +73,8 @@ ScenePlay::ScenePlay() : camera_(nullptr), player_(nullptr), dungeon_mgr_(nullpt
 			GameManager::CHIP_SIZE,
 			GameManager::CHIP_SIZE
 		);
+
+	mini_map_cell_gpc_hdl_ = ResourceManager::getInstance()->loadGraph("graphics/blue.bmp");
 
 	fade_gpc_hdl_ = ResourceManager::getInstance()->loadGraph("graphics/black.bmp");
 
@@ -157,21 +160,18 @@ void ScenePlay::draw() {
 			}
 		}
 
-
-		// デバッグ（ 部屋の入口を表示 ）
-		/*for (int i = 0; i < areas_.size(); i++) {
-			for (int j = 0; j < areas_[i].room.entrance.size(); j++) {
-				tnl::Vector3 draw_pos = areas_[i].room.entrance[j].pos * GameManager::DRAW_CHIP_SIZE - camera_->getPos() + tnl::Vector3(DXE_WINDOW_WIDTH >> 1, DXE_WINDOW_HEIGHT >> 1, 0);
-
-				DrawBox(draw_pos.x, draw_pos.y, draw_pos.x + GameManager::DRAW_CHIP_SIZE, draw_pos.y + GameManager::DRAW_CHIP_SIZE, -1, true);
-			}
-		}*/
-
+		SetFontSize(25);
+		DrawStringEx(10, 25, -1, "ESC：メニューを開く");
+		DrawStringEx(10, 50, -1, "TAB：マップを閉じる");
+		
 		player_->draw(camera_);
 		enemy_mgr_->draw(camera_);
 
 		player_->drawEffect(camera_);
 
+		if (is_display_mini_map_ && !is_opened_menu_) {
+			drawMiniMap();
+		}
 		ui_mgr_->draw(camera_);
 	}
 	SetDrawBlendMode(DX_BLENDMODE_ALPHA, alpha_);
@@ -184,12 +184,55 @@ void ScenePlay::draw() {
 }
 
 // ====================================================
+// ミニマップを描画する
+// ====================================================
+void ScenePlay::drawMiniMap() {
+
+	for (int y = 0; y < field_.size(); ++y) {
+		for (int x = 0; x < field_[y].size(); ++x) {
+
+			if (field_[y][x].terrain_data != eMapData::GROUND && field_[y][x].terrain_data != eMapData::STAIR) {
+				continue;
+			}
+			
+			tnl::Vector2i draw_pos = mini_map_pos_ + tnl::Vector2i(x, y) * mini_map_size_;
+			
+			SetDrawBlendMode(DX_BLENDMODE_ALPHA, 128);
+			DrawBox(draw_pos.x, draw_pos.y, draw_pos.x + mini_map_size_, draw_pos.y + mini_map_size_, GetColor(0, 0, 255), true);
+			SetDrawBlendMode(DX_BLENDMODE_NOBLEND, 255);
+
+			if (field_[y][x].map_data == eMapData::PLAYER) {
+				draw_pos = mini_map_pos_ + tnl::Vector2i(x, y) * mini_map_size_ + tnl::Vector2i( mini_map_size_ >> 1, mini_map_size_ >> 1);
+				DrawCircle(draw_pos.x, draw_pos.y, ( mini_map_size_ >> 1 ) - 1, GetColor(255, 255, 0), true, true);
+			}
+			else if (field_[y][x].map_data == eMapData::ENEMY) {
+				draw_pos = mini_map_pos_ + tnl::Vector2i(x, y) * mini_map_size_ + tnl::Vector2i(mini_map_size_ >> 1, mini_map_size_ >> 1);
+				DrawCircle(draw_pos.x, draw_pos.y, (mini_map_size_ >> 1) - 1, GetColor(255, 0, 0), true, true);
+			}
+			if (field_[y][x].terrain_data == eMapData::STAIR) {
+				tnl::Vector2i draw_pos = mini_map_pos_ + tnl::Vector2i(x, y) * mini_map_size_;
+				DrawBox(draw_pos.x, draw_pos.y, draw_pos.x + mini_map_size_, draw_pos.y + mini_map_size_, -1, false);
+			}
+		}
+	}
+}
+
+// ====================================================
 // キャラクターアップデート
 // ====================================================
 void ScenePlay::charaUpdate(float delta_time) {
 
 	player_->update(delta_time);
 	enemy_mgr_->update(delta_time);
+}
+
+// ====================================================
+// メニュー画面を閉じる
+// ====================================================
+void ScenePlay::closeMainMenu() {
+
+	is_opened_menu_ = false;
+	ui_mgr_->closeMainMenu();
 }
 
 // ====================================================
@@ -303,7 +346,7 @@ void ScenePlay::checkToUseMagic() {
 	}
 	ui_mgr_->executeSletctToUseMagicEnd();
 	ui_mgr_->closeMagicListWindow();
-	ui_mgr_->closeMainMenu();
+	closeMainMenu();
 }
 
 // ====================================================
@@ -344,7 +387,7 @@ bool ScenePlay::checkPlayerCell() {
 		return true;
 	}
 	dungeon_sequence_.change(&ScenePlay::seqPlayerAct);
-	ui_mgr_->closeMainMenu();
+	closeMainMenu();
 	ui_mgr_->setMessage("何もない", MESSAGE_DRAW_TIME);
 
 	return false;
@@ -547,7 +590,12 @@ bool ScenePlay::seqPlayerAct(const float delta_time) {
 		return true;
 	}
 
+	if (tnl::Input::IsKeyDownTrigger(eKeys::KB_TAB)) {
+		is_display_mini_map_ = !is_display_mini_map_;
+	}
+
 	if (tnl::Input::IsKeyDownTrigger(eKeys::KB_ESCAPE)) {
+		is_opened_menu_ = true;
 		dungeon_sequence_.change(&ScenePlay::seqSelectMainMenu);
 		ui_mgr_->openMainMenu();
 		ResourceManager::getInstance()->playSound(open_select_window_se_hdl_path_, DX_PLAYTYPE_BACK);
@@ -781,7 +829,7 @@ bool ScenePlay::seqSelectMainMenu(const float delta_time) {
 	if ( tnl::Input::IsKeyDownTrigger( eKeys::KB_ESCAPE ) ) {
 		ResourceManager::getInstance()->playSound(cancel_se_hdl_path_, DX_PLAYTYPE_BACK);
 		dungeon_sequence_.change(&ScenePlay::seqPlayerAct);
-		ui_mgr_->closeMainMenu();
+		closeMainMenu();
 		return true;
 	}
 

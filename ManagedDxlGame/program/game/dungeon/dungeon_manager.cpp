@@ -124,6 +124,7 @@ void DungeonManager::fieldDataInit() {
 			field_[y][x].map_data = eMapData::WALL;
 			field_[y][x].place = ePlace::WALL;
 			field_[y][x].area_id = 0;
+			field_[y][x].is_display_cell = false;
 		}
 	}
 }
@@ -504,7 +505,9 @@ void DungeonManager::connectUpAndDownRooms(int up_x, int up_y, int down_x, int d
 			field_[down_y][down_x].map_data = eMapData::GROUND;
 			field_[down_y][down_x].place = ePlace::CORRIDOR;
 
-			if (field_[up_y][up_x].terrain_data == eMapData::GROUND) continue;
+			if (field_[up_y][up_x].terrain_data == eMapData::GROUND) {
+				continue;
+			}
 			field_[up_y][up_x].terrain_data = eMapData::GROUND;
 			field_[up_y][up_x].map_data = eMapData::GROUND;
 			field_[up_y][up_x].place = ePlace::CORRIDOR;
