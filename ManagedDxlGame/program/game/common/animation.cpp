@@ -1,4 +1,4 @@
-#include "../dxlib_ext/dxlib_ext.h"
+#include "../../dxlib_ext/dxlib_ext.h"
 #include "../common/camera.h"
 #include "animation.h"
 

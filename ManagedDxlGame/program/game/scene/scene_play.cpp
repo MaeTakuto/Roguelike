@@ -55,10 +55,12 @@ ScenePlay::ScenePlay() : camera_(nullptr), player_(nullptr), dungeon_mgr_(nullpt
 
 	// --------------- フィールドサイズの初期化-------------------------
 	field_.resize(GameManager::FIELD_HEIGHT);
+	mini_map_.resize(GameManager::FIELD_HEIGHT);
 	areas_.resize(dungeon_mgr_->AREA_MAX);
 
 	for (int i = 0; i < GameManager::FIELD_HEIGHT; i++) {
 		field_[i].resize(GameManager::FIELD_WIDTH);
+		mini_map_[i].resize(GameManager::FIELD_WIDTH);
 	}
 
 	// -------------- 画像のロード -------------------------------------
@@ -159,10 +161,6 @@ void ScenePlay::draw() {
 				}
 			}
 		}
-
-		SetFontSize(25);
-		DrawStringEx(10, 25, -1, "ESC：メニューを開く");
-		DrawStringEx(10, 50, -1, "TAB：マップを閉じる");
 		
 		player_->draw(camera_);
 		enemy_mgr_->draw(camera_);
@@ -173,6 +171,10 @@ void ScenePlay::draw() {
 			drawMiniMap();
 		}
 		ui_mgr_->draw(camera_);
+
+		SetFontSize(25);
+		DrawStringEx(10, 25, -1, "ESC：メニューを開く");
+		DrawStringEx(10, 50, -1, "TAB：マップを閉じる");
 	}
 	SetDrawBlendMode(DX_BLENDMODE_ALPHA, alpha_);
 	DrawExtendGraph(0, 0, DXE_WINDOW_WIDTH, DXE_WINDOW_HEIGHT, fade_gpc_hdl_, true);
@@ -183,15 +185,23 @@ void ScenePlay::draw() {
 	 //dungeon_mgr_->displayAreaNumber(camera_);
 }
 
+void ScenePlay::updateMiniMap() {
+	for (int y = 0; y < mini_map_.size(); ++y) {
+		for (int x = 0; x < mini_map_[y].size(); ++x) {
+			mini_map_[y][x].map_data = field_[y][x].map_data;
+		}
+	}
+}
+
 // ====================================================
 // ミニマップを描画する
 // ====================================================
 void ScenePlay::drawMiniMap() {
 
-	for (int y = 0; y < field_.size(); ++y) {
-		for (int x = 0; x < field_[y].size(); ++x) {
+	for (int y = 0; y < mini_map_.size(); ++y) {
+		for (int x = 0; x < mini_map_[y].size(); ++x) {
 
-			if (field_[y][x].terrain_data != eMapData::GROUND && field_[y][x].terrain_data != eMapData::STAIR) {
+			if (mini_map_[y][x].terrain_data != eMapData::GROUND && mini_map_[y][x].terrain_data != eMapData::STAIR) {
 				continue;
 			}
 			
@@ -201,15 +211,15 @@ void ScenePlay::drawMiniMap() {
 			DrawBox(draw_pos.x, draw_pos.y, draw_pos.x + mini_map_size_, draw_pos.y + mini_map_size_, GetColor(0, 0, 255), true);
 			SetDrawBlendMode(DX_BLENDMODE_NOBLEND, 255);
 
-			if (field_[y][x].map_data == eMapData::PLAYER) {
+			if (mini_map_[y][x].map_data == eMapData::PLAYER) {
 				draw_pos = mini_map_pos_ + tnl::Vector2i(x, y) * mini_map_size_ + tnl::Vector2i( mini_map_size_ >> 1, mini_map_size_ >> 1);
 				DrawCircle(draw_pos.x, draw_pos.y, ( mini_map_size_ >> 1 ) - 1, GetColor(255, 255, 0), true, true);
 			}
-			else if (field_[y][x].map_data == eMapData::ENEMY) {
+			else if (mini_map_[y][x].map_data == eMapData::ENEMY) {
 				draw_pos = mini_map_pos_ + tnl::Vector2i(x, y) * mini_map_size_ + tnl::Vector2i(mini_map_size_ >> 1, mini_map_size_ >> 1);
 				DrawCircle(draw_pos.x, draw_pos.y, (mini_map_size_ >> 1) - 1, GetColor(255, 0, 0), true, true);
 			}
-			if (field_[y][x].terrain_data == eMapData::STAIR) {
+			if (mini_map_[y][x].terrain_data == eMapData::STAIR) {
 				tnl::Vector2i draw_pos = mini_map_pos_ + tnl::Vector2i(x, y) * mini_map_size_;
 				DrawBox(draw_pos.x, draw_pos.y, draw_pos.x + mini_map_size_, draw_pos.y + mini_map_size_, -1, false);
 			}
@@ -480,6 +490,15 @@ bool ScenePlay::seqGenerateDungeon(const float delta_time) {
 	// プレイヤー、敵をスポーン
 	for (int y = 0; y < field_.size(); y++) {
 		for (int x = 0; x < field_[y].size(); x++) {
+
+			mini_map_[y][x].is_display_cell = false;
+			mini_map_[y][x].map_data		= field_[y][x].map_data;
+			mini_map_[y][x].terrain_data	= field_[y][x].terrain_data;
+
+			if (field_[y][x].map_data != eMapData::PLAYER && field_[y][x].map_data != eMapData::ENEMY) {
+				continue;
+			}
+
 			if (field_[y][x].map_data == eMapData::PLAYER ) {
 				tnl::DebugTrace("player x = %d, y = %d\n", x, y);
 				tnl::Vector3 pos = { static_cast<float>(x) , static_cast<float>(y), 0 };
@@ -772,6 +791,7 @@ bool ScenePlay::seqActEndProcess(const float delta_time) {
 	charaUpdate(delta_time);
 	ui_mgr_->updateStatusBar();
 	player_->beginAction();
+	updateMiniMap();
 
 	// プレイヤーの位置が階段だった時
 	if (getTerrainData(player_->getPos()) == eMapData::STAIR) {

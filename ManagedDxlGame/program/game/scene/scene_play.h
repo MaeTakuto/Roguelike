@@ -56,19 +56,24 @@ private:
 	// 各エリアの情報（ 始点座標、サイズなど ）
 	std::vector<Area> areas_;
 	// 地形データ
-	std::vector< std::vector<Cell> > field_;
+	std::vector< std::vector<DungeonCell> > field_;
+	// ミニマップデータ
+	std::vector< std::vector<MiniMapCell> > mini_map_;
 	// 現在の階数
 	int dungeon_floor_;
+
 	// マップチップのCSVデータ
 	std::vector< std::vector<tnl::CsvCell> > gpc_hdl_data_;
 	// マップチップの画像格納
 	std::vector<int> mapchip_gpc_hdl_;
+	
 	// ダンジョンを生成したか
 	bool is_created_dungeon_;
 	// ダンジョン名を表示しているか
 	bool is_drawing_dng_title_;
 	// ゲームクリアか判定
 	bool is_game_clear_;
+	
 	// ミニマップの表示位置
 	tnl::Vector2i mini_map_pos_;
 	// ミニマップを表示しているか判定
@@ -185,6 +190,8 @@ public:
 	inline const std::shared_ptr<Player> getPlayer() const { return player_; }
 
 private:
+	// ミニマップを更新
+	void updateMiniMap();
 	// ミニマップを描画する
 	void drawMiniMap();
 	// キャラクターアップデート

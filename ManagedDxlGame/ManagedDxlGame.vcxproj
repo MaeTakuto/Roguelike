@@ -192,6 +192,7 @@
     <ClCompile Include="program\game\common\camera.cpp" />
     <ClCompile Include="program\game\common\chara_status.cpp" />
     <ClCompile Include="program\game\common\animation.cpp" />
+    <ClCompile Include="program\game\common\struct_data.cpp" />
     <ClCompile Include="program\game\dungeon\dungeon_manager.cpp" />
     <ClCompile Include="program\game\gm_main.cpp" />
     <ClCompile Include="program\game\magic\fire_magic.cpp" />
@@ -285,6 +286,7 @@
     <ClInclude Include="program\game\common\chara_status.h" />
     <ClInclude Include="program\game\common\animation.h" />
     <ClInclude Include="program\game\common\enum.h" />
+    <ClInclude Include="program\game\common\struct_data.h" />
     <ClInclude Include="program\game\dungeon\dungeon_manager.h" />
     <ClInclude Include="program\game\gm_main.h" />
     <ClInclude Include="program\game\magic\fire_magic.h" />

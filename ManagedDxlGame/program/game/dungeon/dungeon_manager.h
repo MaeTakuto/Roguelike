@@ -3,81 +3,9 @@
 #include <vector>
 #include <algorithm>
 #include "../common/enum.h"
+#include "../common/struct_data.h"
 
 class Camera;
-
-// =====================================================================================
-// 区画のデータ
-// =====================================================================================
-struct Rect {
-	// 区画の始点座標、終点座標
-	int x = 0;
-	int y = 0;
-	int width = 0;
-	int height = 0;
-
-};
-
-// =====================================================================================
-// 部屋の入口のデータ
-// =====================================================================================
-struct Entrance {
-	tnl::Vector3 pos = { 0, 0, 0 };
-	int id = 0;
-};
-
-// =====================================================================================
-// 部屋のデータ
-// =====================================================================================
-struct Room {
-	// 区画の始点座標、終点座標
-	int x = 0;
-	int y = 0;
-	int width = 0;
-	int height = 0;
-
-	// 入口の数
-	int entrance_count = 0;
-
-	// 部屋の入口の位置
-	std::vector<Entrance> entrance;
-
-};
-
-// =====================================================================================
-// エリアデータ
-// =====================================================================================
-struct Area {
-	Rect area;
-	Room room;
-
-	// 通路が存在するかの判定
-	eDir_4 connect_area_dir = eDir_4::NONE;
-
-	int connect_area_index = -1;
-	bool is_connect = false;
-};
-
-// =====================================================================================
-// 1マスのデータ
-// =====================================================================================
-struct Cell {
-	// エリアの番号
-	int area_id = 0;
-
-	// 場所（ 通路なのか、部屋なのか ）
-	ePlace place = ePlace::WALL;
-
-	// マップのデータ（ 衝突判定用 ）
-	eMapData map_data = eMapData::WALL;
-
-	// 地形データ（ 床、壁 ）
-	eMapData terrain_data = eMapData::WALL;
-
-	// セルを表示するか判定（ ミニマップ用 ）
-	bool is_display_cell = false;
-
-};
 
 // =====================================================================================
 // ダンジョンの生成、管理するクラス
@@ -103,20 +31,10 @@ public:
 
 	// 分割したエリアデータを表示
 	void displayAreaNumber(const std::shared_ptr<Camera> camera);
-	void debugEntranceData() {
-
-		for (int i = 0; i < areas_.size(); i++) {
-			tnl::DebugTrace("========== area = %d ==========\n", i);
-			for (int j = 0; j < areas_[i].room.entrance.size(); j++) {
-				tnl::DebugTrace("entrance[%d].pos = %c\n", j, areas_[i].room.entrance[j].pos.toString().c_str());
-				tnl::DebugTrace("entrance[%d].id = %d\n", j, areas_[i].room.entrance[j].id);
-			}
-			tnl::DebugTrace("\n");
-		}
-	}
+	void debugEntranceData();
 
 	// ゲッター
-	inline std::vector< std::vector<Cell> >& getField() { return field_; }
+	inline std::vector< std::vector<DungeonCell> >& getField() { return field_; }
 	// inline std::vector< std::vector<int> >& getMapData() { return map_data_; }
 	inline std::vector<Area>& getAreas() { return areas_; }
 
@@ -124,7 +42,7 @@ private:
 	// int area_number_[FIELD_HEIGHT][FIELD_WIDTH] = { 0 };
 
 	// 地形データ
-	std::vector<std::vector<Cell> > field_;
+	std::vector<std::vector<DungeonCell> > field_;
 	// std::vector<std::vector<int> > map_data_{ GameManager::FIELD_HEIGHT, std::vector<int>( GameManager::FIELD_WIDTH ) };
 
 	int area_count_ = 0;
