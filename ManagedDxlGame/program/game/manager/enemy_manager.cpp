@@ -177,12 +177,23 @@ void EnemyManager::modifyEnemiesAction() {
 		tnl::DebugTrace("EnemyManager::desideAction() : scene_play ‚ðŽæ“¾‚Å‚«‚Ü‚¹‚ñ‚Å‚µ‚½");
 	}
 
-	for (int i = 0; i < enemies_.size(); i++) {
+	for (int i = 0; i < enemies_.size(); ++i) {
 		if (!enemies_[i]) {
 			continue;
 		}
-		if (enemies_[i]->isAlive() == false) continue;
+		if (!enemies_[i]->isAlive()) {
+			continue;
+		}
 		enemies_[i]->resetEnemyInMapData();
+	}
+
+	for (int i = 0; i < enemies_.size(); ++i) {
+		if (!enemies_[i]) {
+			continue;
+		}
+		if (!enemies_[i]->isAlive()) {
+			continue;
+		}
 		enemies_[i]->decideAction();
 		// ƒV[ƒ“ƒvƒŒƒC‚ÉUŒ‚s“®ŽÒ‚ð“o˜^
 		if (enemies_[i]->getActState() == eActState::ATTACK) {

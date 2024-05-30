@@ -330,18 +330,17 @@ void Pumpkin::updateCellsCost() {
 		cells_[i].cost_ = abs(target_pos_.x - cells_[i].pos_.x) + abs(target_pos_.y - cells_[i].pos_.y);
 		cells_[i].is_enable_ = false;
 
-		// 斜め方向を確認するとき
-		if ( i >= static_cast<int>(eDir_8::UP_LEFT) ) {
-			if (scene_play->getMapData(tnl::Vector3(cells_[i].pos_.x, cells_[i].pos_.y, 0)) != eMapData::GROUND) continue;;
-			if (!canActionToCell(tnl::Vector2i((pos_.x + DIR_POS[i].x), pos_.y))) continue;
-			if (!canActionToCell(tnl::Vector2i(pos_.x, (pos_.y + DIR_POS[i].y)))) continue;
-			cells_[i].is_enable_ = true;
+		if (scene_play->getMapData(tnl::Vector3(cells_[i].pos_.x, cells_[i].pos_.y, 0)) != eMapData::GROUND) {
 			continue;
 		}
 
-		if (scene_play->getMapData(tnl::Vector3(cells_[i].pos_.x, cells_[i].pos_.y, 0)) == eMapData::GROUND) {
-			cells_[i].is_enable_ = true;
+		// 斜め方向を確認するとき
+		if ( i >= static_cast<int>(eDir_8::UP_LEFT) ) {
+			if (!canActionToCell(tnl::Vector2i((pos_.x + DIR_POS[i].x), pos_.y))) continue;
+			if (!canActionToCell(tnl::Vector2i(pos_.x, (pos_.y + DIR_POS[i].y)))) continue;
 		}
+
+		cells_[i].is_enable_ = true;
 	}
 }
 

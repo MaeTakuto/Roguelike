@@ -28,7 +28,7 @@ namespace {
 	const int DUNGEON_NAME_FONT_SIZE = 60;
 
 	// クリア階数
-	const int CLEAR_FLOOR = 1;
+	const int CLEAR_FLOOR = 5;
 
 	// メッセージの表示時間
 	const float MESSAGE_DRAW_TIME = 3.0f;
@@ -344,6 +344,8 @@ void ScenePlay::checkToUseMagic() {
 		ui_mgr_->setMessage("MPが足りない", DRAW_TIME_DUNGEON_NAME);
 		dungeon_sequence_.change(&ScenePlay::seqPlayerAct);
 	}
+
+	// メニューを閉じる
 	ui_mgr_->executeSletctToUseMagicEnd();
 	ui_mgr_->closeMagicListWindow();
 	closeMainMenu();
