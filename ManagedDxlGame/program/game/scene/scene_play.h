@@ -65,10 +65,20 @@ private:
 	std::vector<int> mapchip_gpc_hdl_;
 	// ダンジョンを生成したか
 	bool is_created_dungeon_;
-	// ダンジョンを表示しているか
+	// ダンジョン名を表示しているか
 	bool is_drawing_dng_title_;
 	// ゲームクリアか判定
 	bool is_game_clear_;
+	// ミニマップの表示位置
+	tnl::Vector2i mini_map_pos_;
+	// ミニマップを表示しているか判定
+	bool is_display_mini_map_;
+	// ミニマップの表示サイズ
+	int mini_map_size_;
+	// ミニマップの画像
+	int mini_map_cell_gpc_hdl_;
+	// メニューを開いているか判定
+	bool is_opened_menu_;
 
 	// --------------------------- フェード演出関連 -------------------------
 	// フェード演出の画像
@@ -175,8 +185,12 @@ public:
 	inline const std::shared_ptr<Player> getPlayer() const { return player_; }
 
 private:
+	// ミニマップを描画する
+	void drawMiniMap();
 	// キャラクターアップデート
 	void charaUpdate(float delta_time);
+	// メニュー画面を閉じる
+	void closeMainMenu();
 	// キャラクターを倒したときの処理
 	void defeatCharacter(std::shared_ptr<Character> attacker, std::shared_ptr<Character> target);
 	// 攻撃キャラを切り替える。いなければ、"dungeon_sequence_"を"seqCharaMove" に変更。

@@ -93,7 +93,7 @@ public:
 	// メッセージウィンドウのメッセージを全削除する
 	void clearMessage();
 
-	// HPバーにステータスをセット
+	// ステータスバーの状態を更新
 	void updateStatusBar();
 
 	// 現在の階数をセット

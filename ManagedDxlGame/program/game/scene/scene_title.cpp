@@ -88,7 +88,7 @@ bool SceneTitle::seqSceneTransition(const float delta_time) {
 
 bool SceneTitle::seqRun(const float delta_time) {
 
-	title_menu_alpha_ = 255 * sin(2 * tnl::PI * sequence_.getProgressTime() / 2.5f);
+	title_menu_alpha_ = 255 * abs(sin(2 * tnl::PI * sequence_.getProgressTime() / 5.0f));
 
 	if (GameManager::GetInstance()->isTransition()) {
 		return true;
