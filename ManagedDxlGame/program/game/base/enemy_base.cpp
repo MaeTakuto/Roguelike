@@ -27,7 +27,7 @@ void EnemyBase::resetEnemyInMapData() {
 	}
 
 	scene_play->setMapData(pos_, eMapData::ENEMY);
-	if( abs( ( next_pos_ - pos_ ).length() ) > 0.1f ) {
+	if( abs( ( next_pos_ - pos_ ).length() ) > 0.1f && scene_play->getMapData(next_pos_) == eMapData::ENEMY) {
 		scene_play->setMapData(next_pos_, scene_play->getTerrainData(next_pos_));
 	}
 	next_pos_ = pos_;
