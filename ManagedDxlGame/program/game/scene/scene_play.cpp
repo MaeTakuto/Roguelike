@@ -185,12 +185,47 @@ void ScenePlay::draw() {
 	 //dungeon_mgr_->displayAreaNumber(camera_);
 }
 
-void ScenePlay::updateMiniMap() {
-	for (int y = 0; y < mini_map_.size(); ++y) {
-		for (int x = 0; x < mini_map_[y].size(); ++x) {
+// ミニマップのマスを開く
+void ScenePlay::openMiniMapCell() {
+	
+	int player_x = static_cast<int>(player_->getPos().x);
+	int player_y = static_cast<int>(player_->getPos().y);
+
+	mini_map_[player_y][player_x].is_display_cell = true;
+	mini_map_[player_y][player_x].map_data = field_[player_y][player_x].map_data;
+
+	if ( getPlace(player_->getPos()) == ePlace::CORRIDOR ) {
+		for ( int i = 0; i < std::underlying_type<eDir_8>::type(eDir_8::MAX); ++i ) { 
+			int x = player_x + DIR_POS[i].x;
+			int y = player_y + DIR_POS[i].y;
+			
+			mini_map_[y][x].is_display_cell = true;
 			mini_map_[y][x].map_data = field_[y][x].map_data;
 		}
 	}
+	else {
+		int area_id = getAreaId(player_->getPos());
+
+		for (int y = areas_[area_id].room.y - 1; y < areas_[area_id].room.y + areas_[area_id].room.height + 1; ++y) {
+			for (int x = areas_[area_id].room.x - 1; x < areas_[area_id].room.x + areas_[area_id].room.width + 1; ++x) {
+				mini_map_[y][x].is_display_cell = true;
+				mini_map_[y][x].map_data = field_[y][x].map_data;
+			}
+		}
+
+	}
+}
+
+void ScenePlay::updateMiniMap() {
+
+	for (int y = 0; y < mini_map_.size(); ++y) {
+		for (int x = 0; x < mini_map_[y].size(); ++x) {
+			mini_map_[y][x].map_data = field_[y][x].terrain_data;
+		}
+	}
+
+	openMiniMapCell();
+
 }
 
 // ====================================================
@@ -201,15 +236,18 @@ void ScenePlay::drawMiniMap() {
 	for (int y = 0; y < mini_map_.size(); ++y) {
 		for (int x = 0; x < mini_map_[y].size(); ++x) {
 
-			if (mini_map_[y][x].terrain_data != eMapData::GROUND && mini_map_[y][x].terrain_data != eMapData::STAIR) {
+			if (!mini_map_[y][x].is_display_cell) {
 				continue;
 			}
-			
+
 			tnl::Vector2i draw_pos = mini_map_pos_ + tnl::Vector2i(x, y) * mini_map_size_;
-			
-			SetDrawBlendMode(DX_BLENDMODE_ALPHA, 128);
-			DrawBox(draw_pos.x, draw_pos.y, draw_pos.x + mini_map_size_, draw_pos.y + mini_map_size_, GetColor(0, 0, 255), true);
-			SetDrawBlendMode(DX_BLENDMODE_NOBLEND, 255);
+
+			if (mini_map_[y][x].terrain_data == eMapData::GROUND || mini_map_[y][x].terrain_data == eMapData::STAIR) {
+
+				SetDrawBlendMode(DX_BLENDMODE_ALPHA, 128);
+				DrawBox(draw_pos.x, draw_pos.y, draw_pos.x + mini_map_size_, draw_pos.y + mini_map_size_, GetColor(0, 0, 255), true);
+				SetDrawBlendMode(DX_BLENDMODE_NOBLEND, 255);
+			}
 
 			if (mini_map_[y][x].map_data == eMapData::PLAYER) {
 				draw_pos = mini_map_pos_ + tnl::Vector2i(x, y) * mini_map_size_ + tnl::Vector2i( mini_map_size_ >> 1, mini_map_size_ >> 1);
@@ -511,6 +549,8 @@ bool ScenePlay::seqGenerateDungeon(const float delta_time) {
 		}
 	}
 
+	updateMiniMap();
+
 	// ダンジョンデータのデバッグ
 	// debugMapData();
 	// debugPlaceData();
@@ -793,6 +833,8 @@ bool ScenePlay::seqActEndProcess(const float delta_time) {
 	player_->beginAction();
 	updateMiniMap();
 
+	tnl::DebugTrace( "Place：%d\n", std::underlying_type<ePlace>::type( getPlace( player_->getPos() ) ) );
+
 	// プレイヤーの位置が階段だった時
 	if (getTerrainData(player_->getPos()) == eMapData::STAIR) {
 		dungeon_sequence_.change(&ScenePlay::seqStairSelect);
@@ -880,7 +922,7 @@ bool ScenePlay::seqSelectMainMenu(const float delta_time) {
 		else if (ui_mgr_->getSelectedIndexFromMainMenuCmd() == std::underlying_type<eMainMenuCmd>::type(eMainMenuCmd::CLOSE)) {
 			ResourceManager::getInstance()->playSound(cancel_se_hdl_path_, DX_PLAYTYPE_BACK);
 			dungeon_sequence_.change(&ScenePlay::seqPlayerAct);
-			ui_mgr_->closeMainMenu();
+			closeMainMenu();
 			return true;
 		}
 	}

@@ -190,6 +190,8 @@ public:
 	inline const std::shared_ptr<Player> getPlayer() const { return player_; }
 
 private:
+	// ミニマップのマスを開く
+	void openMiniMapCell();
 	// ミニマップを更新
 	void updateMiniMap();
 	// ミニマップを描画する
