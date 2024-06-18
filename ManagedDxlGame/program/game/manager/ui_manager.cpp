@@ -1,5 +1,7 @@
 #include "../..//dxlib_ext/dxlib_ext.h"
+#include "gm_manager.h"
 #include "../common/enum.h"
+#include "resource_manager.h"
 #include "../ui/message_window.h"
 #include "../ui/select_window.h"
 #include "../ui/status_bar.h"
@@ -11,11 +13,11 @@
 namespace {
 	// メッセージウィンドウの通常の位置、サイズ
 	const tnl::Vector2i	DEFAULT_MESS_WINDOW_POS = { 175, 500 };
-	const tnl::Vector2i DEFAULT_MESS_WINDOW_SIZE = { 900, 200 };
+	const tnl::Vector2i DEFAULT_MESS_WINDOW_SIZE = { 900, 160 };
 
 	// 階段での選択時のメッセージウィンドウの位置、サイズ、メッセージ
 	const tnl::Vector2i STAIR_SEL_MESS_WINDOW_POS = { 150, 450 };
-	const tnl::Vector2i STAIR_SEL_MESS_WINDOW_SIZE = { 750, 200 };
+	const tnl::Vector2i STAIR_SEL_MESS_WINDOW_SIZE = { 750, 160 };
 	const std::string STAIR_SEL_MESSAGE = "穴がある。落ちますか？";
 
 	// 階数の表示位置
@@ -29,6 +31,15 @@ namespace {
 	const int SELECT_WINDOW_CMD_FONT_SIZE = 30;
 	// コマンドと次のコマンドとの表示間隔
 	const int SELECT_WINDOW_CMD_SPACE = SELECT_WINDOW_CMD_FONT_SIZE + 5;
+
+	// ================= 操作説明ウィンドウの設定 ===============================
+
+	// 階段選択ウィンドウの表示位置
+	const tnl::Vector2i CONTROL_EXPLANATION_WINDOW_POS = { 50, 150 };
+	// 2択ウィンドウの表示サイズ
+	const tnl::Vector2i CONTROL_EXPLANATION_WINDOW_SIZE = { 400, 25 };
+	// 
+	const int CONTROL_EXPLANATION_WINDOW_MESSAGE_LINE = 8;
 
 	// ================= 2択選択ウィンドウ（はい、いいえ）の設定 =================
 
@@ -51,7 +62,7 @@ namespace {
 	// 魔法選択メニューの表示サイズ
 	const tnl::Vector2i MAGIC_WINDOW_SIZE = { 300, 70 };
 	// 
-	const tnl::Vector2i MAGIC_EXPLANTION_WINDOW_SIZE = { 450, 150 };
+	const tnl::Vector2i MAGIC_EXPLANTION_WINDOW_SIZE = { 450, 120 };
 
 	// ステータスバーの始点位置
 	const tnl::Vector2i STATUS_BAR_TOP_POS = { 450, 25 };
@@ -65,17 +76,47 @@ namespace {
 // =====================================================================================
 // コンストラクタ
 // =====================================================================================
-UI_Manager::UI_Manager() : message_window_(std::make_shared<MessageWindow>()), view_status_window_(std::make_shared<MessageWindow>()), magic_explation_window_(std::make_shared<MessageWindow>()),
+UI_Manager::UI_Manager() : message_window_(std::make_shared<MessageWindow>()), control_explanation_window_(std::make_shared<MessageWindow>()),
+	view_status_window_(std::make_shared<MessageWindow>()), magic_explation_window_(std::make_shared<MessageWindow>()),
 	two_select_window_(std::make_shared<SelectWindow>()), main_menu_select_window_(std::make_shared<SelectWindow>()), magic_select_window_(std::make_shared<SelectWindow>()),
 	hp_bar_(std::make_shared<StatusBar>()), mp_bar_(std::make_shared<StatusBar>()), floor_(0)
 {
 	// ------------------------- メッセージウィンドウの初期化 -------------------------
 	message_window_->setWindowPos(DEFAULT_MESS_WINDOW_POS);
-	message_window_->setWindowSize(DEFAULT_MESS_WINDOW_SIZE);
+	message_window_->setWindowSize( tnl::Vector2i( DEFAULT_MESS_WINDOW_SIZE.x, DEFAULT_MESS_WINDOW_SIZE.y));
+
+	// ------------------------- 操作説明ウィンドウの初期化 ---------------------------
+
+	control_explanation_window_->setWindowPos(CONTROL_EXPLANATION_WINDOW_POS);
+	control_explanation_window_->setMessageTopPos(tnl::Vector2i(10, 10));
+	control_explanation_window_->setWindowSize(tnl::Vector2i( CONTROL_EXPLANATION_WINDOW_SIZE.x, CONTROL_EXPLANATION_WINDOW_SIZE.y * CONTROL_EXPLANATION_WINDOW_MESSAGE_LINE ));
+	control_explanation_window_->setFontSize(25);
+	control_explanation_window_->setMessageSpace(0);
+	control_explanation_window_->setMessageLine(CONTROL_EXPLANATION_WINDOW_MESSAGE_LINE);
+
+	// 操作説明テキストの取得
+	CsvData& control_explanation_message = ResourceManager::getInstance()->loadCsvData("csv/control_explanation_data.csv");
+	
+	control_explanation_message_.resize( control_explanation_message.size() - 1 );
+	
+	for ( int y = GameManager::CSV_CELL_ROW_START; y < control_explanation_message.size(); ++y ) {
+		control_explanation_message_[y - 1].resize( control_explanation_message[y][0].getInt() );
+
+		for ( int x = GameManager::CSV_CELL_ROW_START; x < control_explanation_message[y][0].getInt() + 1; ++x ) {
+			control_explanation_message_[y - 1][x - 1] = control_explanation_message[y][x].getString();
+		}
+	}
+	
+	// 操作説明テキストを操作説明ウィンドウにセット
+	for (int i = 0; i < control_explanation_message_[0].size(); ++i) {
+		control_explanation_window_->setMessgae(control_explanation_message_[0][i]);
+	}
+
+	control_explanation_window_->setEnable(true);
 
 	// ------------------------- ステータス確認ウィンドウの初期化 ---------------------
 	view_status_window_->setWindowPos( SUB_WINDOW_POS );
-	view_status_window_->setWindowSize(tnl::Vector2i(300, 230));
+	view_status_window_->setWindowSize(tnl::Vector2i(300, 40 * 5));
 	view_status_window_->setMessageLine(5);
 
 	// ------------------------- 2択選択ウィンドウの初期化 ----------------------------
@@ -177,6 +218,9 @@ void UI_Manager::draw(const std::shared_ptr<Camera> camera) {
 	if (message_window_->isEnable()) {
 		message_window_->draw();
 	}
+	if (control_explanation_window_->isEnable()) {
+		control_explanation_window_->draw();
+	}
 	if (two_select_window_->isDrawing()) {
 		two_select_window_->draw();
 	}
@@ -211,6 +255,19 @@ int UI_Manager::getSelectedIndexFromMainMenuCmd() {
 void UI_Manager::openMainMenu() {
 	main_menu_select_window_->setDrawing(true);
 	main_menu_select_window_->setOperate(true);
+	//control_explanation_window_->setEnable(false);
+
+	tnl::Vector2i ctrl_explanation_window_pos_ = tnl::Vector2i(MAIN_MENU_WINDOW_POS.x - 50, MAIN_MENU_WINDOW_POS.y + main_menu_select_window_->getWindowSize().y + 20);
+
+	control_explanation_window_->setWindowPos(ctrl_explanation_window_pos_);
+	control_explanation_window_->setMessageLine(control_explanation_message_[2].size());
+	control_explanation_window_->setWindowSize(tnl::Vector2i(CONTROL_EXPLANATION_WINDOW_SIZE.x - 60, CONTROL_EXPLANATION_WINDOW_SIZE.y * control_explanation_message_[2].size()));
+	control_explanation_window_->setMessageLine(control_explanation_message_[2].size());
+
+	for (int i = 0; i < control_explanation_message_[2].size(); ++i) {
+		control_explanation_window_->setMessgae(control_explanation_message_[2][i]);
+	}
+
 }
 
 // =====================================================================================
@@ -219,6 +276,8 @@ void UI_Manager::openMainMenu() {
 void UI_Manager::closeMainMenu() {
 	main_menu_select_window_->setDrawing(false);
 	main_menu_select_window_->setOperate(false);
+	control_explanation_window_->setEnable(true);
+
 }
 
 // =====================================================================================
@@ -386,6 +445,22 @@ void UI_Manager::executeStairSelectEnd() {
 	message_window_->setWindowSize(DEFAULT_MESS_WINDOW_SIZE);
 	message_window_->clearMessage();
 	message_window_->setEnable(false);
+}
+
+// =====================================================================================
+// 操作画面ウィンドウの表示を切り替える
+// =====================================================================================
+void UI_Manager::changeCtrlExplanationWindowType(int window_type) {
+
+	control_explanation_window_->setWindowPos(CONTROL_EXPLANATION_WINDOW_POS);
+	control_explanation_window_->setWindowSize( 
+		tnl::Vector2i( CONTROL_EXPLANATION_WINDOW_SIZE.x, CONTROL_EXPLANATION_WINDOW_SIZE.y * control_explanation_message_[window_type].size() ) 
+	);
+	control_explanation_window_->setMessageLine(control_explanation_message_[window_type].size());
+
+	for (int i = 0; i < control_explanation_message_[window_type].size(); ++i) {
+		control_explanation_window_->setMessgae(control_explanation_message_[window_type][i]);
+	}
 }
 
 // =====================================================================================

@@ -20,30 +20,29 @@ private:
 	tnl::Vector2i mess_str_top_pos_ = { 30, 20 };
 	tnl::Vector2i mess_str_pos_ = window_pos_ + mess_str_top_pos_;
 
+	//
+	std::string ui_message_;
+	// 表示するメッセージ
+	std::vector<std::string> message_;
 
 	// 表示しているか判定
 	bool is_enable_ = false;
-
 	// 時間制限指定しているか判定
 	bool is_time_limit_ = false;
+	// 
+	bool is_draw_enter_ui_;
 
 	// 制限時間
 	float time_limit_ = 0.0f;
 
-	// 表示するメッセージ
-	std::vector<std::string> message_;
-
 	// 表示しているメッセージ数
 	int display_message_count_ = 0;
-
 	// 文字のサイズ
 	int message_font_size_ = 30;
-
 	// メッセージウィンドウに出せる文字の最大行数
 	int message_line_ = 4;
-	
 	// 行と行の間隔
-	int message_space_ = 40;
+	int message_space_ = 10;
 
 public:
 	// ゲッター
@@ -56,7 +55,7 @@ public:
 	}
 
 	// ウィンドウのサイズを設定
-	inline void setWindowSize(const tnl::Vector2i& size) { window_size_ = size; }
+	inline void setWindowSize(const tnl::Vector2i& size) { window_size_ = size + tnl::Vector2i( mess_str_top_pos_.x, mess_str_top_pos_.y * 2 ); }
 
 	// メッセージの表示位置の始点を決める
 	inline void setMessageTopPos(const tnl::Vector2i pos) { 
@@ -66,6 +65,9 @@ public:
 
 	// メッセージのフォントサイズを設定
 	inline void setFontSize(int size) { message_font_size_ = size; }
+
+	// メッセージの表示間隔を設定する
+	inline void setMessageSpace(int message_space) { message_space_ = message_space; }
 
 	// メッセージの最大行数を変更
 	inline void setMessageLine(int line) {

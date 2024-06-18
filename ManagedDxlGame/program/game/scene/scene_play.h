@@ -85,6 +85,9 @@ private:
 	// メニューを開いているか判定
 	bool is_opened_menu_;
 
+	// 説明を消しているか
+	bool is_hide_explanation_;
+
 	// --------------------------- フェード演出関連 -------------------------
 	// フェード演出の画像
 	int fade_gpc_hdl_;

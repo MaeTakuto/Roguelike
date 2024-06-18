@@ -57,6 +57,9 @@ private:
 	int selected_cmd_index_;
 
 public:
+	// 選択ウィンドウのサイズを設定
+	const tnl::Vector2i& getWindowSize() const { return window_size_; }
+
 	// 選択ウィンドウの表示位置を設定
 	void setWindowPos(const tnl::Vector2i& pos);
 

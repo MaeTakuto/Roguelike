@@ -12,8 +12,11 @@ public:
 	void draw();
 
 private:
+	// ステータスバーの位置
 	tnl::Vector2i status_bar_pos_;
+	// ステータスバーのサイズ
 	tnl::Vector2i status_bar_size_;
+	// 
 	tnl::Vector2i status_text_pos_;
 
 	int max_status_;
@@ -22,7 +25,11 @@ private:
 	std::string status_type_text_;
 	std::string status_text_;
 
+	// 文字サイズ
 	int message_font_size_;
+
+	// ステータスバーの輪郭サイズ
+	int status_bar_outline_size_;
 
 public:
 	// ステータスバーの位置を設定
