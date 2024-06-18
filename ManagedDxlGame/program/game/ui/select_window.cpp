@@ -9,8 +9,8 @@ namespace {
 }
 
 SelectWindow::SelectWindow() : window_pos_(0, 0), window_size_(150, 70), selected_cmd_ui_size_(window_size_.x, DEFAULT_FONT_SIZE), seleted_cmd_ui_space_(10, DEFAULT_FONT_SIZE),
-mess_str_pos_(window_pos_ + tnl::Vector2i(20, 20)), is_drawing_(false), is_operate_(false), message_font_size_(DEFAULT_FONT_SIZE), select_cmd_max_(0),
-message_line_(0), message_space_(0), selected_cmd_index_(0)
+	mess_str_pos_(window_pos_ + tnl::Vector2i(20, 20)), is_drawing_(false), is_operate_(false), message_font_size_(DEFAULT_FONT_SIZE), select_cmd_max_(0),
+	message_line_(0), message_space_(0), selected_cmd_index_(0)
 {
 	selected_cmd_ui_size_.x -= seleted_cmd_ui_space_.x * 2;
 }

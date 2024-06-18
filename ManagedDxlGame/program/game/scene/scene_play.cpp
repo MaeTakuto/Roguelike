@@ -28,7 +28,7 @@ namespace {
 	const int DUNGEON_NAME_FONT_SIZE = 60;
 
 	// クリア階数
-	const int CLEAR_FLOOR = 5;
+	const int CLEAR_FLOOR = 2;
 
 	// メッセージの表示時間
 	const float MESSAGE_DRAW_TIME = 3.0f;
@@ -37,7 +37,7 @@ namespace {
 ScenePlay::ScenePlay() : camera_(nullptr), player_(nullptr), dungeon_mgr_(nullptr),  enemy_mgr_(nullptr), ui_mgr_(nullptr), 
 	dungeon_floor_(1), is_created_dungeon_(false), is_drawing_dng_title_(true), is_game_clear_(false),
 	is_display_mini_map_(true), mini_map_pos_(750, 180), mini_map_size_(8), mini_map_cell_gpc_hdl_(0),
-	is_opened_menu_(false), fade_gpc_hdl_(0), alpha_(0), fade_time_(0.5f),
+	is_opened_menu_(false), is_hide_explanation_(false), fade_gpc_hdl_(0), alpha_(0), fade_time_(0.5f),
 	level_up_character_(nullptr), dungeon_bgm_hdl_(0), dungeon_bgm_hdl_path_("sound/dungeon02.mp3"),
 	damage_se_hdl_path_("sound/damaged.mp3"), open_select_window_se_hdl_path_("sound/springin/open_window.mp3"), level_up_se_hdl_path_("sound/springin/level_up.mp3"), 
 	button_enter_se_hdl_path_("sound/button_enter.mp3"), cancel_se_hdl_path_("sound/springin/cancel.mp3")
@@ -281,6 +281,7 @@ void ScenePlay::closeMainMenu() {
 
 	is_opened_menu_ = false;
 	ui_mgr_->closeMainMenu();
+	ui_mgr_->changeCtrlExplanationWindowType(is_hide_explanation_);
 }
 
 // ====================================================
@@ -654,8 +655,12 @@ bool ScenePlay::seqPlayerAct(const float delta_time) {
 	if (tnl::Input::IsKeyDownTrigger(eKeys::KB_TAB)) {
 		is_display_mini_map_ = !is_display_mini_map_;
 	}
+	if (tnl::Input::IsKeyDownTrigger(eKeys::KB_Q)) {
+		is_hide_explanation_ = !is_hide_explanation_;
+		ui_mgr_->changeCtrlExplanationWindowType(is_hide_explanation_);
+	}
 
-	if (tnl::Input::IsKeyDownTrigger(eKeys::KB_ESCAPE)) {
+	if (tnl::Input::IsKeyDownTrigger(eKeys::KB_E)) {
 		is_opened_menu_ = true;
 		dungeon_sequence_.change(&ScenePlay::seqSelectMainMenu);
 		ui_mgr_->openMainMenu();
@@ -936,7 +941,7 @@ bool ScenePlay::seqSelectMainMenu(const float delta_time) {
 bool ScenePlay::seqSelectMagicList(const float delta_time) {
 
 	// メインメニューに戻る
-	if ( tnl::Input::IsKeyDownTrigger( eKeys::KB_ESCAPE ) ) {
+	if ( tnl::Input::IsKeyDownTrigger( eKeys::KB_ESCAPE) ) {
 		ui_mgr_->closeMagicListWindow();
 		dungeon_sequence_.change(&ScenePlay::seqSelectMainMenu);
 		ResourceManager::getInstance()->playSound(cancel_se_hdl_path_, DX_PLAYTYPE_BACK);
@@ -981,7 +986,7 @@ bool ScenePlay::seqSelectToUseMagic(const float delta_time) {
 }
 
 // ====================================================
-// メインメニューの選択シーケンス
+// ステータス画面確認シーケンス
 // ====================================================
 bool ScenePlay::seqDrawStatusWindow(const float delta_time) {
 

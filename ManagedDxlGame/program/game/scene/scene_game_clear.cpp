@@ -13,7 +13,7 @@ namespace {
 	// メッセージウィンドウの位置
 	const tnl::Vector2i	MESSAGE_WINDOW_POS = { 175, 500 };
 	// メッセージウィンドウのサイズ
-	const tnl::Vector2i MESSAGE_WINDOW_SIZE = { 900, 200 };
+	const tnl::Vector2i MESSAGE_WINDOW_SIZE = { 900, 160 };
 }
 
 // =====================================================================================

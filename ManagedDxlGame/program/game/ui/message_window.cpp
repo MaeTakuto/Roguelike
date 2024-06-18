@@ -54,7 +54,7 @@ void MessageWindow::draw() {
 
 	SetFontSize(message_font_size_);
 	for (int line = 0; line < message_line_; line++) {
-		DrawStringEx(mess_str_pos_.x, mess_str_pos_.y + (message_space_ * line), -1, message_[line].c_str());
+		DrawStringEx(mess_str_pos_.x, mess_str_pos_.y + ( ( message_font_size_ + message_space_ ) * line), -1, message_[line].c_str());
 	}
 }
 

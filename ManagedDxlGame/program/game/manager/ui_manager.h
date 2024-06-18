@@ -23,6 +23,8 @@ private:
 	// ------------------- 各 UIクラス -------------------
 	// メッセージウィンドウ
 	std::shared_ptr<MessageWindow> message_window_;
+	// 操作説明ウィンドウ
+	std::shared_ptr<MessageWindow> control_explanation_window_;
 	// ステータスを確認するウィンドウ
 	std::shared_ptr<MessageWindow> view_status_window_;
 	// 魔法説明のウィンドウ
@@ -39,6 +41,9 @@ private:
 	std::shared_ptr<StatusBar> hp_bar_;
 	// プレイヤーのMPバー
 	std::shared_ptr<StatusBar> mp_bar_;
+
+	// 操作説明のメッセージ
+	std::vector< std::vector< std::string > > control_explanation_message_;
 
 	// UIのステータス参照用
 	std::weak_ptr<Character> ui_target_;
@@ -87,6 +92,9 @@ public:
 	void executeStairSelect();
 	// 階段での選択の実行
 	void executeStairSelectEnd();
+
+	// 操作画面ウィンドウの表示を切り替える
+	void changeCtrlExplanationWindowType(int window_type);
 
 	// メッセージウィンドウにメッセージをセット
 	void setMessage(const std::string& message, float draw_time = -1.0f);
