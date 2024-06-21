@@ -55,7 +55,7 @@ public:
 	}
 
 	// ウィンドウのサイズを設定
-	inline void setWindowSize(const tnl::Vector2i& size) { window_size_ = size + tnl::Vector2i( mess_str_top_pos_.x, mess_str_top_pos_.y * 2 ); }
+	inline void setWindowSize(const tnl::Vector2i& size) { window_size_ = size + tnl::Vector2i( mess_str_top_pos_.x, mess_str_top_pos_.y * 2 - message_space_); }
 
 	// メッセージの表示位置の始点を決める
 	inline void setMessageTopPos(const tnl::Vector2i pos) { 
@@ -67,7 +67,10 @@ public:
 	inline void setFontSize(int size) { message_font_size_ = size; }
 
 	// メッセージの表示間隔を設定する
-	inline void setMessageSpace(int message_space) { message_space_ = message_space; }
+	inline void setMessageSpace(int message_space) { 
+		window_size_.y += message_space_ - message_space;
+		message_space_ = message_space;
+	}
 
 	// メッセージの最大行数を変更
 	inline void setMessageLine(int line) {

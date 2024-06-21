@@ -46,9 +46,9 @@ void MessageWindow::update(float delta_time) {
 // =====================================================================================
 void MessageWindow::draw() {
 
-	SetDrawBlendMode(DX_BLENDMODE_ALPHA, 192);
-	DrawBox(window_pos_.x, window_pos_.y, window_pos_.x + window_size_.x, window_pos_.y + window_size_.y, GetColor(0, 0, 128), true);
-	SetDrawBlendMode(DX_BLENDMODE_ALPHA, 255);
+	SetDrawBlendMode(DX_BLENDMODE_ALPHA, 160);
+	DrawBox(window_pos_.x, window_pos_.y, window_pos_.x + window_size_.x, window_pos_.y + window_size_.y, GetColor(0, 0, 160), true);
+	SetDrawBlendMode(DX_BLENDMODE_NOBLEND, 255);
 
 	DrawBox(window_pos_.x, window_pos_.y, window_pos_.x + window_size_.x, window_pos_.y + window_size_.y, -1, false);
 

@@ -18,4 +18,10 @@ namespace mtl {
 
 		return random_value;
 	}
+
+	// w’è‚µ‚½•¶š—ñ‚ğ‰E‘µ‚¦‚É‚·‚é
+	std::string rightAlign(const std::string& str, int width) {
+		if (str.size() >= width) return str;
+		return std::string(width - str.size(), ' ') + str;
+	}
 }

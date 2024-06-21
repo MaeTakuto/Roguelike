@@ -21,7 +21,7 @@ namespace {
 	const std::string STAIR_SEL_MESSAGE = "穴がある。落ちますか？";
 
 	// 階数の表示位置
-	const tnl::Vector2i FLOOR_STR_POS = { 1000, 55 };
+	const tnl::Vector2i FLOOR_STR_POS = { 750, 55 };
 	const int FLOOR_STR_FONT_SIZE = 40;
 
 	// ウィンドウとウィンドウの間隔
@@ -30,42 +30,40 @@ namespace {
 	// 表示するコマンド名のフォントサイズ
 	const int SELECT_WINDOW_CMD_FONT_SIZE = 30;
 	// コマンドと次のコマンドとの表示間隔
-	const int SELECT_WINDOW_CMD_SPACE = SELECT_WINDOW_CMD_FONT_SIZE + 5;
+	const int SELECT_WINDOW_CMD_SPACE = 5;
 
 	// ================= 操作説明ウィンドウの設定 ===============================
 
-	// 階段選択ウィンドウの表示位置
-	const tnl::Vector2i CONTROL_EXPLANATION_WINDOW_POS = { 50, 150 };
-	// 2択ウィンドウの表示サイズ
+	// 操作説明ウィンドウの表示位置
+	const tnl::Vector2i CONTROL_EXPLANATION_WINDOW_POS = { 850, 25 };
+	// 操作説明ウィンドウの表示サイズ
 	const tnl::Vector2i CONTROL_EXPLANATION_WINDOW_SIZE = { 400, 25 };
-	// 
-	const int CONTROL_EXPLANATION_WINDOW_MESSAGE_LINE = 8;
 
 	// ================= 2択選択ウィンドウ（はい、いいえ）の設定 =================
 
 	// 階段選択ウィンドウの表示位置
 	const tnl::Vector2i STAIR_SELECT_WINDOW_POS = { 950, 450 };
 	// 2択ウィンドウの表示サイズ
-	const tnl::Vector2i TWO_SELECT_WINDOW_SIZE = { 160, 70 };
+	const tnl::Vector2i TWO_SELECT_WINDOW_SIZE = { 160, 0 };
 
 	// ================= メインメニューの設定 ====================================
 
 	// 選択ウィンドウの表示位置
 	const tnl::Vector2i MAIN_MENU_WINDOW_POS = { 100, 150 };
 	// 選択ウィンドウの表示位置
-	const tnl::Vector2i MAIN_MENU_WINDOW_SIZE = { 300, 70 };
+	const tnl::Vector2i MAIN_MENU_WINDOW_SIZE = { 300, 0 };
 
 	// ================= サブメニューの設定 ======================================
 
 	// サブメニューの表示位置
 	const tnl::Vector2i SUB_WINDOW_POS = tnl::Vector2i( MAIN_MENU_WINDOW_POS.x + MAIN_MENU_WINDOW_SIZE.x + WINDOW_SPACE.x, MAIN_MENU_WINDOW_POS.y );
 	// 魔法選択メニューの表示サイズ
-	const tnl::Vector2i MAGIC_WINDOW_SIZE = { 300, 70 };
+	const tnl::Vector2i MAGIC_WINDOW_SIZE = { 300, 0 };
 	// 
 	const tnl::Vector2i MAGIC_EXPLANTION_WINDOW_SIZE = { 450, 120 };
 
 	// ステータスバーの始点位置
-	const tnl::Vector2i STATUS_BAR_TOP_POS = { 450, 25 };
+	const tnl::Vector2i STATUS_BAR_TOP_POS = { 200, 25 };
 	// ステータスバーの表示サイズ
 	const tnl::Vector2i STATUS_BAR_SIZE = { 500, 40 };
 	// ステータスバーの間隔
@@ -87,25 +85,26 @@ UI_Manager::UI_Manager() : message_window_(std::make_shared<MessageWindow>()), c
 
 	// ------------------------- 操作説明ウィンドウの初期化 ---------------------------
 
-	control_explanation_window_->setWindowPos(CONTROL_EXPLANATION_WINDOW_POS);
-	control_explanation_window_->setMessageTopPos(tnl::Vector2i(10, 10));
-	control_explanation_window_->setWindowSize(tnl::Vector2i( CONTROL_EXPLANATION_WINDOW_SIZE.x, CONTROL_EXPLANATION_WINDOW_SIZE.y * CONTROL_EXPLANATION_WINDOW_MESSAGE_LINE ));
-	control_explanation_window_->setFontSize(25);
-	control_explanation_window_->setMessageSpace(0);
-	control_explanation_window_->setMessageLine(CONTROL_EXPLANATION_WINDOW_MESSAGE_LINE);
-
 	// 操作説明テキストの取得
 	CsvData& control_explanation_message = ResourceManager::getInstance()->loadCsvData("csv/control_explanation_data.csv");
-	
-	control_explanation_message_.resize( control_explanation_message.size() - 1 );
-	
-	for ( int y = GameManager::CSV_CELL_ROW_START; y < control_explanation_message.size(); ++y ) {
-		control_explanation_message_[y - 1].resize( control_explanation_message[y][0].getInt() );
 
-		for ( int x = GameManager::CSV_CELL_ROW_START; x < control_explanation_message[y][0].getInt() + 1; ++x ) {
+	control_explanation_message_.resize(control_explanation_message.size() - 1);
+
+	for (int y = GameManager::CSV_CELL_ROW_START; y < control_explanation_message.size(); ++y) {
+		control_explanation_message_[y - 1].resize(control_explanation_message[y][0].getInt());
+
+		for (int x = GameManager::CSV_CELL_ROW_START; x < control_explanation_message[y][0].getInt() + 1; ++x) {
 			control_explanation_message_[y - 1][x - 1] = control_explanation_message[y][x].getString();
 		}
 	}
+
+	// 操作説明ウィンドウの設定
+	control_explanation_window_->setWindowPos(CONTROL_EXPLANATION_WINDOW_POS);
+	control_explanation_window_->setMessageTopPos( tnl::Vector2i(10, 10) );
+	control_explanation_window_->setWindowSize( tnl::Vector2i( CONTROL_EXPLANATION_WINDOW_SIZE.x, CONTROL_EXPLANATION_WINDOW_SIZE.y * control_explanation_message_[0].size() ) );
+	control_explanation_window_->setFontSize(25);
+	control_explanation_window_->setMessageSpace(0);
+	control_explanation_window_->setMessageLine( control_explanation_message_[0].size() );
 	
 	// 操作説明テキストを操作説明ウィンドウにセット
 	for (int i = 0; i < control_explanation_message_[0].size(); ++i) {
@@ -131,11 +130,12 @@ UI_Manager::UI_Manager() : message_window_(std::make_shared<MessageWindow>()), c
 	two_select_cmd_names_[1][1] = "使わない";
 
 	two_select_window_->setWindowPos( STAIR_SELECT_WINDOW_POS );
-	two_select_window_->setWindowSize( tnl::Vector2i( TWO_SELECT_WINDOW_SIZE.x, TWO_SELECT_WINDOW_SIZE.y + SELECT_WINDOW_CMD_FONT_SIZE * ( two_select_cmd_names_.size() - 1 ) ) );
+	two_select_window_->setWindowSize( tnl::Vector2i( TWO_SELECT_WINDOW_SIZE.x, TWO_SELECT_WINDOW_SIZE.y + ( SELECT_WINDOW_CMD_FONT_SIZE + SELECT_WINDOW_CMD_FONT_SIZE ) * ( two_select_cmd_names_.size() - 1 ) ) );
 	two_select_window_->setFontSize( SELECT_WINDOW_CMD_FONT_SIZE );
 	two_select_window_->setMessageSpace( SELECT_WINDOW_CMD_SPACE );
 	two_select_window_->setSelectCmdMax( std::underlying_type<eTwoSelectCmd>::type( eTwoSelectCmd::MAX ) );
 	two_select_window_->setCommandNames( two_select_cmd_names_[0] );
+	two_select_window_->calculateWindowSize();
 
 	// ------------------------- メインメニューウィンドウの初期化 ----------------------
 	std::vector<std::string> select_cmd_names(static_cast<size_t>(eMainMenuCmd::MAX));
@@ -146,20 +146,22 @@ UI_Manager::UI_Manager() : message_window_(std::make_shared<MessageWindow>()), c
 	select_cmd_names[ std::underlying_type<eMainMenuCmd>::type(eMainMenuCmd::CLOSE) ]			= "とじる";
 	
 	main_menu_select_window_->setWindowPos( MAIN_MENU_WINDOW_POS );
-	main_menu_select_window_->setWindowSize( tnl::Vector2i( MAIN_MENU_WINDOW_SIZE.x, MAIN_MENU_WINDOW_SIZE.y + SELECT_WINDOW_CMD_SPACE * ( select_cmd_names.size() - 1 ) ) );
+	main_menu_select_window_->setWindowSize(MAIN_MENU_WINDOW_SIZE);
 	main_menu_select_window_->setFontSize( SELECT_WINDOW_CMD_FONT_SIZE );
 	main_menu_select_window_->setMessageSpace( SELECT_WINDOW_CMD_SPACE );
 	main_menu_select_window_->setSelectCmdMax( std::underlying_type<eMainMenuCmd>::type( eMainMenuCmd::MAX ) );
 	main_menu_select_window_->setCommandNames( select_cmd_names );
+	main_menu_select_window_->calculateWindowSize();
 
 	// ------------------------- 魔法一覧の選択ウィンドウの初期化 ----------------------
 	magic_select_window_->setWindowPos( SUB_WINDOW_POS );
 	magic_select_window_->setWindowSize( MAGIC_WINDOW_SIZE );
 	magic_select_window_->setFontSize( SELECT_WINDOW_CMD_FONT_SIZE );
 	magic_select_window_->setMessageSpace( SELECT_WINDOW_CMD_SPACE );
+	magic_select_window_->calculateWindowSize();
 
 	magic_explation_window_->setWindowPos( SUB_WINDOW_POS 
-		+ tnl::Vector2i( MAGIC_WINDOW_SIZE.x, TWO_SELECT_WINDOW_SIZE.y  + SELECT_WINDOW_CMD_SPACE * ( two_select_cmd_names_.size() - 1 ) )
+		+ tnl::Vector2i( MAGIC_WINDOW_SIZE.x, two_select_window_->getWindowSize().y )
 		+ WINDOW_SPACE
 	);
 
@@ -169,12 +171,13 @@ UI_Manager::UI_Manager() : message_window_(std::make_shared<MessageWindow>()), c
 
 	// ------------------------- ステータスバーの初期化 --------------------------------
 	hp_bar_->setStatusBarPos(STATUS_BAR_TOP_POS);
-	hp_bar_->setStatusBarSize(STATUS_BAR_SIZE);
+	// hp_bar_->setStatusBarSize(STATUS_BAR_SIZE);
 	hp_bar_->setStatusTypeText("HP");
 
 	mp_bar_->setStatusBarPos( STATUS_BAR_TOP_POS + tnl::Vector2i( 0, STATUS_BAR_SIZE.y ) + STATUS_BAR_SPACE );
-	mp_bar_->setStatusBarSize( STATUS_BAR_SIZE );
+	// mp_bar_->setStatusBarSize( STATUS_BAR_SIZE );
 	mp_bar_->setStatusTypeText("MP");
+	mp_bar_->setStatusBarColor(StatusBar::eStatusBarColor::LIGHT_BLUE);
 
 }
 
@@ -301,6 +304,7 @@ void UI_Manager::updateMagicList() {
 	magic_select_window_->setWindowSize(tnl::Vector2i( MAGIC_WINDOW_SIZE.x, MAGIC_WINDOW_SIZE.y + SELECT_WINDOW_CMD_SPACE * ( select_cmd_names.size() - 1 ) ) );
 	magic_select_window_->setSelectCmdMax(select_cmd_names.size());
 	magic_select_window_->setCommandNames(select_cmd_names);
+	magic_select_window_->calculateWindowSize();
 
 }
 
@@ -359,10 +363,10 @@ void UI_Manager::updateMagicExplation() {
 // =====================================================================================
 void UI_Manager::executeSletctToUseMagic() {
 	magic_select_window_->setOperate(false);
-	two_select_window_->setCommandNames(two_select_cmd_names_[1]);
 	two_select_window_->setDrawing(true);
 	two_select_window_->setOperate(true);
 	two_select_window_->setWindowPos( SUB_WINDOW_POS + tnl::Vector2i( MAGIC_WINDOW_SIZE.x + WINDOW_SPACE.x, 0 ) );
+	two_select_window_->setCommandNames(two_select_cmd_names_[1]);
 
 }
 
@@ -418,10 +422,10 @@ int UI_Manager::getSelectedIndexFromTwoSelectCmd() {
 // =====================================================================================
 void UI_Manager::executeStairSelect() {
 	// 二択の選択ウィンドウの有効にする
-	two_select_window_->setCommandNames(two_select_cmd_names_[0]);
 	two_select_window_->setDrawing(true);
 	two_select_window_->setOperate(true);
 	two_select_window_->setWindowPos(STAIR_SELECT_WINDOW_POS);
+	two_select_window_->setCommandNames(two_select_cmd_names_[0]);
 
 	// メッセージウィンドウ関連の処理
 	message_window_->cancelTimeLimit();
@@ -461,6 +465,10 @@ void UI_Manager::changeCtrlExplanationWindowType(int window_type) {
 	for (int i = 0; i < control_explanation_message_[window_type].size(); ++i) {
 		control_explanation_window_->setMessgae(control_explanation_message_[window_type][i]);
 	}
+}
+
+void UI_Manager::hideCtrlExplanationWindow() {
+	control_explanation_window_->setEnable(false);
 }
 
 // =====================================================================================

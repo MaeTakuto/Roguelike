@@ -95,6 +95,8 @@ public:
 
 	// 操作画面ウィンドウの表示を切り替える
 	void changeCtrlExplanationWindowType(int window_type);
+	// 
+	void hideCtrlExplanationWindow();
 
 	// メッセージウィンドウにメッセージをセット
 	void setMessage(const std::string& message, float draw_time = -1.0f);

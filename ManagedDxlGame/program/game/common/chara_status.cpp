@@ -9,6 +9,19 @@ CharaStatus::~CharaStatus() {
 
 }
 
+CharaStatus::CharaStatus(const CharaStatus& status) {
+	
+	level_ = status.level_;
+	max_hp_ = status.max_hp_;
+	hp_ = status.hp_;
+	max_mp_ = status.max_mp_;
+	mp_ = status.mp_;
+	atk_ = status.atk_;
+	def_ = status.def_;
+	exp_ = status.exp_;
+
+}
+
 int CharaStatus::healHP(int amount) {
 	int heal_amount = 0;
 	if (hp_ >= max_hp_) return heal_amount;

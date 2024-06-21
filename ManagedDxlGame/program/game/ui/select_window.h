@@ -28,7 +28,9 @@ private:
 
 	// 選択中コマンドUIの表示位置の間隔調整
 	tnl::Vector2i seleted_cmd_ui_space_;
-
+	
+	// メッセージの位置
+	tnl::Vector2i mess_str_top_pos_;
 	// メッセージの位置
 	tnl::Vector2i mess_str_pos_;
 
@@ -65,6 +67,9 @@ public:
 
 	// 選択ウィンドウのサイズを設定
 	void setWindowSize(const tnl::Vector2i& size);
+
+	// ウィンづサイズ（ 高さ ）を計算する。
+	void calculateWindowSize();
 
 	// コマンドメッセージの表示間隔を設定
 	inline void setMessageSpace(int space) { message_space_ = space; }

@@ -5,11 +5,13 @@
 #include "../object/character/player.h"
 
 class DungeonManager;
+class DungeonLog;
 class Camera;
 class Player;
 class EnemyBase;
 class EnemyManager;
 class UI_Manager;
+
 
 // プレイシーンクラス
 class ScenePlay final : public SceneBase {
@@ -37,6 +39,8 @@ private:
 	std::shared_ptr<Player> player_;
 	// ダンジョンの生成処理を行うクラス
 	std::shared_ptr<DungeonManager> dungeon_mgr_;
+	// ダンジョンでの出来事を記録するクラス
+	std::shared_ptr<DungeonLog> dungeon_log_;
 	// ダンジョンに生成される敵の生成、行動制御などを管理するクラス
 	std::shared_ptr<EnemyManager> enemy_mgr_ ;
 	// シーンプレイの表示されるUIの管理をするクラス
@@ -213,12 +217,15 @@ private:
 	void checkToUseMagic();
 	// 次のフロアに変える処理を行う
 	void changeProcessNextFloor();
+	// ダンジョンログの書き込みを行う
+	void writeDungeonLog();
 	// ゲームオーバー処理を実行する
 	void executeGameOverProcess();
 	// ゲームクリアの処理を実行する
 	void executeGameClearProcess();
 	// プレイヤーがいるセルを確認する
 	bool checkPlayerCell();
+
 
 
 	// =========== メインシーケンス ===========
@@ -239,6 +246,7 @@ private:
 	bool seqCharaMove(const float delta_time);
 	bool seqActEndProcess(const float delta_time);
 	bool seqStairSelect(const float delta_time);
+	bool seqDrawGameOverMessage(const float delta_time);
 	bool seqGameOver(const float delta_time);
 	bool seqSelectMainMenu(const float delta_time);
 	bool seqSelectMagicList(const float delta_time);

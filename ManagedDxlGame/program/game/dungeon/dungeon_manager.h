@@ -92,4 +92,7 @@ private:
 	// 敵の生成位置を決める
 	void spawnEnemy();
 
+	// 指定した座標から、指定した地形と一致する周囲の地形を数える
+	int countTerrainForDirection(int x, int y, eMapData terrain_data);
+
 };

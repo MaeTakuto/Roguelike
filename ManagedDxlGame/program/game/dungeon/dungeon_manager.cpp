@@ -255,6 +255,7 @@ void DungeonManager::createRoom() {
 // =====================================================================================
 void DungeonManager::connectRoom(int area_index) {
 
+	// 隣のエリアインデックス
 	int neighbor_index;
 
 	tnl::DebugTrace("========== connectRoom(area_index = %d) ===========\n", area_index);
@@ -266,6 +267,7 @@ void DungeonManager::connectRoom(int area_index) {
 	// 次のエリアが見つかった場合
 	if (areas_[area_index].connect_area_index != -1) {
 
+		// 次に部屋を繋げるエリア番号のセット
 		areas_[neighbor_index].is_connect = true;
 		order_connect_rooms_[order_index_ + 1] = neighbor_index;
 		order_index_++;
@@ -285,8 +287,12 @@ void DungeonManager::connectRoom(int area_index) {
 		case eDir_4::UP:
 			// 両ルームの適当な座標指定
 			index = order_connect_rooms_[order_index_ - 1 - connect_error_count_];
-			dx1 = random(areas_[index].room.x + ROOM_AND_ROAD_SPACE, areas_[index].room.x + areas_[index].room.width - 1 - ROOM_AND_ROAD_SPACE);
+
 			dy1 = areas_[index].room.y;
+
+			do {
+				dx1 = random(areas_[index].room.x + ROOM_AND_ROAD_SPACE, areas_[index].room.x + areas_[index].room.width - 1 - ROOM_AND_ROAD_SPACE);
+			} while (countTerrainForDirection(dx1, dy1 - 1, eMapData::GROUND) >= 2);
 
 			// 部屋の入口の座標を設定
 			areas_[index].room.entrance.emplace_back();
@@ -298,8 +304,12 @@ void DungeonManager::connectRoom(int area_index) {
 			index = order_connect_rooms_[order_index_];
 			tnl::DebugTrace("d2 index = %d\n", index);
 
-			dx2 = random(areas_[index].room.x + ROOM_AND_ROAD_SPACE, areas_[index].room.x + areas_[index].room.width - 1 - ROOM_AND_ROAD_SPACE);
-			dy2 = areas_[index].room.y + areas_[index].room.height - 1 - rand() % (ROOM_AND_ROAD_SPACE + 1);
+			dy2 = areas_[index].room.y + areas_[index].room.height - 1;
+
+			do {
+				dx2 = random(areas_[index].room.x + ROOM_AND_ROAD_SPACE, areas_[index].room.x + areas_[index].room.width - 1 - ROOM_AND_ROAD_SPACE);
+			} while (countTerrainForDirection(dx2, areas_[index].room.y + areas_[index].room.height, eMapData::GROUND) >= 2);
+
 			tnl::DebugTrace("dx1 = %d, dy1 = %d, dx2 = %d, dy2 = %d\n", dx1, dy1, dx2, dy2);
 			tnl::DebugTrace("上通路作成\n");
 
@@ -317,7 +327,11 @@ void DungeonManager::connectRoom(int area_index) {
 			// 両ルームの適当な座標指定
 			index = order_connect_rooms_[order_index_ - 1 - connect_error_count_];
 			dx1 = random(areas_[index].room.x + ROOM_AND_ROAD_SPACE, areas_[index].room.x + areas_[index].room.width - 1 - ROOM_AND_ROAD_SPACE);
-			dy1 = areas_[index].room.y + areas_[index].room.height - 1 - rand() % (ROOM_AND_ROAD_SPACE + 1);
+			dy1 = areas_[index].room.y + areas_[index].room.height - 1;
+
+			do {
+				dx1 = random(areas_[index].room.x + ROOM_AND_ROAD_SPACE, areas_[index].room.x + areas_[index].room.width - 1 - ROOM_AND_ROAD_SPACE);
+			} while (countTerrainForDirection(dx1, areas_[index].room.y + areas_[index].room.height, eMapData::GROUND) >= 2);
 
 			// 部屋の入口の座標を設定
 			areas_[index].room.entrance.emplace_back();
@@ -330,8 +344,13 @@ void DungeonManager::connectRoom(int area_index) {
 			index = order_connect_rooms_[order_index_];
 			tnl::DebugTrace("d2 index = %d\n", index);
 			
-			dx2 = random(areas_[index].room.x + ROOM_AND_ROAD_SPACE, areas_[index].room.x + areas_[index].room.width - 1 - ROOM_AND_ROAD_SPACE);
+			//dx2 = random(areas_[index].room.x + ROOM_AND_ROAD_SPACE, areas_[index].room.x + areas_[index].room.width - 1 - ROOM_AND_ROAD_SPACE);
 			dy2 = areas_[index].room.y;
+
+			do {
+				dx2 = random(areas_[index].room.x + ROOM_AND_ROAD_SPACE, areas_[index].room.x + areas_[index].room.width - 1 - ROOM_AND_ROAD_SPACE);
+			} while (countTerrainForDirection(dx2, dy2 - 1, eMapData::GROUND) >= 2);
+
 			tnl::DebugTrace("dx1 = %d, dy1 = %d, dx2 = %d, dy2 = %d\n", dx1, dy1, dx2, dy2);
 			tnl::DebugTrace("下通路作成\n");
 
@@ -348,7 +367,10 @@ void DungeonManager::connectRoom(int area_index) {
 			// 両ルームの適当な座標指定
 			index = order_connect_rooms_[order_index_ - 1 - connect_error_count_];
 			dx1 = areas_[index].room.x;
-			dy1 = random(areas_[index].room.y + ROOM_AND_ROAD_SPACE, areas_[index].room.y + areas_[index].room.height - 1 - ROOM_AND_ROAD_SPACE);
+			
+			do {
+				dy1 = random(areas_[index].room.y + ROOM_AND_ROAD_SPACE, areas_[index].room.y + areas_[index].room.height - 1 - ROOM_AND_ROAD_SPACE);
+			} while (countTerrainForDirection(dx1 - 1, dy1, eMapData::GROUND) >= 2);
 
 			// 部屋の入口を設定
 			areas_[index].room.entrance.emplace_back();
@@ -360,8 +382,12 @@ void DungeonManager::connectRoom(int area_index) {
 			index = order_connect_rooms_[order_index_];
 			tnl::DebugTrace("d2 index = %d\n", index);
 
-			dx2 = areas_[index].room.x + areas_[index].room.width - 1 - rand() % ( ROOM_AND_ROAD_SPACE + 1 );
-			dy2 = random(areas_[index].room.y + ROOM_AND_ROAD_SPACE, areas_[index].room.y + areas_[index].room.height - 1 - ROOM_AND_ROAD_SPACE);
+			dx2 = areas_[index].room.x + areas_[index].room.width - 1;
+
+			do {
+				dy2 = random(areas_[index].room.y + ROOM_AND_ROAD_SPACE, areas_[index].room.y + areas_[index].room.height - 1 - ROOM_AND_ROAD_SPACE);
+			} while (countTerrainForDirection(areas_[index].room.x + areas_[index].room.width, dy2, eMapData::GROUND) >= 2);
+
 			tnl::DebugTrace("dx1 = %d, dy1 = %d, dx2 = %d, dy2 = %d\n", dx1, dy1, dx2, dy2);
 			tnl::DebugTrace("左通路作成\n");
 			
@@ -378,8 +404,12 @@ void DungeonManager::connectRoom(int area_index) {
 		case eDir_4::RIGHT:
 			// 両ルームの適当な座標指定
 			index = order_connect_rooms_[order_index_ - 1 - connect_error_count_];
-			dx1 = areas_[index].room.x + areas_[index].room.width - 1 - rand() % (ROOM_AND_ROAD_SPACE + 1);
-			dy1 = random(areas_[index].room.y + ROOM_AND_ROAD_SPACE, areas_[index].room.y + areas_[index].room.height - 1 - ROOM_AND_ROAD_SPACE);
+
+			dx1 = areas_[index].room.x + areas_[index].room.width - 1;
+
+			do {
+				dy1 = random(areas_[index].room.y + ROOM_AND_ROAD_SPACE, areas_[index].room.y + areas_[index].room.height - 1 - ROOM_AND_ROAD_SPACE);
+			} while (countTerrainForDirection(areas_[index].room.x + areas_[index].room.width, dy1, eMapData::GROUND) >= 2);
 
 			// 部屋の入口の座標を設定
 			areas_[index].room.entrance.emplace_back();
@@ -392,7 +422,11 @@ void DungeonManager::connectRoom(int area_index) {
 			tnl::DebugTrace("d2 index = %d\n", index);
 			
 			dx2 = areas_[index].room.x;
-			dy2 = random(areas_[index].room.y + ROOM_AND_ROAD_SPACE, areas_[index].room.y + areas_[index].room.height - 1 - ROOM_AND_ROAD_SPACE);
+
+			do {
+				dy2 = random(areas_[index].room.y + ROOM_AND_ROAD_SPACE, areas_[index].room.y + areas_[index].room.height - 1 - ROOM_AND_ROAD_SPACE);
+			} while (countTerrainForDirection(dx2 - 1, dy2, eMapData::GROUND) >= 2);
+
 			tnl::DebugTrace("dx1 = %d, dy1 = %d, dx2 = %d, dy2 = %d\n", dx1, dy1, dx2, dy2);
 			tnl::DebugTrace("右通路作成\n");
 
@@ -504,7 +538,8 @@ void DungeonManager::getNextConnectRoomIndex(int area_index) {
 }
 
 // =====================================================================================
-// 
+// 繋げようとしているエリアと指定された座標のエリアの番号が最大値か比較し、
+// 最大値の場合、繋げるエリア"connect_area_index"を引数で指定された座標のエリアの番号にする。
 // =====================================================================================
 bool DungeonManager::checkConnectAreaNumMax(int x, int y, int area_index) {
 
@@ -670,4 +705,17 @@ void DungeonManager::spawnEnemy() {
 			spawn_num++;
 		}
 	}
+}
+
+int DungeonManager::countTerrainForDirection(int x, int y, eMapData terrain_data) {
+
+	int count = 0;
+
+	for (int i = 0; i < std::underlying_type<eDir_4>::type(eDir_4::MAX); ++i) {
+		if (field_[y + DIR_POS[i].y][x + DIR_POS[i].x].terrain_data == terrain_data) {
+			++count;
+		}
+	}
+
+	return 0;
 }
