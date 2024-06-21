@@ -311,6 +311,9 @@
     <ClCompile Include="program\game\common\struct_data.cpp">
       <Filter>program\[003] game\common</Filter>
     </ClCompile>
+    <ClCompile Include="program\game\dungeon\dungeon_log.cpp">
+      <Filter>program\[003] game\dungeon</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="ManagedDxlGame.rc">
@@ -601,6 +604,9 @@
     </ClInclude>
     <ClInclude Include="program\game\common\struct_data.h">
       <Filter>program\[003] game\common</Filter>
+    </ClInclude>
+    <ClInclude Include="program\game\dungeon\dungeon_log.h">
+      <Filter>program\[003] game\dungeon</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

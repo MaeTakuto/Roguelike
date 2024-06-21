@@ -7,4 +7,7 @@ namespace mtl {
 	// arg1...範囲の始まり
 	// arg2...範囲の終わり
 	int getRandomValue(int start, int end);
+
+	// 指定した文字列を右揃えにする
+	std::string rightAlign(const std::string& str, int width);
 }

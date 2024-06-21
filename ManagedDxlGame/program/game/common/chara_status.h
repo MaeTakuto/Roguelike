@@ -9,6 +9,8 @@ public:
 	CharaStatus();
 	~CharaStatus();
 
+	CharaStatus(const CharaStatus& status);
+
 	// ゲッター
 
 	// 現在のレベル

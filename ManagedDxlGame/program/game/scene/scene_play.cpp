@@ -3,6 +3,7 @@
 #include "../manager/gm_manager.h"
 #include "../manager/resource_manager.h"
 #include "../dungeon/dungeon_manager.h"
+#include "../dungeon/dungeon_log.h"
 #include "../manager/enemy_manager.h"
 #include "../base/enemy_base.h"
 #include "../manager/ui_manager.h"
@@ -34,9 +35,10 @@ namespace {
 	const float MESSAGE_DRAW_TIME = 3.0f;
 }
 
-ScenePlay::ScenePlay() : camera_(nullptr), player_(nullptr), dungeon_mgr_(nullptr),  enemy_mgr_(nullptr), ui_mgr_(nullptr), 
+ScenePlay::ScenePlay() : camera_(std::make_shared<Camera>()), player_(std::make_shared<Player>()), dungeon_mgr_(std::make_shared<DungeonManager>()),
+	dungeon_log_(std::make_shared<DungeonLog>()), enemy_mgr_(std::make_shared<EnemyManager>()), ui_mgr_(std::make_shared<UI_Manager>()),
 	dungeon_floor_(1), is_created_dungeon_(false), is_drawing_dng_title_(true), is_game_clear_(false),
-	is_display_mini_map_(true), mini_map_pos_(750, 180), mini_map_size_(8), mini_map_cell_gpc_hdl_(0),
+	is_display_mini_map_(true), mini_map_pos_(50, 180), mini_map_size_(8), mini_map_cell_gpc_hdl_(0),
 	is_opened_menu_(false), is_hide_explanation_(false), fade_gpc_hdl_(0), alpha_(0), fade_time_(0.5f),
 	level_up_character_(nullptr), dungeon_bgm_hdl_(0), dungeon_bgm_hdl_path_("sound/dungeon02.mp3"),
 	damage_se_hdl_path_("sound/damaged.mp3"), open_select_window_se_hdl_path_("sound/springin/open_window.mp3"), level_up_se_hdl_path_("sound/springin/level_up.mp3"), 
@@ -45,13 +47,6 @@ ScenePlay::ScenePlay() : camera_(nullptr), player_(nullptr), dungeon_mgr_(nullpt
 
 	tnl::DebugTrace("ScenePlayのコンストラクタが実行されました\n");
 	// SetBackgroundColor(0, 0, 0);
-
-	// ------------------- 各クラスの生成 ------------------------------
-	player_	= std::make_shared<Player>();
-	dungeon_mgr_ = std::make_shared<DungeonManager>();
-	camera_	= std::make_shared<Camera>();
-	enemy_mgr_ = std::make_shared<EnemyManager>();
-	ui_mgr_ = std::make_shared<UI_Manager>();
 
 	// --------------- フィールドサイズの初期化-------------------------
 	field_.resize(GameManager::FIELD_HEIGHT);
@@ -171,10 +166,8 @@ void ScenePlay::draw() {
 			drawMiniMap();
 		}
 		ui_mgr_->draw(camera_);
+		dungeon_log_->draw();
 
-		SetFontSize(25);
-		DrawStringEx(10, 25, -1, "ESC：メニューを開く");
-		DrawStringEx(10, 50, -1, "TAB：マップを閉じる");
 	}
 	SetDrawBlendMode(DX_BLENDMODE_ALPHA, alpha_);
 	DrawExtendGraph(0, 0, DXE_WINDOW_WIDTH, DXE_WINDOW_HEIGHT, fade_gpc_hdl_, true);
@@ -340,7 +333,7 @@ void ScenePlay::applyDamage(std::shared_ptr<Character> attacker, std::shared_ptr
 	ui_mgr_->setMessage(message, MESSAGE_DRAW_TIME);
 	tnl::DebugTrace("%dダメージを与えた。\n", attacker->getStatus().getAtk());
 
-	if (!target->isAlive()) {
+	if (!target->isAlive() && target.get() != player_.get()) {
 		defeatCharacter(attacker, target);
 	}
 
@@ -362,6 +355,13 @@ void ScenePlay::changeProcessNextFloor() {
 	dungeon_sequence_.change(&ScenePlay::seqPlayerAct);
 	++dungeon_floor_;
 	is_created_dungeon_ = false;
+}
+
+void ScenePlay::writeDungeonLog() {
+
+	dungeon_log_->setEndFloor(dungeon_floor_);
+	dungeon_log_->setEndStatus(player_->getStatus());
+	dungeon_log_->updateDungeonLogMessage();
 }
 
 // ====================================================
@@ -407,7 +407,8 @@ void ScenePlay::executeGameOverProcess() {
 	ui_mgr_->clearMessage();
 	std::string message = player_->getName() + "はやられてしまった";
 	ui_mgr_->setMessage(message);
-	dungeon_sequence_.immediatelyChange(&ScenePlay::seqGameOver);
+	dungeon_sequence_.immediatelyChange(&ScenePlay::seqDrawGameOverMessage);
+	writeDungeonLog();
 }
 
 // ====================================================
@@ -417,9 +418,14 @@ void ScenePlay::executeGameClearProcess() {
 	ui_mgr_->clearMessage();
 	std::string message = "ダンジョンを制覇しました！";
 	ui_mgr_->setMessage(message);
+
 	is_game_clear_ = true;
 	GameManager::GetInstance()->setGameClear(true);
-	dungeon_sequence_.immediatelyChange(&ScenePlay::seqGameOver);
+	dungeon_sequence_.immediatelyChange(&ScenePlay::seqDrawGameOverMessage);
+	
+	dungeon_log_->setEndMessage("ダンジョンを制覇しました。");
+	dungeon_log_->setDungeonClear(true);
+	writeDungeonLog();
 }
 
 // ====================================================
@@ -454,6 +460,7 @@ void ScenePlay::defeatCharacter(std::shared_ptr<Character> attacker, std::shared
 	std::string message = target->getName() + "を倒した";
 	ui_mgr_->setMessage(message, MESSAGE_DRAW_TIME);
 	tnl::DebugTrace("倒した\n");
+	dungeon_log_->additionRepellingEnemy();
 
 	if (enemy_mgr_->getAliveEnemyNum() <= 0) {
 		std::string message = "敵の気配がなくなった";
@@ -767,6 +774,7 @@ bool ScenePlay::seqTargetDamaged(const float delta_time) {
 	// 攻撃対象を倒したとき、時の確認
 	if (!atk_targets_.front()->isAlive()) {
 		if (atk_targets_.front().get() == player_.get()) {
+			dungeon_log_->setEndMessage(attackers_.front()->getName() + "にやられてしまった。");
 			executeGameOverProcess();
 			return true;
 		}
@@ -873,6 +881,18 @@ bool ScenePlay::seqStairSelect(const float delta_time) {
 	return true;
 }
 
+bool ScenePlay::seqDrawGameOverMessage(const float delta_time)
+{
+	if (tnl::Input::IsKeyDownTrigger(eKeys::KB_RETURN)) {
+		dungeon_log_->setDrawing(true);
+		ui_mgr_->hideCtrlExplanationWindow();
+		ui_mgr_->clearMessage();
+		dungeon_sequence_.change(&ScenePlay::seqGameOver);
+		ResourceManager::getInstance()->playSound(open_select_window_se_hdl_path_, DX_PLAYTYPE_BACK);
+	}
+	return false;
+}
+
 // ====================================================
 // ゲームオーバーシーケンス
 // ====================================================
@@ -883,7 +903,7 @@ bool ScenePlay::seqGameOver(const float delta_time) {
 			GameManager::GetInstance()->changeScene(std::make_shared<SceneGameClear>(), 2.0f);
 		}
 		else {
-			GameManager::GetInstance()->changeScene(std::make_shared<SceneTitle>());
+			GameManager::GetInstance()->changeScene(std::make_shared<SceneTitle>(), 2.0f);
 		}
 	}
 	return true;
@@ -895,7 +915,7 @@ bool ScenePlay::seqGameOver(const float delta_time) {
 bool ScenePlay::seqSelectMainMenu(const float delta_time) {
 
 	// メインメニューを閉じる
-	if ( tnl::Input::IsKeyDownTrigger( eKeys::KB_ESCAPE ) ) {
+	if ( tnl::Input::IsKeyDownTrigger( eKeys::KB_BACK ) ) {
 		ResourceManager::getInstance()->playSound(cancel_se_hdl_path_, DX_PLAYTYPE_BACK);
 		dungeon_sequence_.change(&ScenePlay::seqPlayerAct);
 		closeMainMenu();
@@ -941,7 +961,7 @@ bool ScenePlay::seqSelectMainMenu(const float delta_time) {
 bool ScenePlay::seqSelectMagicList(const float delta_time) {
 
 	// メインメニューに戻る
-	if ( tnl::Input::IsKeyDownTrigger( eKeys::KB_ESCAPE) ) {
+	if ( tnl::Input::IsKeyDownTrigger( eKeys::KB_BACK) ) {
 		ui_mgr_->closeMagicListWindow();
 		dungeon_sequence_.change(&ScenePlay::seqSelectMainMenu);
 		ResourceManager::getInstance()->playSound(cancel_se_hdl_path_, DX_PLAYTYPE_BACK);
@@ -964,7 +984,7 @@ bool ScenePlay::seqSelectMagicList(const float delta_time) {
 bool ScenePlay::seqSelectToUseMagic(const float delta_time) {
 
 	// メインメニューに戻る
-	if (tnl::Input::IsKeyDownTrigger(eKeys::KB_ESCAPE)) {
+	if (tnl::Input::IsKeyDownTrigger(eKeys::KB_BACK)) {
 		dungeon_sequence_.change(&ScenePlay::seqSelectMagicList);
 		ui_mgr_->executeSletctToUseMagicEnd();
 		ResourceManager::getInstance()->playSound(cancel_se_hdl_path_, DX_PLAYTYPE_BACK);
@@ -990,7 +1010,7 @@ bool ScenePlay::seqSelectToUseMagic(const float delta_time) {
 // ====================================================
 bool ScenePlay::seqDrawStatusWindow(const float delta_time) {
 
-	if (tnl::Input::IsKeyDownTrigger(eKeys::KB_ESCAPE, eKeys::KB_RETURN)) {
+	if (tnl::Input::IsKeyDownTrigger(eKeys::KB_BACK, eKeys::KB_RETURN)) {
 		ui_mgr_->hideStatusWindow();
 		dungeon_sequence_.change(&ScenePlay::seqSelectMainMenu);
 		ResourceManager::getInstance()->playSound(cancel_se_hdl_path_, DX_PLAYTYPE_BACK);
