@@ -82,12 +82,16 @@ private:
 	tnl::Vector2i mini_map_pos_;
 	// ミニマップを表示しているか判定
 	bool is_display_mini_map_;
+	// メニューを開いているか判定
+	bool is_opened_menu_;
+	// プレイヤーを表示しているか判定
+	bool is_display_player_icon_;
 	// ミニマップの表示サイズ
 	int mini_map_size_;
 	// ミニマップの画像
 	int mini_map_cell_gpc_hdl_;
-	// メニューを開いているか判定
-	bool is_opened_menu_;
+	// アイコンの表示切り替えをしてからの経過時間
+	float elapsed_swich_icon_display_;
 
 	// 説明を消しているか
 	bool is_hide_explanation_;
@@ -106,7 +110,7 @@ private:
 	// ダンジョンのBGM
 	int dungeon_bgm_hdl_;
 	// BGM 終了地点のサンプリング周波数
-	int bgm_end_freqency_ = 2105775;
+	int bgm_end_freqency_;
 	// ダメージSE
 	std::string damage_se_hdl_path_;
 	// 選択ウィンドウを開くときのSEパス
@@ -122,6 +126,7 @@ public:
 	// ==============================================
 	// プロトタイプ宣言
 	// ==============================================
+
 	// 敵の行動内容を修正する
 	void modifyEnemyAction();
 	// 指定した位置の敵を返す。存在しない場合、"nullptr" で返す

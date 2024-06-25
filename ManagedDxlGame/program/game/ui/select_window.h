@@ -46,7 +46,7 @@ private:
 	// 文字のサイズ
 	int message_font_size_;
 
-	// 選択コマンドの数
+	// 選択コマンドの最大数
 	int select_cmd_max_;
 
 	// メッセージウィンドウに出せる文字の最大行数
@@ -59,18 +59,38 @@ private:
 	int selected_cmd_index_;
 
 public:
-	// 選択ウィンドウのサイズを設定
+
+	// ==============================================
+	// ゲッター
+	// ==============================================
+
+	// 選択ウィンドウが有効かを返す
+	inline bool isDrawing() { return is_drawing_; }
+
+	// 選択ウィンドウを操作できるか判定を返す
+	inline bool isOperate() { return is_operate_; }
+
+	// 選択ウィンドウの位置を取得
+	const tnl::Vector2i& getWindowPos() const { return window_pos_; }
+
+	// 選択ウィンドウのサイズを取得
 	const tnl::Vector2i& getWindowSize() const { return window_size_; }
+
+	// 選択中のコマンド番号を返す。
+	inline int getSelectedCmdIndex() { return selected_cmd_index_; }
+
+	// 選択できるコマンドの最大数を取得する
+	inline int getSelectCmdMax() { return select_cmd_max_; }
+
+	// ==============================================
+	// セッター
+	// ==============================================
 
 	// 選択ウィンドウの表示位置を設定
 	void setWindowPos(const tnl::Vector2i& pos);
-
 	// 選択ウィンドウのサイズを設定
 	void setWindowSize(const tnl::Vector2i& size);
-
-	// ウィンづサイズ（ 高さ ）を計算する。
-	void calculateWindowSize();
-
+	
 	// コマンドメッセージの表示間隔を設定
 	inline void setMessageSpace(int space) { message_space_ = space; }
 
@@ -86,14 +106,6 @@ public:
 	// 各選択コマンドの名前を設定
 	void setCommandNames(const std::vector<std::string>& command_names);
 
-	// =============== インライン関数 =================
-
-	// 選択ウィンドウが有効かを返す
-	inline bool isDrawing() { return is_drawing_; }
-
-	// 選択ウィンドウを操作できるか判定を返す
-	inline bool isOperate() { return is_operate_; }
-
 	// 選択ウィンドウを描画するか設定する
 	inline void setDrawing(bool is_drawing) {
 		is_drawing_ = is_drawing;
@@ -105,7 +117,11 @@ public:
 		is_operate_ = is_operate;
 	}
 
-	// 選択中のコマンド番号を返す。
-	inline int getSelectedCmdIndex() { return selected_cmd_index_; }
+	// ==============================================
+	// その他
+	// ==============================================
+
+	// ウィンづサイズ（ 高さ ）を計算する。
+	void calculateWindowSize();
 
 };

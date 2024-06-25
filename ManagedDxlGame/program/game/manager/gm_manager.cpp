@@ -2,6 +2,7 @@
 #include "../gm_main.h"
 #include "../common/enum.h"
 #include "../base/scene_base.h"
+#include "../dungeon/dungeon_log.h"
 #include "gm_manager.h"
 #include "resource_manager.h"
 
@@ -13,6 +14,13 @@ GameManager::GameManager(std::shared_ptr<SceneBase> start_scene) : now_scene_(nu
 	transition_gpc_hdl_path_ = "graphics/black.bmp";
 
 	transition_gpc_hdl_ = LoadGraph(transition_gpc_hdl_path_.c_str());
+
+	dungeon_log_list_.resize(10);
+
+	for (int i = 0; i < dungeon_log_list_.size(); ++i) {
+		dungeon_log_list_[i] = nullptr;
+	}
+
 }
 
 GameManager::~GameManager() {
@@ -49,6 +57,36 @@ void GameManager::changeScene(std::shared_ptr<SceneBase> next_scene, float fade_
 	sequence_.change(&GameManager::seqTransOut);
 	is_transition_ = true;
 }
+
+// ダンジョン記録を追加する（総合スコアがリストより低い場合、追加されない）
+void GameManager::addDungeonLog(std::shared_ptr<DungeonLog> dungeon_log) {
+
+	for (int i = 0; i < dungeon_log_list_.size(); ++i) {
+		// ダンジョン記録がないとき
+		if (!dungeon_log_list_[i]) {
+			dungeon_log_list_[i] = dungeon_log;
+			break;
+		}
+
+		// スコアが高いとき
+		if ( dungeon_log_list_[i]->getOverallScore() < dungeon_log->getOverallScore() ) {
+
+			std::shared_ptr<DungeonLog> temp;
+
+			for (int j = dungeon_log_list_.size() - 1; j > i; --j) {
+				dungeon_log_list_[j] = dungeon_log_list_[j - 1];
+			}
+			dungeon_log_list_[i] = dungeon_log;
+			break;
+		}
+	}
+}
+
+// ダンジョン記録リストを取得
+const std::vector<std::shared_ptr<DungeonLog>>& GameManager::getDungeonLogList() const {
+	return dungeon_log_list_;
+}
+
 
 // 何もしない
 bool GameManager::seqRun(const float delta_time) {

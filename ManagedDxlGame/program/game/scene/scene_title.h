@@ -3,6 +3,7 @@
 
 class DungeonLog;
 class SelectWindow;
+class MessageWindow;
 
 class SceneTitle final : public SceneBase {
 public:
@@ -18,10 +19,20 @@ private:
 
 	// タイトルメニュー
 	std::shared_ptr<SelectWindow> title_menu_;
+
+	// ------------------ ダンジョンログ関連 -------------------------------
+
 	// ダンジョンログメニュー
 	std::shared_ptr<SelectWindow> dungeon_log_menu_;
 	// ダンジョン記録リスト
 	std::vector<std::shared_ptr<DungeonLog>> dungeon_log_list_;
+	// 選択中のダンジョン記録リストのインデックス
+	int selected_dungeon_log_list_index_;
+
+	// ---------------------------------------------------------------------
+
+	// 操作説明ウィンドウ
+	std::shared_ptr<MessageWindow> control_explanation_window_;
 
 	// タイトル背景画像
 	int back_ground_gpc_hdl_;
@@ -47,12 +58,27 @@ private:
 	// シーン経過時間
 	float scene_elapsed_time_;
 
+	// ==============================================
+	// 
+	// ==============================================
+
+	// ダンジョン記録メニューのセットアップ
+	void setupDugeonLogMenu();
+	// ダンジョン記録メニューを開く
+	void openDungeonLogMenu();
+	// ダンジョン記録メニューを閉じる
+	void closeDungeonLogMenu();
+
+	// ==============================================
+	// タイトルシーケンス
+	// ==============================================
+	
 	// シーン遷移中シーケンス
 	bool seqSceneTransition(const float);
 	// タイトル画面での処理シーケンス
 	bool seqRun(const float delta_time);
 	// メニュー選択画面シーケンス
-	bool seqSelectMenu(const float delta_time);
+	bool seqSelectMainMenu(const float delta_time);
 	// ダンジョン記録を選択するシーケンス
 	bool seqSelectDungeonLogList(const float delta_time);
 

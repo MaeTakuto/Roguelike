@@ -12,7 +12,7 @@ namespace {
 }
 
 DungeonLog::DungeonLog() : dungeon_log_window_(std::make_shared<MessageWindow>()), is_drawing_(false), is_dungeon_clear_(false),
-	end_floor_(0), end_status_(CharaStatus()), repelling_enemy_count_(0), end_message_("")
+	end_floor_(0), end_status_(CharaStatus()), repelling_enemy_count_(0), end_message_(""), overall_score_(0)
 {
 	dungeon_log_window_->setWindowPos(tnl::Vector2i(340, 150));
 	dungeon_log_window_->setMessageLine(LOG_MESSAGE_LINE);
@@ -20,7 +20,7 @@ DungeonLog::DungeonLog() : dungeon_log_window_(std::make_shared<MessageWindow>()
 
 	log_messages_.resize(LOG_MESSAGE_LINE);
 
-	updateDungeonLogMessage();
+	updateDungeonLogData();
 
 }
 
@@ -38,11 +38,19 @@ void DungeonLog::draw() {
 
 }
 
-void DungeonLog::setEndStatus(CharaStatus status) {
+void DungeonLog::setWindowPos(const tnl::Vector2i& pos) {
+	dungeon_log_window_->setWindowPos(pos);
+}
+
+void DungeonLog::setEndStatus(const CharaStatus& status) {
 	end_status_ = status;
 }
 
-void DungeonLog::updateDungeonLogMessage() {
+// ダンジョン記録のデータ更新
+void DungeonLog::updateDungeonLogData() {
+
+	// 総合スコアを計算
+	calculateOverallScore();
 
 	log_messages_[0] = "・冒険の結果";
 	log_messages_[1] = "";
@@ -64,5 +72,14 @@ void DungeonLog::updateDungeonLogMessage() {
 		dungeon_log_window_->setMessgae(log_messages_[i]);
 	}
 
+}
+
+// 総合スコアを計算する
+void DungeonLog::calculateOverallScore() {
+
+	overall_score_ += is_dungeon_clear_ ? 2000 : 0;
+	overall_score_ += end_floor_ * 2000;
+	overall_score_ += end_status_.getLevel() * 150;
+	overall_score_ += repelling_enemy_count_ * 10;
 }
 

@@ -45,8 +45,22 @@ private:
 	int message_space_ = 10;
 
 public:
-	// ゲッター
+
+	// =====================================================================================
+	// 各ゲッター関数
+	// =====================================================================================
+
 	inline bool isEnable() { return is_enable_; }
+
+	// ウィンドウ位置を取得
+	inline tnl::Vector2i& getWindowPos() { return window_pos_; }
+
+	// ウィンドウサイズを取得
+	inline tnl::Vector2i& getWindowSize() { return window_size_; }
+
+	// =====================================================================================
+	// 各セッター関数
+	// =====================================================================================
 
 	// ウィンドウの位置を設定
 	inline void setWindowPos(const tnl::Vector2i& pos) { 
@@ -85,22 +99,29 @@ public:
 		is_time_limit_ = true;
 	}
 
+	// メッセージをセットする
+	void setMessgae(const std::string& message);
+
+	// 全ての行のメッセージをセットする。（ 最大行をはみ出した行はセットされない。 ）
+	void setAllLineMessage(const std::vector<std::string>& messages);
+
+	// メッセージウィンドウを表示、非表示の設定をする。
+	inline void setEnable(bool enable) { is_enable_ = enable; }
+
+	// =====================================================================================
+	// その他関数
+	// =====================================================================================
+
+	// メッセージを全削除
+	void clearMessage();
+
 	// 表示時間の設定を取り消し
 	inline void cancelTimeLimit() {
 		time_limit_ = 0.0f;
 		is_time_limit_ = false;
 	}
 
-	// メッセージウィンドウを表示、非表示の設定をする。
-	inline void setEnable(bool enable) { is_enable_ = enable; }
-
-	// メッセージを全削除
-	void clearMessage();
-
-	// メッセージをセットする
-	void setMessgae(const std::string& message);
-
-	// 全ての行のメッセージをセットする。（ 最大行をはみ出した行はセットされない。 ）
-	void setAllLineMessage(const std::vector<std::string>& messages);
+	// 行数、文字間隔、文字サイズからウィンドウサイズを計算する
+	void calculateWindowSize();
 
 };

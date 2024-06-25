@@ -46,6 +46,10 @@ void MessageWindow::update(float delta_time) {
 // =====================================================================================
 void MessageWindow::draw() {
 
+	if (!is_enable_) {
+		return;
+	}
+
 	SetDrawBlendMode(DX_BLENDMODE_ALPHA, 160);
 	DrawBox(window_pos_.x, window_pos_.y, window_pos_.x + window_size_.x, window_pos_.y + window_size_.y, GetColor(0, 0, 160), true);
 	SetDrawBlendMode(DX_BLENDMODE_NOBLEND, 255);
@@ -83,6 +87,13 @@ void MessageWindow::clearMessage() {
 	}
 	cancelTimeLimit();
 	setEnable(false);
+}
+
+// =====================================================================================
+// メッセージを全削除
+// =====================================================================================
+void MessageWindow::calculateWindowSize() {
+	window_size_.y = (message_font_size_ + message_space_) * message_line_ + (mess_str_top_pos_.y * 2);
 };
 
 // =====================================================================================

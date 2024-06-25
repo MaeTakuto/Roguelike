@@ -15,25 +15,33 @@ public:
 	// "DungeonLog"クラスの描画をする
 	void draw();
 
+	// -------------------- ゲッター -----------------------------
+
+	// 総合スコアを取得する
+	inline int getOverallScore() const { return overall_score_; }
+
+	// -------------------- セッター -----------------------------
+
+	// ダンジョン記録ウィンドウの位置を設定
+	void setWindowPos(const tnl::Vector2i& pos);
 	// 描画するか設定する
 	inline void setDrawing(bool is_drawing) { is_drawing_ = is_drawing; }
-
 	// ダンジョンクリアのフラグをセットする
 	inline void setDungeonClear(bool is_clear) { is_dungeon_clear_ = is_clear; }
-
 	// 終了時のレベルをセットする
 	inline void setEndFloor(int floor) { end_floor_ = floor; };
+	// 終了時のメッセージをセットする。
+	inline void setEndMessage(std::string message) { end_message_ = message; }
+	// 終了時のレベルをセットする
+	void setEndStatus(const CharaStatus& status);
+
+	// -------------------- その他関数 ---------------------------
 
 	// 敵の撃退数を加算する
 	inline void additionRepellingEnemy() { ++repelling_enemy_count_; }
 
-	// 終了時のメッセージをセットする。
-	inline void setEndMessage(std::string message) { end_message_ = message; }
-
-	// 終了時のレベルをセットする
-	void setEndStatus(CharaStatus status);
-	// ダンジョン記録の更新
-	void updateDungeonLogMessage();
+	// ダンジョン記録のデータ更新する。
+	void updateDungeonLogData();
 
 private:
 	// ダンジョン記録ウィンドウ
@@ -55,5 +63,11 @@ private:
 	int end_floor_;
 	// 敵の撃退数
 	int repelling_enemy_count_;
+	// 総合スコア
+	int overall_score_;
+
+private:
+	// 総合スコアを計算する
+	void calculateOverallScore();
 
 };
