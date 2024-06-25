@@ -1,6 +1,7 @@
 #pragma once
 
 class SceneBase;
+class DungeonLog;
 
 using CsvData = std::vector< std::vector<tnl::CsvCell> >;
 
@@ -49,15 +50,22 @@ public:
 	// "is_game_clear_" の値を設定する
 	inline void setGameClear(bool is_game_clear) { is_game_clear_ = is_game_clear; }
 
+	// ダンジョン記録を追加する（総合スコアがリストより低い場合、追加されない）
+	void addDungeonLog(std::shared_ptr<DungeonLog> dungeon_log);
+	// ダンジョン記録のリストを取得
+	const std::vector< std::shared_ptr<DungeonLog> >& getDungeonLogList() const;
+
 private:
 	// コンストラクタ
 	GameManager(std::shared_ptr<SceneBase> start_scene);
 
 	// 現在のシーン
 	std::shared_ptr<SceneBase> now_scene_;
-
 	// 次のシーン
 	std::shared_ptr<SceneBase> next_scene_;
+
+	// ダンジョン記録リスト
+	std::vector< std::shared_ptr<DungeonLog> > dungeon_log_list_;
 
 	// フェード演出画像パス
 	std::string transition_gpc_hdl_path_;

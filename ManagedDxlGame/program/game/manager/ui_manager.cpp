@@ -21,7 +21,7 @@ namespace {
 	const std::string STAIR_SEL_MESSAGE = "穴がある。落ちますか？";
 
 	// 階数の表示位置
-	const tnl::Vector2i FLOOR_STR_POS = { 750, 55 };
+	const tnl::Vector2i FLOOR_STR_POS = { 750, 90 };
 	const int FLOOR_STR_FONT_SIZE = 40;
 
 	// ウィンドウとウィンドウの間隔
@@ -260,11 +260,11 @@ void UI_Manager::openMainMenu() {
 	main_menu_select_window_->setOperate(true);
 	//control_explanation_window_->setEnable(false);
 
-	tnl::Vector2i ctrl_explanation_window_pos_ = tnl::Vector2i(MAIN_MENU_WINDOW_POS.x - 50, MAIN_MENU_WINDOW_POS.y + main_menu_select_window_->getWindowSize().y + 20);
+	tnl::Vector2i ctrl_explanation_window_pos_ = tnl::Vector2i(MAIN_MENU_WINDOW_POS.x - 65, MAIN_MENU_WINDOW_POS.y + main_menu_select_window_->getWindowSize().y + 20);
 
 	control_explanation_window_->setWindowPos(ctrl_explanation_window_pos_);
 	control_explanation_window_->setMessageLine(control_explanation_message_[2].size());
-	control_explanation_window_->setWindowSize(tnl::Vector2i(CONTROL_EXPLANATION_WINDOW_SIZE.x - 60, CONTROL_EXPLANATION_WINDOW_SIZE.y * control_explanation_message_[2].size()));
+	control_explanation_window_->setWindowSize(tnl::Vector2i(CONTROL_EXPLANATION_WINDOW_SIZE.x - 45, CONTROL_EXPLANATION_WINDOW_SIZE.y * control_explanation_message_[2].size()));
 	control_explanation_window_->setMessageLine(control_explanation_message_[2].size());
 
 	for (int i = 0; i < control_explanation_message_[2].size(); ++i) {

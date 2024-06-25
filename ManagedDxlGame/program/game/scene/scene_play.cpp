@@ -29,18 +29,22 @@ namespace {
 	const int DUNGEON_NAME_FONT_SIZE = 60;
 
 	// クリア階数
-	const int CLEAR_FLOOR = 2;
+	const int CLEAR_FLOOR = 5;
 
 	// メッセージの表示時間
 	const float MESSAGE_DRAW_TIME = 3.0f;
+
+	//アイコン表示切り替え間隔（ミニマップ）
+	const float ICON_DISPLAY_CHANGE_INTERVAL = 0.5f;
 }
 
 ScenePlay::ScenePlay() : camera_(std::make_shared<Camera>()), player_(std::make_shared<Player>()), dungeon_mgr_(std::make_shared<DungeonManager>()),
 	dungeon_log_(std::make_shared<DungeonLog>()), enemy_mgr_(std::make_shared<EnemyManager>()), ui_mgr_(std::make_shared<UI_Manager>()),
 	dungeon_floor_(1), is_created_dungeon_(false), is_drawing_dng_title_(true), is_game_clear_(false),
 	is_display_mini_map_(true), mini_map_pos_(50, 180), mini_map_size_(8), mini_map_cell_gpc_hdl_(0),
-	is_opened_menu_(false), is_hide_explanation_(false), fade_gpc_hdl_(0), alpha_(0), fade_time_(0.5f),
-	level_up_character_(nullptr), dungeon_bgm_hdl_(0), dungeon_bgm_hdl_path_("sound/dungeon02.mp3"),
+	is_opened_menu_(false), is_display_player_icon_(true), elapsed_swich_icon_display_(0.0f),
+	is_hide_explanation_(false), fade_gpc_hdl_(0), alpha_(0), fade_time_(0.5f),
+	level_up_character_(nullptr), dungeon_bgm_hdl_(0), bgm_end_freqency_(2105775), dungeon_bgm_hdl_path_("sound/bgm/dungeon01.mp3"),
 	damage_se_hdl_path_("sound/damaged.mp3"), open_select_window_se_hdl_path_("sound/springin/open_window.mp3"), level_up_se_hdl_path_("sound/springin/level_up.mp3"), 
 	button_enter_se_hdl_path_("sound/button_enter.mp3"), cancel_se_hdl_path_("sound/springin/cancel.mp3")
 {
@@ -112,13 +116,13 @@ void ScenePlay::update(float delta_time) {
 
 	main_seq_.update(delta_time);
 
-	/*int freqency = GetCurrentPositionSoundMem(dungeon_bgm_hdl_);
+	int freqency = GetCurrentPositionSoundMem(dungeon_bgm_hdl_);
 	if (freqency > bgm_end_freqency_)
 	{
 		StopSoundMem(dungeon_bgm_hdl_);
 		SetCurrentPositionSoundMem(0, dungeon_bgm_hdl_);
 		PlaySoundMem(dungeon_bgm_hdl_, DX_PLAYTYPE_LOOP, false);
-	}*/
+	}
 }
 
 // ====================================================
@@ -242,7 +246,7 @@ void ScenePlay::drawMiniMap() {
 				SetDrawBlendMode(DX_BLENDMODE_NOBLEND, 255);
 			}
 
-			if (mini_map_[y][x].map_data == eMapData::PLAYER) {
+			if (mini_map_[y][x].map_data == eMapData::PLAYER && is_display_player_icon_) {
 				draw_pos = mini_map_pos_ + tnl::Vector2i(x, y) * mini_map_size_ + tnl::Vector2i( mini_map_size_ >> 1, mini_map_size_ >> 1);
 				DrawCircle(draw_pos.x, draw_pos.y, ( mini_map_size_ >> 1 ) - 1, GetColor(255, 255, 0), true, true);
 			}
@@ -282,9 +286,19 @@ void ScenePlay::closeMainMenu() {
 // ====================================================
 void ScenePlay::modifyEnemyAction() {
 
+	bool is_player_ = false;;
+
 	while (!attackers_.empty()) {
+		if (attackers_.front().get() == player_.get()) {
+			is_player_ = true;
+		}
 		attackers_.pop();
 	}
+
+	if (is_player_) {
+		attackers_.push(player_);
+	}
+
 	enemy_mgr_->modifyEnemiesAction();
 }
 
@@ -361,7 +375,8 @@ void ScenePlay::writeDungeonLog() {
 
 	dungeon_log_->setEndFloor(dungeon_floor_);
 	dungeon_log_->setEndStatus(player_->getStatus());
-	dungeon_log_->updateDungeonLogMessage();
+	dungeon_log_->updateDungeonLogData();
+	GameManager::GetInstance()->addDungeonLog(dungeon_log_);
 }
 
 // ====================================================
@@ -461,6 +476,7 @@ void ScenePlay::defeatCharacter(std::shared_ptr<Character> attacker, std::shared
 	ui_mgr_->setMessage(message, MESSAGE_DRAW_TIME);
 	tnl::DebugTrace("倒した\n");
 	dungeon_log_->additionRepellingEnemy();
+	modifyEnemyAction();
 
 	if (enemy_mgr_->getAliveEnemyNum() <= 0) {
 		std::string message = "敵の気配がなくなった";
@@ -610,11 +626,19 @@ bool ScenePlay::seqFadeIn(const float delta_time) {
 bool ScenePlay::seqMain(const float delta_time) {
 	if (dungeon_sequence_.isStart()) {
 		if (!CheckSoundMem(dungeon_bgm_hdl_)) {
+			// ChangeVolumeSoundMem(255, dungeon_bgm_hdl_);
 			PlaySoundMem(dungeon_bgm_hdl_, DX_PLAYTYPE_LOOP, true);
 		}
 	}
 
 	// camera_->control();
+
+	elapsed_swich_icon_display_ += delta_time;
+
+	if (elapsed_swich_icon_display_ > ICON_DISPLAY_CHANGE_INTERVAL) {
+		elapsed_swich_icon_display_ = 0.0f;
+		is_display_player_icon_ = !is_display_player_icon_;
+	}
 
 	 dungeon_sequence_.update(delta_time);
 	 camera_->setPos(player_->getPos());
@@ -654,6 +678,9 @@ bool ScenePlay::seqPlayerAct(const float delta_time) {
 		
 		dungeon_sequence_.change(&ScenePlay::seqEnemyAct);
 
+		is_display_player_icon_ = true;
+		elapsed_swich_icon_display_ = 0.0f;
+
 		setMapData(player_->getPos(), getTerrainData(player_->getPos()));
 		setMapData(player_->getNextPos(), eMapData::PLAYER);
 		return true;
@@ -665,6 +692,7 @@ bool ScenePlay::seqPlayerAct(const float delta_time) {
 	if (tnl::Input::IsKeyDownTrigger(eKeys::KB_Q)) {
 		is_hide_explanation_ = !is_hide_explanation_;
 		ui_mgr_->changeCtrlExplanationWindowType(is_hide_explanation_);
+		ResourceManager::getInstance()->playSound("sound/se/swicth_explanation_window.mp3", DX_PLAYTYPE_BACK);
 	}
 
 	if (tnl::Input::IsKeyDownTrigger(eKeys::KB_E)) {
@@ -884,6 +912,7 @@ bool ScenePlay::seqStairSelect(const float delta_time) {
 bool ScenePlay::seqDrawGameOverMessage(const float delta_time)
 {
 	if (tnl::Input::IsKeyDownTrigger(eKeys::KB_RETURN)) {
+		is_display_mini_map_ = false;
 		dungeon_log_->setDrawing(true);
 		ui_mgr_->hideCtrlExplanationWindow();
 		ui_mgr_->clearMessage();

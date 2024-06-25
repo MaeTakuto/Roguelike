@@ -11,10 +11,11 @@ public:
 
 	CharaStatus(const CharaStatus& status);
 
-	// ゲッター
+	// ---------------- ゲッター ---------------------------------
 
-	// 現在のレベル
+	// 現在のレベルを取得
 	inline int getLevel() const { return level_; }
+	// 最大HPを取得
 	inline int getMaxHP() const { return max_hp_; }
 	inline int getHP() const { return hp_; }
 	inline int getMaxMP() const{ return max_mp_; }
@@ -23,6 +24,8 @@ public:
 	inline int getDef() const { return def_; }
 	inline int getExp() const { return exp_; }
 
+	// ---------------- セッター ---------------------------------
+	
 	// ステータスをセット	
 	inline void setStatus(int level, int max_hp, int max_mp, int atk, int def, int exp) {
 		level_ = level;
@@ -34,6 +37,8 @@ public:
 		def_ = def;
 		exp_ = exp;
 	}
+
+	// ---------------- その他 ---------------------------------
 
 	// 経験値を得る
 	inline void addExp(int exp) { exp_ += exp; }
@@ -72,5 +77,22 @@ private:
 	int def_;
 	// 経験値
 	int exp_;
+
+public:
+
+	// --------------------- operator ---------------------
+
+	CharaStatus& operator=(const CharaStatus& other) {
+		this->level_ = other.level_;
+		this->max_hp_ = other.max_hp_;
+		this->hp_ = other.hp_;
+		this->max_mp_ = other.max_mp_;
+		this->mp_ = other.mp_;
+		this->atk_ = other.atk_;
+		this->def_ = other.def_;
+		this->exp_ = other.exp_;
+
+		return *this;
+	}
 
 };
