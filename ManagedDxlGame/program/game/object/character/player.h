@@ -31,18 +31,27 @@ private:
 	// プレイヤーの行動シーケンス
 	tnl::Sequence<Player> sequence_;
 
-	std::shared_ptr<Animation> magic_chanting_effect_;
+	// 入力可能か判定
+	bool can_operation_input_;
 
+	// ------------------ 魔法関連 ---------------------------------
+
+	// 魔法詠唱エフェクト
+	std::shared_ptr<Animation> magic_chanting_effect_;
 	// 魔法を使用しているか判定
 	bool is_use_magic_;
 	// 使用する魔法のリスト番号
 	int use_magic_index_;
+
+	// -------------------------------------------------------------
 
 	// 選択中のセルの画像
 	int select_cell_blue_gpc_hdl_;
 	int select_cell_red_gpc_hdl_;
 
 public:
+	// 操作入力できるようにするか設定
+	inline void setOperationInput(bool can_operation_input) { can_operation_input_ = can_operation_input; }
 	// 行動を開始する
 	void beginAction() override;
 	// 指定した目標位置にキャラクターを移動させる
@@ -58,7 +67,7 @@ public:
 	// レベルアップさせる
 	void startLevelUp() override;
 	
-	// 魔法を使う
+	// 魔法を使えるか試す
 	bool tryUseMagic(int magic_index);
 	
 private:

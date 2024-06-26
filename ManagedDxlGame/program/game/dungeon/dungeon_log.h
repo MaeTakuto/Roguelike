@@ -25,7 +25,7 @@ public:
 	// ダンジョン記録ウィンドウの位置を設定
 	void setWindowPos(const tnl::Vector2i& pos);
 	// 描画するか設定する
-	inline void setDrawing(bool is_drawing) { is_drawing_ = is_drawing; }
+	void setDrawing(bool is_drawing);
 	// ダンジョンクリアのフラグをセットする
 	inline void setDungeonClear(bool is_clear) { is_dungeon_clear_ = is_clear; }
 	// 終了時のレベルをセットする

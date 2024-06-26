@@ -2,6 +2,7 @@
 #include "../../../manager/gm_manager.h"
 #include "../../../manager/resource_manager.h"
 #include "../../../common/camera.h"
+#include "../../../common/animation.h"
 #include "../../../scene/scene_play.h"
 #include "../../projectile.h"
 #include "skeleton.h"
@@ -44,6 +45,12 @@ Skeleton::Skeleton() : sequence_(tnl::Sequence<Skeleton>(this, &Skeleton::seqIdl
 		);
 	}
 
+	chara_animation_ = std::make_shared<Animation>();
+	chara_animation_->setAnimGraphicHandle(chara_gpc_hdl_[std::underlying_type<eDir_4>::type(anim_dir_)]);
+	chara_animation_->setLoopAnimation(true);
+	chara_animation_->setFrameChangeInterval(0.25f);
+	chara_animation_->startAnimation();
+
 	// “Š±•¨‚Ì‰æ‘œ‚ðƒ[ƒh
 	bone_gpc_hdl_ = rm_instance->loadGraph("graphics/bone.png");
 	bone_->setProjectileGpcHdl(bone_gpc_hdl_);
@@ -80,6 +87,8 @@ Skeleton::~Skeleton() {
 // =====================================================================================
 void Skeleton::update(float delta_time) {
 
+	chara_animation_->setAnimGraphicHandle(chara_gpc_hdl_[std::underlying_type<eDir_4>::type(anim_dir_)]);
+	chara_animation_->update(delta_time);
 	sequence_.update(delta_time);
 
 	if (bone_->isEnable()) {
@@ -97,11 +106,13 @@ void Skeleton::draw(const std::shared_ptr<Camera> camera) {
 	}
 
 	// •`‰æˆÊ’u’²®
-	tnl::Vector3 draw_pos = tnl::Vector3(pos_.x * GameManager::DRAW_CHIP_SIZE, pos_.y * GameManager::DRAW_CHIP_SIZE, 0)
-		- camera->getPos() + tnl::Vector3(DXE_WINDOW_WIDTH >> 1, DXE_WINDOW_HEIGHT >> 1, 0);
+	tnl::Vector2i player_draw_pos = tnl::Vector2i(static_cast<int>(pos_.x * GameManager::DRAW_CHIP_SIZE), static_cast<int>(pos_.y * GameManager::DRAW_CHIP_SIZE))
+		+ tnl::Vector2i((DXE_WINDOW_WIDTH >> 1), DXE_WINDOW_HEIGHT >> 1);
 
-	DrawExtendGraph(draw_pos.x, draw_pos.y, draw_pos.x + GameManager::DRAW_CHIP_SIZE, draw_pos.y + GameManager::DRAW_CHIP_SIZE,
-		chara_gpc_hdl_[static_cast<int>(anim_dir_)][0], true);
+	chara_animation_->setDrawPos(player_draw_pos);
+	chara_animation_->setDrawSize(tnl::Vector2i(GameManager::DRAW_CHIP_SIZE, GameManager::DRAW_CHIP_SIZE));
+	chara_animation_->draw(camera);
+
 }
 
 // =====================================================================================

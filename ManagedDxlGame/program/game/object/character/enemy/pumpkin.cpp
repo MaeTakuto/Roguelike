@@ -2,6 +2,7 @@
 #include "../../../manager/gm_manager.h"
 #include "../../../manager/resource_manager.h"
 #include "../../../common/camera.h"
+#include "../../../common/animation.h"
 #include "../../../scene/scene_play.h"
 #include "pumpkin.h"
 
@@ -37,6 +38,14 @@ Pumpkin::Pumpkin() {
 		);
 	}
 
+	// ------------------- キャラクターアニメーションの設定 -------------------------------------------------------
+
+	chara_animation_ = std::make_shared<Animation>();
+	chara_animation_->setAnimGraphicHandle(chara_gpc_hdl_[std::underlying_type<eDir_4>::type(anim_dir_)]);
+	chara_animation_->setLoopAnimation(true);
+	chara_animation_->setFrameChangeInterval(0.25f);
+	chara_animation_->startAnimation();
+
 	// ステータスデータを CSV から取得
 	CsvData status_data = rm_instance->loadCsvData(PUMPKIN_DATA_CSV_PATH);
 
@@ -66,6 +75,8 @@ Pumpkin::~Pumpkin() {
 // =====================================================================================
 void Pumpkin::update(float delta_time) {
 
+	chara_animation_->setAnimGraphicHandle(chara_gpc_hdl_[std::underlying_type<eDir_4>::type(anim_dir_)]);
+	chara_animation_->update(delta_time);
 	sequence_.update(delta_time);
 }
 
@@ -75,11 +86,12 @@ void Pumpkin::update(float delta_time) {
 void Pumpkin::draw(const std::shared_ptr<Camera> camera) {
 
 	// 描画位置調整
-	tnl::Vector3 draw_pos = tnl::Vector3(pos_.x * GameManager::DRAW_CHIP_SIZE, pos_.y * GameManager::DRAW_CHIP_SIZE, 0)
-		- camera->getPos() + tnl::Vector3(DXE_WINDOW_WIDTH >> 1, DXE_WINDOW_HEIGHT >> 1, 0);
+	tnl::Vector2i draw_pos = tnl::Vector2i(static_cast<int>(pos_.x * GameManager::DRAW_CHIP_SIZE), static_cast<int>(pos_.y * GameManager::DRAW_CHIP_SIZE))
+		+ tnl::Vector2i(DXE_WINDOW_WIDTH >> 1, DXE_WINDOW_HEIGHT >> 1);
 
-	DrawExtendGraph(draw_pos.x, draw_pos.y, draw_pos.x + GameManager::DRAW_CHIP_SIZE, draw_pos.y + GameManager::DRAW_CHIP_SIZE,
-		chara_gpc_hdl_[static_cast<int>(anim_dir_)][0], true);
+	chara_animation_->setDrawPos(draw_pos);
+	chara_animation_->setDrawSize(tnl::Vector2i(GameManager::DRAW_CHIP_SIZE, GameManager::DRAW_CHIP_SIZE));
+	chara_animation_->draw(camera);
 }
 
 // =====================================================================================

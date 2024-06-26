@@ -5,7 +5,8 @@
 // =====================================================================================
 // コンストラクタ
 // =====================================================================================
-Animation::Animation() : pos_(0, 0), anim_frame_(0), blend_mode_(DX_BLENDMODE_NOBLEND), is_enable_(false), frame_elapsed_(0.0f), frame_change_interval_(0.5f)
+Animation::Animation() : pos_(0, 0), size_(0, 0), anim_frame_(0), blend_mode_(DX_BLENDMODE_NOBLEND), is_enable_(false), is_loop_(false),
+	frame_elapsed_(0.0f), frame_change_interval_(0.5f)
 {
 
 }
@@ -33,9 +34,17 @@ void Animation::update(float delta_time) {
 		++anim_frame_;
 
 		// アニメーションの終わりまでいった場合
-		if (anim_frame_ >= anim_gpc_hdl_.size()) {
-			is_enable_ = false;
+		if (anim_frame_ < anim_gpc_hdl_.size()) {
+			return;
 		}
+
+		// ループさせる場合
+		if (is_loop_) {
+			anim_frame_ = 0;
+			return;
+		}
+		
+		is_enable_ = false;
 	}
 
 }
@@ -52,21 +61,8 @@ void Animation::draw(const std::shared_ptr<Camera> camera) {
 	tnl::Vector2i draw_pos = pos_ - tnl::Vector2i(static_cast<int>(camera->getPos().x), static_cast<int>(camera->getPos().y));
 
 	SetDrawBlendMode(blend_mode_, 255);
-	DrawExtendGraph(draw_pos.x, draw_pos.y, draw_pos.x + width_, draw_pos.y + height_, anim_gpc_hdl_[anim_frame_], true);
+	DrawExtendGraph(draw_pos.x, draw_pos.y, draw_pos.x + size_.x, draw_pos.y + size_.y, anim_gpc_hdl_[anim_frame_], true);
 	SetDrawBlendMode(DX_BLENDMODE_NOBLEND, 255);
-}
-
-// =====================================================================================
-// エフェクト画像をセット
-// =====================================================================================
-void Animation::setAnimGraphicHandle(const std::vector<int>& effect_gpc_hdl) {
-
-	anim_gpc_hdl_.resize(effect_gpc_hdl.size());
-
-	for (int i = 0; i < effect_gpc_hdl.size(); ++i) {
-		anim_gpc_hdl_[i] = effect_gpc_hdl[i];
-	}
-
 }
 
 // =====================================================================================

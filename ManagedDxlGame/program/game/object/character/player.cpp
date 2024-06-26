@@ -20,8 +20,8 @@ namespace {
 }
 
 
-Player::Player() : regenerating_mp_(1), sequence_(tnl::Sequence<Player>(this, &Player::seqIdle)), magic_chanting_effect_(nullptr), is_use_magic_(false), use_magic_index_(0),
-	select_cell_blue_gpc_hdl_(0), select_cell_red_gpc_hdl_(0)
+Player::Player() : regenerating_mp_(1), sequence_(tnl::Sequence<Player>(this, &Player::seqIdle)), can_operation_input_(true),
+	magic_chanting_effect_(nullptr), is_use_magic_(false), use_magic_index_(0), select_cell_blue_gpc_hdl_(0), select_cell_red_gpc_hdl_(0)
 {
 
 	// リソースマネージャーのインスタンスを取得
@@ -45,6 +45,14 @@ Player::Player() : regenerating_mp_(1), sequence_(tnl::Sequence<Player>(this, &P
 			GameManager::CHIP_SIZE												// y方向に 1フレームごとの切り取る画像サイズ
 		);
 	}
+
+	// ------------------- キャラクターアニメーションの設定 -------------------------------------------------------
+	
+	chara_animation_ = std::make_shared<Animation>();
+	chara_animation_->setAnimGraphicHandle(chara_gpc_hdl_[std::underlying_type<eDir_4>::type(anim_dir_)]);
+	chara_animation_->setLoopAnimation(true);
+	chara_animation_->setFrameChangeInterval(0.25f);
+	chara_animation_->startAnimation();
 
 	// ------------------- プレイヤーの攻撃方向のセル画像を設定 ---------------------------------------------------
 	select_cell_blue_gpc_hdl_ = rm_instance->loadGraph("graphics/blue.bmp");
@@ -119,6 +127,9 @@ Player::~Player() {
 void Player::update(float delta_time) {
 
 	sequence_.update(delta_time);
+	
+	chara_animation_->setAnimGraphicHandle( chara_gpc_hdl_[std::underlying_type<eDir_4>::type(anim_dir_)] );
+	chara_animation_->update(delta_time);
 	magic_chanting_effect_->update(delta_time);
 	atk_effect_->update(delta_time);
 	
@@ -134,10 +145,15 @@ void Player::update(float delta_time) {
 void Player::draw(std::shared_ptr<Camera> camera) {
 
 	// 描画位置調整
-	tnl::Vector3 player_draw_pos = pos_ * GameManager::DRAW_CHIP_SIZE - camera->getPos() + tnl::Vector3(DXE_WINDOW_WIDTH >> 1, DXE_WINDOW_HEIGHT >> 1, 0);
+	tnl::Vector2i player_draw_pos = tnl::Vector2i(static_cast<int>(pos_.x * GameManager::DRAW_CHIP_SIZE), static_cast<int>(pos_.y * GameManager::DRAW_CHIP_SIZE))
+		+ tnl::Vector2i( ( DXE_WINDOW_WIDTH >> 1 ), DXE_WINDOW_HEIGHT >> 1);
 
-	DrawExtendGraph(player_draw_pos.x, player_draw_pos.y, player_draw_pos.x + GameManager::DRAW_CHIP_SIZE, player_draw_pos.y + GameManager::DRAW_CHIP_SIZE,
-		chara_gpc_hdl_[static_cast<int>(anim_dir_)][0], true);
+	chara_animation_->setDrawPos(player_draw_pos);
+	chara_animation_->setDrawSize(tnl::Vector2i(GameManager::DRAW_CHIP_SIZE, GameManager::DRAW_CHIP_SIZE));
+	chara_animation_->draw(camera);
+
+	/*DrawExtendGraph(player_draw_pos.x, player_draw_pos.y, player_draw_pos.x + GameManager::DRAW_CHIP_SIZE, player_draw_pos.y + GameManager::DRAW_CHIP_SIZE,
+		chara_gpc_hdl_[static_cast<int>(anim_dir_)][0], true);*/
 
 	if (act_state_ != eActState::IDLE) {
 		return;
@@ -403,7 +419,13 @@ bool Player::canActionToCell(eDir_8 dir) {
 // ====================================================
 bool Player::seqIdle(const float delta_time) {
 
-	if (act_state_ != eActState::IDLE) return true;
+	if (act_state_ != eActState::IDLE) {
+		return true;
+	}
+
+	if (!can_operation_input_) {
+		return true;
+	}
 
 	// ======== 方向転換 ========
 	if (tnl::Input::IsKeyDown(eKeys::KB_LSHIFT)) {
