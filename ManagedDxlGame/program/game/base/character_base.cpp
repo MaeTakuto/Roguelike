@@ -3,7 +3,8 @@
 #include "magic_base.h"
 #include "character_base.h"
 
-Character::Character() : name_(""), status_(CharaStatus()), magic_list_(0), atk_target_(nullptr), atk_effect_(nullptr), looking_dir_{0}, act_state_ { 0 }, is_alive_(true)
+Character::Character() : name_(""), status_(CharaStatus()), magic_list_(0), pos_(0.0f, 0.0f, 0.0f), next_pos_(0.0f, 0.0f, 0.0f), anim_dir_(eDir_4::DOWN),
+	atk_target_(nullptr), atk_effect_(nullptr), looking_dir_{0}, act_state_ { 0 }, is_alive_(true)
 {
 
 }

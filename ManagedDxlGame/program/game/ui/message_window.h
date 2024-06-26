@@ -13,12 +13,12 @@ public:
 
 private:
 	// メッセージウィンドウの位置
-	tnl::Vector2i window_pos_ = { 250, 450 };
-	tnl::Vector2i window_size_ = { 800, 200 };
+	tnl::Vector2i window_pos_;
+	tnl::Vector2i window_size_;
 
 	// メッセージの位置
-	tnl::Vector2i mess_str_top_pos_ = { 30, 20 };
-	tnl::Vector2i mess_str_pos_ = window_pos_ + mess_str_top_pos_;
+	tnl::Vector2i mess_str_top_pos_;
+	tnl::Vector2i mess_str_pos_;
 
 	//
 	std::string ui_message_;
@@ -26,23 +26,23 @@ private:
 	std::vector<std::string> message_;
 
 	// 表示しているか判定
-	bool is_enable_ = false;
+	bool is_enable_;
 	// 時間制限指定しているか判定
-	bool is_time_limit_ = false;
+	bool is_time_limit_;
 	// 
 	bool is_draw_enter_ui_;
 
 	// 制限時間
-	float time_limit_ = 0.0f;
+	float time_limit_;
 
 	// 表示しているメッセージ数
-	int display_message_count_ = 0;
+	int display_message_count_;
 	// 文字のサイズ
-	int message_font_size_ = 30;
+	int message_font_size_;
 	// メッセージウィンドウに出せる文字の最大行数
-	int message_line_ = 4;
+	int message_line_;
 	// 行と行の間隔
-	int message_space_ = 10;
+	int message_space_;
 
 public:
 

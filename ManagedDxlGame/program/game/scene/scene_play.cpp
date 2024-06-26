@@ -276,6 +276,7 @@ void ScenePlay::charaUpdate(float delta_time) {
 // ====================================================
 void ScenePlay::closeMainMenu() {
 
+	player_->setOperationInput(true);
 	is_opened_menu_ = false;
 	ui_mgr_->closeMainMenu();
 	ui_mgr_->changeCtrlExplanationWindowType(is_hide_explanation_);
@@ -365,6 +366,7 @@ void ScenePlay::changeProcessNextFloor() {
 		executeGameClearProcess();
 		return;
 	}
+	player_->setOperationInput(true);
 	main_seq_.change(&ScenePlay::seqFadeOut);
 	dungeon_sequence_.change(&ScenePlay::seqPlayerAct);
 	++dungeon_floor_;
@@ -430,6 +432,9 @@ void ScenePlay::executeGameOverProcess() {
 // ゲームクリアの処理を実行する
 // ====================================================
 void ScenePlay::executeGameClearProcess() {
+
+	// player_->setOperationInput(false);
+
 	ui_mgr_->clearMessage();
 	std::string message = "ダンジョンを制覇しました！";
 	ui_mgr_->setMessage(message);
@@ -696,6 +701,8 @@ bool ScenePlay::seqPlayerAct(const float delta_time) {
 	}
 
 	if (tnl::Input::IsKeyDownTrigger(eKeys::KB_E)) {
+
+		player_->setOperationInput(false);
 		is_opened_menu_ = true;
 		dungeon_sequence_.change(&ScenePlay::seqSelectMainMenu);
 		ui_mgr_->openMainMenu();
@@ -878,6 +885,7 @@ bool ScenePlay::seqActEndProcess(const float delta_time) {
 
 	// プレイヤーの位置が階段だった時
 	if (getTerrainData(player_->getPos()) == eMapData::STAIR) {
+		player_->setOperationInput(false);
 		dungeon_sequence_.change(&ScenePlay::seqStairSelect);
 		ui_mgr_->executeStairSelect();
 		ResourceManager::getInstance()->playSound(open_select_window_se_hdl_path_, DX_PLAYTYPE_BACK);
@@ -893,6 +901,8 @@ bool ScenePlay::seqActEndProcess(const float delta_time) {
 // ====================================================
 bool ScenePlay::seqStairSelect(const float delta_time) {
 
+	charaUpdate(delta_time);
+
 	if (tnl::Input::IsKeyDownTrigger(eKeys::KB_RETURN)) {
 
 		if (ui_mgr_->getSelectedIndexFromTwoSelectCmd() == std::underlying_type<eTwoSelectCmd>::type( eTwoSelectCmd::YES ) ) {
@@ -903,7 +913,17 @@ bool ScenePlay::seqStairSelect(const float delta_time) {
 			ResourceManager::getInstance()->playSound(cancel_se_hdl_path_, DX_PLAYTYPE_BACK);
 			dungeon_sequence_.change(&ScenePlay::seqPlayerAct);
 			ui_mgr_->executeStairSelectEnd();
+			player_->setOperationInput(true);
 		}
+
+		return true;
+	}
+
+	if (tnl::Input::IsKeyDownTrigger(eKeys::KB_BACK)) {
+		ResourceManager::getInstance()->playSound(cancel_se_hdl_path_, DX_PLAYTYPE_BACK);
+		dungeon_sequence_.change(&ScenePlay::seqPlayerAct);
+		ui_mgr_->executeStairSelectEnd();
+		player_->setOperationInput(true);
 	}
 
 	return true;
@@ -911,6 +931,9 @@ bool ScenePlay::seqStairSelect(const float delta_time) {
 
 bool ScenePlay::seqDrawGameOverMessage(const float delta_time)
 {
+
+	charaUpdate(delta_time);
+
 	if (tnl::Input::IsKeyDownTrigger(eKeys::KB_RETURN)) {
 		is_display_mini_map_ = false;
 		dungeon_log_->setDrawing(true);
@@ -927,6 +950,8 @@ bool ScenePlay::seqDrawGameOverMessage(const float delta_time)
 // ====================================================
 bool ScenePlay::seqGameOver(const float delta_time) {
 
+	charaUpdate(delta_time);
+
 	if (tnl::Input::IsKeyDownTrigger(eKeys::KB_RETURN)) {
 		if (is_game_clear_) {
 			GameManager::GetInstance()->changeScene(std::make_shared<SceneGameClear>(), 2.0f);
@@ -942,6 +967,8 @@ bool ScenePlay::seqGameOver(const float delta_time) {
 // メインメニューの選択シーケンス
 // ====================================================
 bool ScenePlay::seqSelectMainMenu(const float delta_time) {
+
+	charaUpdate(delta_time);
 
 	// メインメニューを閉じる
 	if ( tnl::Input::IsKeyDownTrigger( eKeys::KB_BACK ) ) {
@@ -989,6 +1016,8 @@ bool ScenePlay::seqSelectMainMenu(const float delta_time) {
 // ====================================================
 bool ScenePlay::seqSelectMagicList(const float delta_time) {
 
+	charaUpdate(delta_time);
+
 	// メインメニューに戻る
 	if ( tnl::Input::IsKeyDownTrigger( eKeys::KB_BACK) ) {
 		ui_mgr_->closeMagicListWindow();
@@ -1011,6 +1040,8 @@ bool ScenePlay::seqSelectMagicList(const float delta_time) {
 // 選択した魔法を使用するか選択するシーケンス
 // ====================================================
 bool ScenePlay::seqSelectToUseMagic(const float delta_time) {
+
+	charaUpdate(delta_time);
 
 	// メインメニューに戻る
 	if (tnl::Input::IsKeyDownTrigger(eKeys::KB_BACK)) {
@@ -1038,6 +1069,8 @@ bool ScenePlay::seqSelectToUseMagic(const float delta_time) {
 // ステータス画面確認シーケンス
 // ====================================================
 bool ScenePlay::seqDrawStatusWindow(const float delta_time) {
+
+	charaUpdate(delta_time);
 
 	if (tnl::Input::IsKeyDownTrigger(eKeys::KB_BACK, eKeys::KB_RETURN)) {
 		ui_mgr_->hideStatusWindow();

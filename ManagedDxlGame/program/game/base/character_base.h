@@ -39,19 +39,33 @@ protected:
 	const eDir_8 REVERCE_DIRECTION[static_cast<int>(eDir_8::MAX)]
 		= { eDir_8::DOWN, eDir_8::UP, eDir_8::RIGHT, eDir_8::LEFT, eDir_8::DOWN_RIGHT, eDir_8::DOWN_LEFT, eDir_8::UP_RIGHT, eDir_8::UP_LEFT };
 
+	// ---------------- キャラクターデータ関連 ---------------------------------------
+
 	// キャラの画像
 	std::vector< std::vector<int> > chara_gpc_hdl_;
-
+	// キャラクターアニメーション
+	std::shared_ptr<Animation> chara_animation_;
 	// キャラクターの名前
 	std::string name_;
-
 	// ステータス（ HP、ATKなど ）
 	CharaStatus status_;
-
 	// 魔法一覧
 	std::vector<std::shared_ptr<MagicBase>> magic_list_;
 
-	// ---------------- 攻撃関連 ----------------
+	// 現在の位置
+	tnl::Vector3 pos_;
+	// 移動させる位置
+	tnl::Vector3 next_pos_;
+	// 現在見ている方向
+	eDir_8 looking_dir_;
+	// キャラのアニメ方向
+	eDir_4 anim_dir_;
+	// 行動状態
+	eActState act_state_;
+	// 生存しているか判定
+	bool is_alive_;
+
+	// ---------------- 攻撃関連 ----------------------------------------------------
 	// 攻撃対象のキャラクタークラス
 	std::shared_ptr<Character> atk_target_;
 	// 攻撃エフェクトのアニメーション
@@ -59,23 +73,6 @@ protected:
 	// 攻撃エフェクト画像
 	std::vector<int> atk_effect_gpc_hdls_;
 
-	// ---------------- 位置関連 ----------------
-	// 現在の位置
-	tnl::Vector3 pos_ = { 0, 0, 0 };
-	// 移動させる位置
-	tnl::Vector3 next_pos_ = { 0, 0, 0 };
-	// ------------------------------------------
-
-	// 現在見ている方向
-	eDir_8 looking_dir_;
-	// キャラのアニメ方向
-	eDir_4 anim_dir_ = eDir_4::DOWN;
-
-	// 行動状態
-	eActState act_state_;
-
-	// 生存しているか判定
-	bool is_alive_;
 
 public:
 	// ================= ゲッター、セッター =================

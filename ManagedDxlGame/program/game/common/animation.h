@@ -16,10 +16,8 @@ public:
 private:
 	// エフェクトの表示位置
 	tnl::Vector2i pos_;
-	// 表示の幅
-	int width_;
-	// 表示の高さ
-	int height_;
+	// エフェクトのサイズ
+	tnl::Vector2i size_;
 
 	// エフェクト画像
 	std::vector<int> anim_gpc_hdl_;
@@ -28,6 +26,8 @@ private:
 
 	// 有効か判定
 	bool is_enable_;
+	// アニメーションをループさせるか判定
+	bool is_loop_;
 
 	// 現在フレーム
 	int anim_frame_;
@@ -41,6 +41,9 @@ public:
 	// 有効か判定する
 	inline bool isEnable() { return is_enable_; }
 
+	// アニメーションをループさせるか設定する
+	inline void setLoopAnimation(bool is_loop) { is_loop_ = is_loop; };
+
 	// アニメーションフレーム切り替え間隔を設定
 	inline void setFrameChangeInterval(float frame_change_interval) { frame_change_interval_ = frame_change_interval; }
 
@@ -49,15 +52,16 @@ public:
 
 	// 画像の表示サイズを設定する
 	inline void setDrawSize(const tnl::Vector2i& size) {
-		width_ = size.x;
-		height_ = size.y;
+		size_ = size;
 	}
 
 	// 画像のブレンドモードを設定する
 	inline void setBlendMode(int blend_mode) { blend_mode_ = blend_mode; }
 
 	// アニメーション画像を設定
-	void setAnimGraphicHandle(const std::vector<int>& anim_gpc_hdl);
+	inline void setAnimGraphicHandle(const std::vector<int>& anim_gpc_hdl) {
+		anim_gpc_hdl_ = anim_gpc_hdl;
+	}
 	
 	// アニメーションを再生
 	void startAnimation();

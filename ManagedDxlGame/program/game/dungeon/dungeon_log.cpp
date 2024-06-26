@@ -42,6 +42,10 @@ void DungeonLog::setWindowPos(const tnl::Vector2i& pos) {
 	dungeon_log_window_->setWindowPos(pos);
 }
 
+void DungeonLog::setDrawing(bool is_drawing) {
+	is_drawing_ = is_drawing;
+}
+
 void DungeonLog::setEndStatus(const CharaStatus& status) {
 	end_status_ = status;
 }
@@ -67,6 +71,7 @@ void DungeonLog::updateDungeonLogData() {
 	log_messages_[2] += mtl::rightAlign(message, LOG_MESSAGE_SPACE);
 
 	dungeon_log_window_->clearMessage();
+	dungeon_log_window_->setEnable(true);
 
 	for (int i = 0; i < log_messages_.size(); ++i) {
 		dungeon_log_window_->setMessgae(log_messages_[i]);

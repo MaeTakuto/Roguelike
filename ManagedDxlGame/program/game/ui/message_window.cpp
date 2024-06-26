@@ -7,7 +7,10 @@
 // =====================================================================================
 // コンストラクタ
 // =====================================================================================
-MessageWindow::MessageWindow() {
+MessageWindow::MessageWindow() : window_pos_(250, 450), window_size_(800, 200), mess_str_top_pos_(30, 20), 
+	mess_str_pos_(window_pos_ + mess_str_top_pos_), ui_message_(""), is_enable_(false), is_time_limit_(false), is_draw_enter_ui_(false),
+	time_limit_(0.0f), display_message_count_(0), message_font_size_(30), message_line_(4), message_space_(10)
+{
 
 	message_.resize(message_line_);
 
