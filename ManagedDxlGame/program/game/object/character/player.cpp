@@ -17,11 +17,15 @@ namespace {
 	const int MAX_LEVEL = 6;
 	// 経験値テーブル
 	const int LEVEL_TABLE[MAX_LEVEL - 1] = { 12, 50, 100, 180, 280 };
+
+	// MPの回復間隔 
+	const int REGENERATE_INTERVAL = 5;
 }
 
 
-Player::Player() : regenerating_mp_(1), sequence_(tnl::Sequence<Player>(this, &Player::seqIdle)), can_operation_input_(true),
-	magic_chanting_effect_(nullptr), is_use_magic_(false), use_magic_index_(0), select_cell_blue_gpc_hdl_(0), select_cell_red_gpc_hdl_(0)
+Player::Player() : regenerating_count_(0), regenerating_mp_(1), sequence_(tnl::Sequence<Player>(this, &Player::seqIdle)), 
+	level_up_se_hdl_path_("sound/se/level_up.mp3"), can_operation_input_(true), magic_chanting_effect_(nullptr), is_use_magic_(false),
+	use_magic_index_(0), select_cell_blue_gpc_hdl_(0), select_cell_red_gpc_hdl_(0)
 {
 
 	// リソースマネージャーのインスタンスを取得
@@ -51,7 +55,7 @@ Player::Player() : regenerating_mp_(1), sequence_(tnl::Sequence<Player>(this, &P
 	chara_animation_ = std::make_shared<Animation>();
 	chara_animation_->setAnimGraphicHandle(chara_gpc_hdl_[std::underlying_type<eDir_4>::type(anim_dir_)]);
 	chara_animation_->setLoopAnimation(true);
-	chara_animation_->setFrameChangeInterval(0.25f);
+	chara_animation_->setFrameChangeInterval(CHARA_ANIM_INTERVAL);
 	chara_animation_->startAnimation();
 
 	// ------------------- プレイヤーの攻撃方向のセル画像を設定 ---------------------------------------------------
@@ -78,6 +82,24 @@ Player::Player() : regenerating_mp_(1), sequence_(tnl::Sequence<Player>(this, &P
 
 	magic_chanting_effect_->setBlendMode(DX_BLENDMODE_ADD);
 	magic_chanting_effect_->setFrameChangeInterval(0.05f);
+
+	level_up_effect_ = std::make_shared<Animation>();
+
+	start_cell = effect_data[GameManager::CSV_CELL_ROW_START + 4];
+	
+	level_up_effect_->setAnimGraphicHandle(
+		rm_instance->loadAnimation(
+			start_cell[1].getString(),								// 画像パス,
+			start_cell[2].getInt() * start_cell[3].getInt(),		// フレーム総数
+			start_cell[2].getInt(),									// 横方向の分割数
+			start_cell[3].getInt(),									// 縦方向の分割数
+			start_cell[4].getInt(),									// 横方向の分割サイズ
+			start_cell[5].getInt()									// 縦方向の分割サイズ
+		)
+	);
+
+	level_up_effect_->setLoopAnimation(true);
+	level_up_effect_->setFrameChangeInterval(0.1f);
 
 	// ------------------- エフェクトの設定 -------------------------------------------------------------------
 	start_cell = effect_data[GameManager::CSV_CELL_ROW_START + 2];
@@ -143,6 +165,10 @@ void Player::update(float delta_time) {
 // プレイヤー関連の描画
 // ====================================================
 void Player::draw(std::shared_ptr<Camera> camera) {
+
+	if (!is_drawing_) {
+		return;
+	}
 
 	// 描画位置調整
 	tnl::Vector2i player_draw_pos = tnl::Vector2i(static_cast<int>(pos_.x * GameManager::DRAW_CHIP_SIZE), static_cast<int>(pos_.y * GameManager::DRAW_CHIP_SIZE))
@@ -211,6 +237,12 @@ void Player::drawEffect(std::shared_ptr<Camera> camera) {
 	if (is_use_magic_) {
 		magic_list_[use_magic_index_]->draw(camera);
 	}
+
+	level_up_effect_->draw(camera);
+}
+
+int Player::getMagicEffectAmount() const {
+	return magic_list_[use_magic_index_]->getMagicEffectAmount();
 }
 
 // ====================================================
@@ -303,7 +335,7 @@ void Player::startMagic() {
 	magic_chanting_effect_->setDrawPos(effect_draw_pos);
 	magic_chanting_effect_->setDrawSize(effect_draw_size);
 	magic_chanting_effect_->startAnimation();
-	ResourceManager::getInstance()->playSound("sound/springin/magic_chanting.mp3", DX_PLAYTYPE_BACK);
+	ResourceManager::getInstance()->playSound("sound/se/magic_chanting.mp3", DX_PLAYTYPE_BACK);
 
 	sequence_.change(&Player::seqMagicChanting);
 }
@@ -312,9 +344,37 @@ void Player::startMagic() {
 // レベルアップできるか判定
 // ====================================================
 void Player::startLevelUp() {
-	status_.levelUP(4, 3, 3);
+	status_.levelUP(4, 2, 3, 3);
 	sequence_.change(&Player::seqLevellUp);
 	act_state_ = eActState::LEVEL_UP;
+	ResourceManager::getInstance()->playSound(level_up_se_hdl_path_, DX_PLAYTYPE_BACK);
+
+	tnl::Vector2i effect_draw_pos = tnl::Vector2i(static_cast<int>(pos_.x), static_cast<int>(pos_.y)) * GameManager::DRAW_CHIP_SIZE
+		+ tnl::Vector2i(DXE_WINDOW_WIDTH >> 1, DXE_WINDOW_HEIGHT >> 1);
+
+	tnl::Vector2i effect_draw_size = tnl::Vector2i(GameManager::DRAW_CHIP_SIZE, GameManager::DRAW_CHIP_SIZE);
+
+	level_up_effect_->setDrawPos(effect_draw_pos);
+	level_up_effect_->setDrawSize(effect_draw_size);
+	level_up_effect_->startAnimation();
+}
+
+void Player::takeDamage(int damage) {
+	
+	status_.takeDamage(damage);
+
+	is_take_damage_ = true;
+	sequence_.change(&Player::seqTakeDamage);
+}
+
+void Player::executeRecoveryStatusProcess() {
+
+	++regenerating_count_;
+
+	if (regenerating_count_ >= REGENERATE_INTERVAL) {
+		regenerating_count_ = 0;
+		status_.recoveryMP(regenerating_mp_);
+	}
 }
 
 // ====================================================
@@ -379,7 +439,7 @@ void Player::setNextPosInDir(eDir_8 dir) {
 
 	act_state_ = eActState::MOVE;
 	sequence_.change(&Player::seqMove);
-	status_.recoveryMP(regenerating_mp_);
+	executeRecoveryStatusProcess();
 }
 
 // ====================================================
@@ -514,7 +574,7 @@ bool Player::seqIdle(const float delta_time) {
 	if (tnl::Input::IsKeyDown(eKeys::KB_Z)) {
 		act_state_ = eActState::MOVE;
 		sequence_.change(&Player::seqMove);
-		status_.recoveryMP(regenerating_mp_);
+		executeRecoveryStatusProcess();
 		return true;
 	}
 
@@ -618,15 +678,45 @@ bool Player::seqUseMagic(const float delta_time) {
 	return true;
 }
 
+bool Player::seqTakeDamage(const float delta_time) {
+
+	damage_production_elapsed_ += delta_time;
+
+	if (sequence_.getProgressTime() < DAMAGE_EFFECT_CHANGE_INTERVAL * damage_production_count_) {
+		return true;
+	}
+
+	++damage_production_count_;
+	is_drawing_ = !is_drawing_;
+
+	if (damage_production_count_ < 7) {
+		return true;
+	}
+
+	is_take_damage_ = false;
+	is_drawing_ = true;
+	damage_production_count_ = 0;
+	sequence_.change(&Player::seqIdle);
+
+	if (status_.getHP() <= 0) {
+		is_alive_ = false;
+	}
+
+	return true;
+}
+
 // ====================================================
 // レベルアップシーケンス
 // レベルアップしたときのエフェクトを表示する。
 // ====================================================
 bool Player::seqLevellUp(const float delta_time) {
 
-	if (sequence_.getProgressTime() > SEQUENCE_WAIT_TIME) {
+	level_up_effect_->update(delta_time);
+	
+	if (!CheckSoundMem(ResourceManager::getInstance()->loadSound(level_up_se_hdl_path_))) {
 		act_state_ = eActState::END;
 		sequence_.change(&Player::seqIdle);
+		level_up_effect_->stopAnimation();
 		return true;
 	}
 

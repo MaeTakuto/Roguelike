@@ -36,7 +36,7 @@ namespace {
 }
 
 
-SceneTitle::SceneTitle() : sequence_(tnl::Sequence<SceneTitle>(this, &SceneTitle::seqSceneTransition)), title_menu_(std::make_shared<SelectWindow>()),
+SceneTitle::SceneTitle() : sequence_(tnl::Sequence<SceneTitle>(this, &SceneTitle::seqSceneStart)), title_menu_(std::make_shared<SelectWindow>()),
 	dungeon_log_menu_(std::make_shared<SelectWindow>()), selected_dungeon_log_list_index_(0), control_explanation_window_(std::make_shared<MessageWindow>()),
 	back_ground_gpc_hdl_(0), sunlight_gpc_hdl_(0), title_bgm_hdl_path_("sound/bgm/title.ogg"), title_bgm_hdl_(0), 
 	bgm_end_freqency_(2722464), title_menu_alpha_(0), sunlight_alpha_(0), alpha_center_(176), sin_range_(32), scene_elapsed_time_(0.0f)
@@ -190,6 +190,12 @@ void SceneTitle::openDungeonLogMenu() {
 		dungeon_log_list_[i]->setDrawing(true);
 	}
 
+	int draw_pos_y 
+		= dungeon_log_list_[selected_dungeon_log_list_index_]->getWindowPos().y + dungeon_log_list_[selected_dungeon_log_list_index_]->getWindowSize().y + 20;
+
+	control_explanation_window_->setWindowPos( TITLE_MAIN_MENU_SIZE 
+		+ tnl::Vector2i(TITLE_MAIN_MENU_POS.x + 20, draw_pos_y) );
+
 }
 
 void SceneTitle::closeDungeonLogMenu() {
@@ -203,9 +209,11 @@ void SceneTitle::closeDungeonLogMenu() {
 		}
 		dungeon_log_list_[i]->setDrawing(false);
 	}
+
+	control_explanation_window_->setWindowPos(TITLE_MAIN_MENU_POS + TITLE_MAIN_MENU_SIZE + tnl::Vector2i(20, 0));
 }
 
-bool SceneTitle::seqSceneTransition(const float delta_time) {
+bool SceneTitle::seqSceneStart(const float delta_time) {
 
 	if (!GameManager::GetInstance()->isTransition()) {
 		setupDugeonLogMenu();
@@ -246,6 +254,7 @@ bool SceneTitle::seqSelectMainMenu(const float delta_time) {
 
 		if (title_menu_->getSelectedCmdIndex() == 0) {
 			GameManager::GetInstance()->changeScene(std::make_shared<ScenePlay>());
+			sequence_.change(&SceneTitle::seqTransitionNextScene);
 		}
 		else {
 			title_menu_->setDrawing(false);
@@ -272,6 +281,10 @@ bool SceneTitle::seqSelectDungeonLogList(const float delta_time) {
 		sequence_.change(&SceneTitle::seqSelectMainMenu);
 	}
 
+	return true;
+}
 
-	return false;
+bool SceneTitle::seqTransitionNextScene(const float delta_time) {
+
+	return true;
 }

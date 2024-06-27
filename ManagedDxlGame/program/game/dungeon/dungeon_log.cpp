@@ -5,7 +5,7 @@
 
 namespace {
 	// ダンジョン記録のメッセージ行
-	const int LOG_MESSAGE_LINE = 9;
+	const int LOG_MESSAGE_LINE = 11;
 
 	// 空白
 	const int LOG_MESSAGE_SPACE = 18;
@@ -38,6 +38,14 @@ void DungeonLog::draw() {
 
 }
 
+const tnl::Vector2i& DungeonLog::getWindowPos() const {
+	return dungeon_log_window_->getWindowPos();
+}
+
+const tnl::Vector2i& DungeonLog::getWindowSize() const {
+	return dungeon_log_window_->getWindowSize();
+}
+
 void DungeonLog::setWindowPos(const tnl::Vector2i& pos) {
 	dungeon_log_window_->setWindowPos(pos);
 }
@@ -58,17 +66,19 @@ void DungeonLog::updateDungeonLogData() {
 
 	log_messages_[0] = "・冒険の結果";
 	log_messages_[1] = "";
-	log_messages_[2] = "到達フロア　　　：";
-	log_messages_[3] = "レベル　　　　　：" + mtl::rightAlign(std::to_string(end_status_.getLevel()), LOG_MESSAGE_SPACE );
-	log_messages_[4] = "HP　　　　　　　：" + mtl::rightAlign(std::to_string(end_status_.getMaxHP()), LOG_MESSAGE_SPACE );
-	log_messages_[5] = "敵撃退数　　　　：" + mtl::rightAlign(std::to_string(repelling_enemy_count_) + "体", LOG_MESSAGE_SPACE);
-	log_messages_[6] = "";
-	log_messages_[7] = "・終了時メッセージ";
-	log_messages_[8] = end_message_;
+	log_messages_[2] = "総合スコア　　　：" + mtl::rightAlign(std::to_string(overall_score_), LOG_MESSAGE_SPACE);
+	log_messages_[3] = "到達フロア　　　：";
+	log_messages_[4] = "レベル　　　　　：" + mtl::rightAlign(std::to_string(end_status_.getLevel()), LOG_MESSAGE_SPACE );
+	log_messages_[5] = "HP　　　　　　　：" + mtl::rightAlign(std::to_string(end_status_.getMaxHP()), LOG_MESSAGE_SPACE );
+	log_messages_[6] = "MP　　　　　　　：" + mtl::rightAlign(std::to_string(end_status_.getMaxMP()), LOG_MESSAGE_SPACE );
+	log_messages_[7] = "敵撃退数　　　　：" + mtl::rightAlign(std::to_string(repelling_enemy_count_) + "体", LOG_MESSAGE_SPACE);
+	log_messages_[8] = "";
+	log_messages_[9] = "・終了時メッセージ";
+	log_messages_[10] = end_message_;
 
 	std::string message = is_dungeon_clear_ ? "最深部" : std::to_string(end_floor_) + "F";
 
-	log_messages_[2] += mtl::rightAlign(message, LOG_MESSAGE_SPACE);
+	log_messages_[3] += mtl::rightAlign(message, LOG_MESSAGE_SPACE);
 
 	dungeon_log_window_->clearMessage();
 	dungeon_log_window_->setEnable(true);

@@ -48,7 +48,7 @@ Skeleton::Skeleton() : sequence_(tnl::Sequence<Skeleton>(this, &Skeleton::seqIdl
 	chara_animation_ = std::make_shared<Animation>();
 	chara_animation_->setAnimGraphicHandle(chara_gpc_hdl_[std::underlying_type<eDir_4>::type(anim_dir_)]);
 	chara_animation_->setLoopAnimation(true);
-	chara_animation_->setFrameChangeInterval(0.25f);
+	chara_animation_->setFrameChangeInterval(CHARA_ANIM_INTERVAL);
 	chara_animation_->startAnimation();
 
 	// 投擲物の画像をロード
@@ -100,6 +100,10 @@ void Skeleton::update(float delta_time) {
 // 描画
 // =====================================================================================
 void Skeleton::draw(const std::shared_ptr<Camera> camera) {
+
+	if (!is_drawing_) {
+		return;
+	}
 
 	if (bone_->isEnable()) {
 		bone_->draw(camera);
@@ -191,9 +195,11 @@ void Skeleton::decideAction() {
 
 	// 通路にいる場合、通路での行動処理を行う
 	if (scene_play->getPlace(pos_) == ePlace::CORRIDOR) {
+		
 		// 周囲 8マスにプレイヤーがいるか確認
 		eDir_8 player_dir = findPlayerDir_8();
 		if (player_dir != eDir_8::NONE) {
+			is_find_player_ = true;
 			target_pos_ = pos_ + DIR_POS[std::underlying_type<eDir_8>::type(player_dir)];
 			bone_->setupToLaunchProjectile(pos_, player_dir, 32);
 			changeToAttackAction(player_dir);
@@ -256,6 +262,14 @@ void Skeleton::startLevelUp() {
 
 }
 
+void Skeleton::takeDamage(int damage) {
+
+	status_.takeDamage(damage);
+
+	is_take_damage_ = true;
+	sequence_.change(&Skeleton::seqTakeDamage);
+}
+
 // =====================================================================================
 // 自信をデスさせる
 // =====================================================================================
@@ -310,6 +324,33 @@ bool Skeleton::seqAttack(const float delta_time) {
 		act_state_ = eActState::END;
 		sequence_.change(&Skeleton::seqIdle);
 	}
+	return true;
+}
+
+bool Skeleton::seqTakeDamage(const float delta_time) {
+
+	damage_production_elapsed_ += delta_time;
+
+	if (sequence_.getProgressTime() < DAMAGE_EFFECT_CHANGE_INTERVAL * damage_production_count_) {
+		return true;
+	}
+
+	++damage_production_count_;
+	is_drawing_ = !is_drawing_;
+
+	if (damage_production_count_ < 7) {
+		return true;
+	}
+
+	is_take_damage_ = false;
+	is_drawing_ = true;
+	damage_production_count_ = 0;
+	sequence_.change(&Skeleton::seqIdle);
+
+	if (status_.getHP() <= 0) {
+		is_alive_ = false;
+	}
+
 	return true;
 }
 

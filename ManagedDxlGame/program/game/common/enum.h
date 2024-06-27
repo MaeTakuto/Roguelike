@@ -43,11 +43,12 @@ enum class ePlace {
 
 // ƒLƒƒƒ‰‚Ìs“®ó‘Ô
 enum class eActState {
-	IDLE,
+	IDLE = 0,
 	MOVE,
 	USE_MAGIC,
 	ATTACK,
 	LEVEL_UP,
+	TAKE_DAMAGE,
 	END
 };
 

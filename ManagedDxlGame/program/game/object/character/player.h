@@ -25,15 +25,6 @@ public:
 	}
 
 private:
-	// 毎ターン回復させる MP
-	int regenerating_mp_;
-
-	// プレイヤーの行動シーケンス
-	tnl::Sequence<Player> sequence_;
-
-	// 入力可能か判定
-	bool can_operation_input_;
-
 	// ------------------ 魔法関連 ---------------------------------
 
 	// 魔法詠唱エフェクト
@@ -45,11 +36,31 @@ private:
 
 	// -------------------------------------------------------------
 
+	// レベルアップエフェクト
+	std::shared_ptr<Animation> level_up_effect_;
+
+	// プレイヤーの行動シーケンス
+	tnl::Sequence<Player> sequence_;
+
+	// MP を回復してからのカウント
+	int regenerating_count_;
+
+	// 毎ターン回復させる MP
+	int regenerating_mp_;
+
+	// レベルアップSE
+	std::string level_up_se_hdl_path_;
+
+	// 入力可能か判定
+	bool can_operation_input_;
+
 	// 選択中のセルの画像
 	int select_cell_blue_gpc_hdl_;
 	int select_cell_red_gpc_hdl_;
 
 public:
+	// 魔法効果量を取得
+	int getMagicEffectAmount() const;
 	// 操作入力できるようにするか設定
 	inline void setOperationInput(bool can_operation_input) { can_operation_input_ = can_operation_input; }
 	// 行動を開始する
@@ -66,6 +77,10 @@ public:
 	void startMagic();
 	// レベルアップさせる
 	void startLevelUp() override;
+	// ダメージを受ける
+	void takeDamage(int damage) override;
+	// ステータス回復の処理
+	void executeRecoveryStatusProcess();
 	
 	// 魔法を使えるか試す
 	bool tryUseMagic(int magic_index);
@@ -84,6 +99,8 @@ private:
 	bool seqMagicChanting(const float delta_time);
 	// 魔法攻撃シーケンス
 	bool seqUseMagic(const float delta_time);
+	// ダメージを受けるシーケンス
+	bool seqTakeDamage(const float delta_time);
 
 	// ====================== 関数のプロトタイプ宣言 ============================
 	bool checkMapDataFromPos(const tnl::Vector3& pos, eMapData map_data);

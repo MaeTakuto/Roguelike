@@ -45,6 +45,8 @@ public:
 	void beginAction() override;
 	// レベルアップ処理を行う
 	void startLevelUp() override;
+	// ダメージを受ける
+	void takeDamage(int damage) override;
 	// 敵をデスさせる
 	void death() override;
 
@@ -56,6 +58,8 @@ private:
 	bool seqMove(const float delta_time);
 	// 攻撃状態
 	bool seqAttack(const float delta_time);
+	// ダメージを受けるシーケンス
+	bool seqTakeDamage(const float delta_time);
 
 	// ============= プロトタイプ宣言 =============
 	// 目標の位置に向かって 1マス移動する

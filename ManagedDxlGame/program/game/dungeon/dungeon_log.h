@@ -19,6 +19,10 @@ public:
 
 	// 総合スコアを取得する
 	inline int getOverallScore() const { return overall_score_; }
+	// ウィンドウの位置を取得
+	const tnl::Vector2i& getWindowPos() const;
+	// ウィンドウサイズを取得
+	const tnl::Vector2i& getWindowSize() const;
 
 	// -------------------- セッター -----------------------------
 

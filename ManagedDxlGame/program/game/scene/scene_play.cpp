@@ -45,7 +45,7 @@ ScenePlay::ScenePlay() : camera_(std::make_shared<Camera>()), player_(std::make_
 	is_opened_menu_(false), is_display_player_icon_(true), elapsed_swich_icon_display_(0.0f),
 	is_hide_explanation_(false), fade_gpc_hdl_(0), alpha_(0), fade_time_(0.5f),
 	level_up_character_(nullptr), dungeon_bgm_hdl_(0), bgm_end_freqency_(2105775), dungeon_bgm_hdl_path_("sound/bgm/dungeon01.mp3"),
-	damage_se_hdl_path_("sound/damaged.mp3"), open_select_window_se_hdl_path_("sound/springin/open_window.mp3"), level_up_se_hdl_path_("sound/springin/level_up.mp3"), 
+	damage_se_hdl_path_("sound/damaged.mp3"), open_select_window_se_hdl_path_("sound/springin/open_window.mp3"), 
 	button_enter_se_hdl_path_("sound/button_enter.mp3"), cancel_se_hdl_path_("sound/springin/cancel.mp3")
 {
 
@@ -83,7 +83,6 @@ ScenePlay::ScenePlay() : camera_(std::make_shared<Camera>()), player_(std::make_
 	dungeon_bgm_hdl_ = ResourceManager::getInstance()->loadSound(dungeon_bgm_hdl_path_);
 	ResourceManager::getInstance()->loadSound(damage_se_hdl_path_);
 	ResourceManager::getInstance()->loadSound(open_select_window_se_hdl_path_);
-	ResourceManager::getInstance()->loadSound(level_up_se_hdl_path_);
 	ResourceManager::getInstance()->loadSound(cancel_se_hdl_path_);
 
 	// ------------- UI_Managerクラスの初期設定 -------------------------
@@ -101,7 +100,6 @@ ScenePlay::~ScenePlay() {
 	ResourceManager::getInstance()->deleteSound(dungeon_bgm_hdl_path_);
 	ResourceManager::getInstance()->deleteSound(damage_se_hdl_path_);
 	ResourceManager::getInstance()->deleteSound(open_select_window_se_hdl_path_);
-	ResourceManager::getInstance()->deleteSound(level_up_se_hdl_path_);
 	
 	// 画像の削除
 	ResourceManager::getInstance()->deleteAnimation(
@@ -165,6 +163,7 @@ void ScenePlay::draw() {
 		enemy_mgr_->draw(camera_);
 
 		player_->drawEffect(camera_);
+		enemy_mgr_->drawEffect(camera_);
 
 		if (is_display_mini_map_ && !is_opened_menu_) {
 			drawMiniMap();
@@ -348,10 +347,6 @@ void ScenePlay::applyDamage(std::shared_ptr<Character> attacker, std::shared_ptr
 	ui_mgr_->setMessage(message, MESSAGE_DRAW_TIME);
 	tnl::DebugTrace("%dダメージを与えた。\n", attacker->getStatus().getAtk());
 
-	if (!target->isAlive() && target.get() != player_.get()) {
-		defeatCharacter(attacker, target);
-	}
-
 }
 
 // ====================================================
@@ -385,7 +380,6 @@ void ScenePlay::writeDungeonLog() {
 // キャラのレベルが上がった時の処理
 // ====================================================
 void ScenePlay::executeLevelUpProcess(std::shared_ptr<Character> chara) {
-	ResourceManager::getInstance()->playSound(level_up_se_hdl_path_, DX_PLAYTYPE_BACK);
 	chara->startLevelUp();
 	level_up_character_ = chara;
 
@@ -473,7 +467,17 @@ bool ScenePlay::checkPlayerCell() {
 // ====================================================
 // キャラクターを倒した時の処理を行う 
 // ====================================================
-void ScenePlay::defeatCharacter(std::shared_ptr<Character> attacker, std::shared_ptr<Character> target) {
+void ScenePlay::checkDeathCharacter(std::shared_ptr<Character> attacker, std::shared_ptr<Character> target) {
+
+	if (target->isAlive()) {
+		return;
+	}
+
+	if (target.get() == player_.get()) {
+		dungeon_log_->setEndMessage(attackers_.front()->getName() + "にやられてしまった。");
+		executeGameOverProcess();
+		return;
+	}
 
 	attacker->addExp(target->getStatus().getExp());
 	setMapData(target->getNextPos(), getTerrainData(target->getNextPos()));
@@ -722,7 +726,7 @@ bool ScenePlay::seqEnemyAct(const float delta_time) {
 
 	// 
 	if (player_->getActState() == eActState::USE_MAGIC) {
-		dungeon_sequence_.change(&ScenePlay::seqPlayerAction);
+		dungeon_sequence_.change(&ScenePlay::seqPlayerUseMagic);
 		player_->startMagic();
 		return true;
 	}
@@ -753,25 +757,57 @@ bool ScenePlay::seqPlayerAction(const float delta_time) {
 
 	charaUpdate(delta_time);
 
-	if (player_->getActState() != eActState::END) return true;
-	ui_mgr_->updateStatusBar();
-
-	if (player_->canLevelUp()) {
-		executeLevelUpProcess(player_);
+	if (player_->getActState() != eActState::END) {
 		return true;
 	}
+
+	ui_mgr_->updateStatusBar();
+
 	if (attackers_.empty()) {
 		dungeon_sequence_.change(&ScenePlay::seqCharaMove);
 		enemy_mgr_->beginActionToMove();
 		return true;
 	}
-	else if (!attackers_.front()->isAlive()) {
-		changeAttacker();
+
+	dungeon_sequence_.change(&ScenePlay::seqCharacterAttack);
+	attackers_.front()->startAttack();
+	return true;
+}
+
+// ====================================================
+// プレイヤーのみ行動
+// ====================================================
+bool ScenePlay::seqPlayerUseMagic(const float delta_time) {
+
+	charaUpdate(delta_time);
+
+	if (player_->getActState() != eActState::END) {
+		return true;
+	}
+
+	ui_mgr_->updateStatusBar();
+
+	if (attackers_.empty()) {
+		dungeon_sequence_.change(&ScenePlay::seqCharaMove);
+		enemy_mgr_->beginActionToMove();
+		return true;
+	}
+
+	if (attackers_.front().get() == player_.get()) {
+
+		if (atk_targets_.empty()) {
+			changeAttacker();
+			return true;
+		}
+
+		applyDamage(player_, atk_targets_.front(), player_->getMagicEffectAmount());
+		dungeon_sequence_.change(&ScenePlay::seqTargetDamaged);
 		return true;
 	}
 
 	dungeon_sequence_.change(&ScenePlay::seqCharacterAttack);
 	attackers_.front()->startAttack();
+
 	return true;
 }
 
@@ -806,16 +842,17 @@ bool ScenePlay::seqTargetDamaged(const float delta_time) {
 
 	charaUpdate(delta_time);
 
-	// 攻撃対象を倒したとき、時の確認
-	if (!atk_targets_.front()->isAlive()) {
-		if (atk_targets_.front().get() == player_.get()) {
-			dungeon_log_->setEndMessage(attackers_.front()->getName() + "にやられてしまった。");
-			executeGameOverProcess();
-			return true;
-		}
+	if (atk_targets_.front()->isTakeDamage()) {
+		return true;
 	}
 
+	checkDeathCharacter(attackers_.front(), atk_targets_.front());
+
 	atk_targets_.pop();
+
+	if (!player_->isAlive()) {
+		return true;
+	}
 
 	// 攻撃対象が残っている場合、もう一度攻撃対象のダメージ処理を行う
 	if (!atk_targets_.empty()) {

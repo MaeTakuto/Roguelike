@@ -115,8 +115,6 @@ private:
 	std::string damage_se_hdl_path_;
 	// 選択ウィンドウを開くときのSEパス
 	std::string open_select_window_se_hdl_path_;
-	// レベルアップSE
-	std::string level_up_se_hdl_path_;
 	// コマンド決定SEのパス
 	std::string button_enter_se_hdl_path_;
 	// キャンセルSEのパス
@@ -213,7 +211,7 @@ private:
 	// メニュー画面を閉じる
 	void closeMainMenu();
 	// キャラクターを倒したときの処理
-	void defeatCharacter(std::shared_ptr<Character> attacker, std::shared_ptr<Character> target);
+	void checkDeathCharacter(std::shared_ptr<Character> attacker, std::shared_ptr<Character> target);
 	// 攻撃キャラを切り替える。いなければ、"dungeon_sequence_"を"seqCharaMove" に変更。
 	void changeAttacker();
 	// レベルアップ処理をする
@@ -245,6 +243,7 @@ private:
 	bool seqPlayerAct(const float delta_time);
 	bool seqEnemyAct(const float delta_time);
 	bool seqPlayerAction(const float delta_time);
+	bool seqPlayerUseMagic(const float delta_time);
 	bool seqCharacterAttack(const float delta_time);
 	bool seqTargetDamaged(const float delta_time);
 	bool seqCharaLevelUp(const float delta_time);

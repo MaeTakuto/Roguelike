@@ -29,13 +29,21 @@ protected:
 	bool is_draw_effect_;
 	// 消費MP
 	int consumed_mp_;
+	// 魔法効果量
+	int magic_effect_amount_;
 
 	// 魔法の説明
 	std::vector<std::string> magic_explantion_;
 
 public:
 	inline bool isDrawEffect() const { return is_draw_effect_; }
+	
+	// 消費MPをセット
 	inline int getConsumedMP() const { return consumed_mp_; }
+
+	// 魔法効果量を取得（ 回復量、ダメージ量など ）
+	inline int getMagicEffectAmount() const { return magic_effect_amount_; }
+
 	inline const std::string& getMagicName() const { return magic_name_; }
 	// 魔法の効果対象を返す
 	inline eMagicTarget getMagicTarget() const { return magic_target_; }

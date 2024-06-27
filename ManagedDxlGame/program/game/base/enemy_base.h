@@ -75,6 +75,8 @@ public:
 	virtual void startAttack() = 0;
 	// レベルアップ処理を行う
 	virtual void startLevelUp() = 0;
+	// ダメージを受ける
+	virtual void takeDamage(int damage) = 0;
 	// 敵をデスさせる
 	virtual void death() = 0;
 

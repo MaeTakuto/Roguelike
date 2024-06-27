@@ -43,8 +43,31 @@ Pumpkin::Pumpkin() {
 	chara_animation_ = std::make_shared<Animation>();
 	chara_animation_->setAnimGraphicHandle(chara_gpc_hdl_[std::underlying_type<eDir_4>::type(anim_dir_)]);
 	chara_animation_->setLoopAnimation(true);
-	chara_animation_->setFrameChangeInterval(0.25f);
+	chara_animation_->setFrameChangeInterval(CHARA_ANIM_INTERVAL);
 	chara_animation_->startAnimation();
+
+	// ------------------- エフェクトの設定 -----------------------------------------------------------------------
+
+	CsvData& effect_data = rm_instance->loadCsvData("csv/effect_gpc_data.csv");
+
+	std::vector<tnl::CsvCell> start_cell = effect_data[GameManager::CSV_CELL_ROW_START];
+
+	atk_effect_ = std::make_shared<Animation>();
+
+	atk_effect_->setAnimGraphicHandle(
+		rm_instance->loadAnimation(
+			start_cell[1].getString(),								// 画像パス,
+			start_cell[2].getInt() * start_cell[3].getInt(),		// フレーム総数
+			start_cell[2].getInt(),									// 横方向の分割数
+			start_cell[3].getInt(),									// 縦方向の分割数
+			start_cell[4].getInt(),									// 横方向の分割サイズ
+			start_cell[5].getInt()									// 縦方向の分割サイズ
+		)
+	);
+
+	atk_effect_->setFrameChangeInterval(0.05f);
+
+	// -----------------------------------------------------------------------------------------------------------
 
 	// ステータスデータを CSV から取得
 	CsvData status_data = rm_instance->loadCsvData(PUMPKIN_DATA_CSV_PATH);
@@ -85,6 +108,10 @@ void Pumpkin::update(float delta_time) {
 // =====================================================================================
 void Pumpkin::draw(const std::shared_ptr<Camera> camera) {
 
+	if (!is_drawing_) {
+		return;
+	}
+
 	// 描画位置調整
 	tnl::Vector2i draw_pos = tnl::Vector2i(static_cast<int>(pos_.x * GameManager::DRAW_CHIP_SIZE), static_cast<int>(pos_.y * GameManager::DRAW_CHIP_SIZE))
 		+ tnl::Vector2i(DXE_WINDOW_WIDTH >> 1, DXE_WINDOW_HEIGHT >> 1);
@@ -99,6 +126,7 @@ void Pumpkin::draw(const std::shared_ptr<Camera> camera) {
 // =====================================================================================
 void Pumpkin::drawEffect(const std::shared_ptr<Camera> camera) {
 
+	atk_effect_->draw(camera);
 }
 
 // =====================================================================================
@@ -199,6 +227,23 @@ void Pumpkin::decideAction() {
 // 攻撃を開始する
 // =====================================================================================
 void Pumpkin::startAttack() {
+
+	tnl::Vector2i attack_pos = tnl::Vector2i( static_cast<int>(pos_.x), static_cast<int>(pos_.y) ) 
+		+ tnl::Vector2i(
+			static_cast<int>( DIR_POS[std::underlying_type<eDir_8>::type(looking_dir_)].x ),
+			static_cast<int>( DIR_POS[std::underlying_type<eDir_8>::type(looking_dir_)].y )
+		);
+
+	tnl::Vector2i effect_draw_pos = attack_pos * GameManager::DRAW_CHIP_SIZE
+		+ tnl::Vector2i(DXE_WINDOW_WIDTH >> 1, DXE_WINDOW_HEIGHT >> 1);
+
+	tnl::Vector2i effect_draw_size = tnl::Vector2i(GameManager::DRAW_CHIP_SIZE, GameManager::DRAW_CHIP_SIZE);
+
+	atk_effect_->setDrawPos(effect_draw_pos);
+	atk_effect_->setDrawSize(effect_draw_size);
+	atk_effect_->startAnimation();
+	ResourceManager::getInstance()->playSound("sound/se/physical_attack1.mp3", DX_PLAYTYPE_BACK);
+
 	sequence_.change(&Pumpkin::seqAttack);
 }
 
@@ -222,6 +267,14 @@ void Pumpkin::beginAction() {
 // =====================================================================================
 void Pumpkin::startLevelUp() {
 
+}
+
+void Pumpkin::takeDamage(int damage) {
+
+	status_.takeDamage(damage);
+
+	is_take_damage_ = true;
+	sequence_.change(&Pumpkin::seqTakeDamage);
 }
 
 // =====================================================================================
@@ -261,22 +314,57 @@ bool Pumpkin::seqMove(const float delta_time) {
 // ====================================================
 bool Pumpkin::seqAttack(const float delta_time) {
 
-	attack_time_ += delta_time;
+	atk_effect_->update(delta_time);
 
-	if ( attack_time_ > ATTACK_TIME_MAX ) {
-		auto scene_play = scene_play_.lock();
-		if (scene_play == nullptr) {
-			tnl::DebugTrace("攻撃を正常に実行できませんでした\n");
-			act_state_ = eActState::END;
-			sequence_.change(&Pumpkin::seqIdle);
-			return true;
-		}
+	if (atk_effect_->isEnable()) {
+		return true;
+	}
 
-		scene_play->addAttackTarget(scene_play->getPlayer());
-		attack_time_ = 0.0f;
+	int sound_hdl = ResourceManager::getInstance()->loadSound("sound/se/physical_attack2.mp3");
+
+	if (CheckSoundMem(sound_hdl)) {
+		return true;
+	}
+
+	auto scene_play = scene_play_.lock();
+	if (scene_play == nullptr) {
+		tnl::DebugTrace("攻撃を正常に実行できませんでした\n");
 		act_state_ = eActState::END;
 		sequence_.change(&Pumpkin::seqIdle);
+		return true;
 	}
+
+	scene_play->addAttackTarget(scene_play->getPlayer());
+	attack_time_ = 0.0f;
+	act_state_ = eActState::END;
+	sequence_.change(&Pumpkin::seqIdle);
+	return true;
+}
+
+bool Pumpkin::seqTakeDamage(const float delta_time) {
+
+	damage_production_elapsed_ += delta_time;
+
+	if (sequence_.getProgressTime() < DAMAGE_EFFECT_CHANGE_INTERVAL * damage_production_count_) {
+		return true;
+	}
+
+	++damage_production_count_;
+	is_drawing_ = !is_drawing_;
+
+	if (damage_production_count_ < 7) {
+		return true;
+	}
+
+	is_take_damage_ = false;
+	is_drawing_ = true;
+	damage_production_count_ = 0;
+	sequence_.change(&Pumpkin::seqIdle);
+
+	if (status_.getHP() <= 0) {
+		is_alive_ = false;
+	}
+
 	return true;
 }
 
@@ -306,7 +394,7 @@ void Pumpkin::trackingPlayer() {
 
 	tnl::Vector3 player_pos = scene_play->getPlayer()->getNextPos();
 
-	// 部屋にいる場合いて、プレイヤーが通常にいる場合
+	// 自身が部屋にいて、プレイヤーが通路にいる場合
 	if (scene_play->getPlace(pos_) == ePlace::ROOM && scene_play->getPlace(player_pos) == ePlace::CORRIDOR) {
 		
 		tnl::Vector3 entrance_pos = getEntrancePosToNearestPlayer(scene_play->getAreaId(pos_));

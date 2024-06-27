@@ -74,3 +74,7 @@ void Animation::startAnimation() {
 	is_enable_ = true;
 	frame_elapsed_ = 0.0f;
 }
+
+void Animation::stopAnimation() {
+	is_enable_ = false;
+}
