@@ -66,4 +66,7 @@ public:
 	// アニメーションを再生
 	void startAnimation();
 
+	// アニメーションを停止
+	void stopAnimation();
+
 };

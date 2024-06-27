@@ -68,6 +68,13 @@ void FireMagic::draw(const std::shared_ptr<Camera> camera) {
 // =====================================================================================
 void FireMagic::setupToUseMagic(const std::shared_ptr<Character> owner) {
 
+	auto scene_play = std::dynamic_pointer_cast<ScenePlay>(GameManager::GetInstance()->getSceneInstance());
+	if (!scene_play) {
+		return;
+	}
+
+	scene_play->addAttacker(owner);
+
 	// ‰Î‚Ì‹Ê‚Ì‰æ‘œ‚Æ”­ŽËˆÊ’u‚ðÝ’è‚·‚é
 	fire_ball_->setProjectileGpcHdl(fire_ball_gpc_hdl_[std::underlying_type<eDir_8>::type(owner->getLookingDir())]);
 	fire_ball_->setupToLaunchProjectile(owner->getPos(), owner->getLookingDir(), 10);
@@ -97,7 +104,8 @@ void FireMagic::useMagic(std::shared_ptr<Character> owner) {
 		return;
 	}
 
-	int damage = owner->getStatus().getAtk() * 1.15f;
-	scene_play->applyDamage(owner, atk_target_, damage);
+	magic_effect_amount_ = owner->getStatus().getAtk() * 1.15f;
+
+	scene_play->addAttackTarget(atk_target_);
 
 }

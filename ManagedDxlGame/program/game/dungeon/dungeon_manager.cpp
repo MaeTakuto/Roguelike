@@ -304,7 +304,7 @@ void DungeonManager::connectRoom(int area_index) {
 			index = order_connect_rooms_[order_index_];
 			tnl::DebugTrace("d2 index = %d\n", index);
 
-			dy2 = areas_[index].room.y + areas_[index].room.height - 1;
+			dy2 = areas_[index].room.y + areas_[index].room.height - 2;
 
 			do {
 				dx2 = random(areas_[index].room.x + ROOM_AND_ROAD_SPACE, areas_[index].room.x + areas_[index].room.width - 1 - ROOM_AND_ROAD_SPACE);
@@ -382,7 +382,7 @@ void DungeonManager::connectRoom(int area_index) {
 			index = order_connect_rooms_[order_index_];
 			tnl::DebugTrace("d2 index = %d\n", index);
 
-			dx2 = areas_[index].room.x + areas_[index].room.width - 1;
+			dx2 = areas_[index].room.x + areas_[index].room.width - 2;
 
 			do {
 				dy2 = random(areas_[index].room.y + ROOM_AND_ROAD_SPACE, areas_[index].room.y + areas_[index].room.height - 1 - ROOM_AND_ROAD_SPACE);
@@ -405,7 +405,7 @@ void DungeonManager::connectRoom(int area_index) {
 			// 両ルームの適当な座標指定
 			index = order_connect_rooms_[order_index_ - 1 - connect_error_count_];
 
-			dx1 = areas_[index].room.x + areas_[index].room.width - 1;
+			dx1 = areas_[index].room.x + areas_[index].room.width - 2;
 
 			do {
 				dy1 = random(areas_[index].room.y + ROOM_AND_ROAD_SPACE, areas_[index].room.y + areas_[index].room.height - 1 - ROOM_AND_ROAD_SPACE);

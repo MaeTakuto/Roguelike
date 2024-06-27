@@ -241,8 +241,15 @@ void UI_Manager::draw(const std::shared_ptr<Camera> camera) {
 	}
 	hp_bar_->draw();
 	mp_bar_->draw();
+
+	auto player = ui_target_.lock();
+
 	SetFontSize(FLOOR_STR_FONT_SIZE);
 	DrawStringEx(FLOOR_STR_POS.x, FLOOR_STR_POS.y, -1, "%dF", floor_);
+
+	if (player) {
+		DrawStringEx(FLOOR_STR_POS.x - 20, FLOOR_STR_POS.y - FLOOR_STR_FONT_SIZE - 20, -1, "Lv%d", player->getStatus().getLevel());
+	}
 }
 
 // =====================================================================================
@@ -289,6 +296,7 @@ void UI_Manager::closeMainMenu() {
 void UI_Manager::updateMagicList() {
 
 	std::shared_ptr<Character> target = ui_target_.lock();
+
 	if (!target) {
 		return;
 	}

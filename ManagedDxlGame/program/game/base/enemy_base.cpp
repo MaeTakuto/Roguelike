@@ -200,6 +200,7 @@ void EnemyBase::changeToAttackAction(eDir_8 dir) {
 
 	act_state_ = eActState::ATTACK;
 	anim_dir_ = ANIM_DIR[std::underlying_type<eDir_8>::type(dir)];
+	looking_dir_ = dir;
 	
 }
 

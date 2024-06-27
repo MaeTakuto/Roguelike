@@ -58,7 +58,7 @@ public:
 
 
 	// レベルアップ関数
-	void levelUP(int max_hp, int atk, int def);
+	void levelUP(int max_hp, int max_mp, int atk, int def);
 
 private:
 	// レベル

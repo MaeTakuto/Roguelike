@@ -64,6 +64,16 @@ void EnemyManager::draw(const std::shared_ptr<Camera> camera) {
 	}
 }
 
+void EnemyManager::drawEffect(const std::shared_ptr<Camera> camera) {
+	for (int i = 0; i < enemies_.size(); i++) {
+		if (!enemies_[i]) {
+			continue;
+		}
+		if (enemies_[i]->isAlive())
+			enemies_[i]->drawEffect(camera);
+	}
+}
+
 // =====================================================================================
 // ¶‘¶‚µ‚Ä‚¢‚é“G‚Ì”‚ğ•Ô‚·B
 // =====================================================================================

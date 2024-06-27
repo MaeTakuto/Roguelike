@@ -36,10 +36,12 @@ int CharaStatus::healHP(int amount) {
 	return heal_amount;
 }
 
-void CharaStatus::levelUP(int max_hp, int atk, int def) {
+void CharaStatus::levelUP(int max_hp, int max_mp, int atk, int def) {
 	++level_;
 	max_hp_ += max_hp;
 	hp_ = max_hp_;
+	max_mp_ += max_mp;
+	mp_ = max_mp_;
 	atk_ += atk;
 	def_ += def;
 }

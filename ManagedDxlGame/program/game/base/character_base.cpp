@@ -4,7 +4,8 @@
 #include "character_base.h"
 
 Character::Character() : name_(""), status_(CharaStatus()), magic_list_(0), pos_(0.0f, 0.0f, 0.0f), next_pos_(0.0f, 0.0f, 0.0f), anim_dir_(eDir_4::DOWN),
-	atk_target_(nullptr), atk_effect_(nullptr), looking_dir_{0}, act_state_ { 0 }, is_alive_(true)
+	atk_target_(nullptr), atk_effect_(nullptr), looking_dir_{0}, act_state_ { 0 },is_take_damage_(false), is_alive_(true), is_drawing_(true),
+	damage_production_count_(0), damage_production_elapsed_(0.0f)
 {
 
 }
@@ -14,17 +15,6 @@ Character::Character() : name_(""), status_(CharaStatus()), magic_list_(0), pos_
 // =====================================================================================
 const std::vector<std::shared_ptr<MagicBase>>& Character::getMagicList() const {
 	return magic_list_;
-}
-
-// =====================================================================================
-// ƒ_ƒ[ƒW‚ğó‚¯‚é
-// =====================================================================================
-void Character::takeDamage(int damage) {
-	status_.takeDamage(damage);
-
-	if (status_.getHP() <= 0) {
-		is_alive_ = false;
-	}
 }
 
 // =====================================================================================

@@ -76,7 +76,7 @@ void HealMagic::startDrawEffect() {
 	
 	is_draw_effect_ = true;
 	magic_effect_->startAnimation();
-	ResourceManager::getInstance()->playSound("sound/springin/level_up.mp3", DX_PLAYTYPE_BACK);
+	ResourceManager::getInstance()->playSound("sound/se/heal_type2.mp3", DX_PLAYTYPE_BACK);
 }
 
 void HealMagic::useMagic(std::shared_ptr<Character> owner) {
@@ -91,7 +91,7 @@ void HealMagic::useMagic(std::shared_ptr<Character> owner) {
 	}
 
 	heal_amount_ = owner->getStatus().getMaxHP() * 0.6f;
-	owner->getStatus().healHP(heal_amount_);
+	owner->healHP(heal_amount_);
 	scene_play->setMessage(owner->getName() + "‚Í" + std::to_string(heal_amount_) + "‰ñ•œ‚µ‚½");
 
 }

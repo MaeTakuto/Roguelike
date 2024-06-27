@@ -19,6 +19,7 @@ public:
 
 	void update(float delta_time);
 	void draw(const std::shared_ptr<Camera> camera);
+	void drawEffect(const std::shared_ptr<Camera> camera);
 
 
 private:

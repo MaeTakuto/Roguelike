@@ -74,12 +74,14 @@ private:
 	// ==============================================
 	
 	// シーン遷移中シーケンス
-	bool seqSceneTransition(const float);
+	bool seqSceneStart(const float);
 	// タイトル画面での処理シーケンス
 	bool seqRun(const float delta_time);
 	// メニュー選択画面シーケンス
 	bool seqSelectMainMenu(const float delta_time);
 	// ダンジョン記録を選択するシーケンス
 	bool seqSelectDungeonLogList(const float delta_time);
+	// シーンチェンジシーケンス
+	bool seqTransitionNextScene(const float delta_time);
 
 };
