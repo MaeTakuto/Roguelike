@@ -8,8 +8,9 @@
 // コンストラクタ
 // =====================================================================================
 MessageWindow::MessageWindow() : window_pos_(250, 450), window_size_(800, 200), mess_str_top_pos_(30, 20), 
-	mess_str_pos_(window_pos_ + mess_str_top_pos_), ui_message_(""), is_enable_(false), is_time_limit_(false), is_draw_enter_ui_(false),
-	time_limit_(0.0f), display_message_count_(0), message_font_size_(30), message_line_(4), message_space_(10)
+	mess_str_pos_(window_pos_ + mess_str_top_pos_), ui_message_(""), is_enable_(false), is_time_limit_(false), is_draw_enter_ui_(true),
+	is_enable_enter_ui_(false), draw_time_limit_(0.0f), swicth_enter_ui_elapsed_(0.0f), display_message_count_(0), message_font_size_(30), 
+	message_line_(4), message_space_(10)
 {
 
 	message_.resize(message_line_);
@@ -17,6 +18,7 @@ MessageWindow::MessageWindow() : window_pos_(250, 450), window_size_(800, 200), 
 	for (int line = 0; line < message_line_; line++) {
 		message_[line] = "";
 	}
+
 }
 
 // =====================================================================================
@@ -34,14 +36,28 @@ MessageWindow::~MessageWindow() {
 void MessageWindow::update(float delta_time) {
 
 	if (is_time_limit_) {
-		time_limit_ -= delta_time;
+		draw_time_limit_ -= delta_time;
 
-		if (time_limit_ <= 0) {
+		if (draw_time_limit_ <= 0) {
 			is_time_limit_ = false;
 			is_enable_ = false;
 			clearMessage();
 		}
 	}
+
+	if (!is_enable_enter_ui_) {
+		return;
+	}
+
+	swicth_enter_ui_elapsed_ += delta_time;
+
+	if (swicth_enter_ui_elapsed_ < 0.5f) {
+		return;
+	}
+
+	is_draw_enter_ui_ = !is_draw_enter_ui_;
+	swicth_enter_ui_elapsed_ = 0.0f;
+
 }
 
 // =====================================================================================
@@ -63,6 +79,16 @@ void MessageWindow::draw() {
 	for (int line = 0; line < message_line_; line++) {
 		DrawStringEx(mess_str_pos_.x, mess_str_pos_.y + ( ( message_font_size_ + message_space_ ) * line), -1, message_[line].c_str());
 	}
+
+	if (!is_enable_enter_ui_ || !is_draw_enter_ui_ ) {
+		return;
+	}
+
+	SetFontSize(25);
+
+	tnl::Vector2i draw_pos = window_pos_ + window_size_ - tnl::Vector2i( 150, 30 );
+
+	DrawStringEx(draw_pos.x, draw_pos.y, -1, "Next Enter");
 }
 
 // =====================================================================================
@@ -85,6 +111,9 @@ void MessageWindow::setMessgae(const std::string& message) {
 // =====================================================================================
 void MessageWindow::clearMessage() {
 	display_message_count_ = 0;
+	swicth_enter_ui_elapsed_ = 0.0f;
+	is_enable_enter_ui_ = false;
+
 	for (int line = 0; line < message_line_; ++line) {
 		message_[line] = "";
 	}
@@ -96,7 +125,7 @@ void MessageWindow::clearMessage() {
 // メッセージを全削除
 // =====================================================================================
 void MessageWindow::calculateWindowSize() {
-	window_size_.y = (message_font_size_ + message_space_) * message_line_ + (mess_str_top_pos_.y * 2);
+	window_size_.y = (message_font_size_) * message_line_ + message_space_ * ( message_line_ - 1 ) + (mess_str_top_pos_.y * 2);
 };
 
 // =====================================================================================

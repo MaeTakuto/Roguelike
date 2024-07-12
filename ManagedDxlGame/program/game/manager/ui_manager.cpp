@@ -6,6 +6,7 @@
 #include "../ui/select_window.h"
 #include "../ui/status_bar.h"
 #include "../common/chara_status.h"
+#include "../common/magic_status.h"
 #include "../base/character_base.h"
 #include "../base/magic_base.h"
 #include "ui_manager.h"
@@ -16,9 +17,8 @@ namespace {
 	const tnl::Vector2i DEFAULT_MESS_WINDOW_SIZE = { 900, 160 };
 
 	// 階段での選択時のメッセージウィンドウの位置、サイズ、メッセージ
-	const tnl::Vector2i STAIR_SEL_MESS_WINDOW_POS = { 150, 450 };
+	const tnl::Vector2i STAIR_SEL_MESS_WINDOW_POS = { 150, 500 };
 	const tnl::Vector2i STAIR_SEL_MESS_WINDOW_SIZE = { 750, 160 };
-	const std::string STAIR_SEL_MESSAGE = "穴がある。落ちますか？";
 
 	// 階数の表示位置
 	const tnl::Vector2i FLOOR_STR_POS = { 750, 90 };
@@ -42,7 +42,7 @@ namespace {
 	// ================= 2択選択ウィンドウ（はい、いいえ）の設定 =================
 
 	// 階段選択ウィンドウの表示位置
-	const tnl::Vector2i STAIR_SELECT_WINDOW_POS = { 950, 450 };
+	const tnl::Vector2i STAIR_SELECT_WINDOW_POS = { 950, 500 };
 	// 2択ウィンドウの表示サイズ
 	const tnl::Vector2i TWO_SELECT_WINDOW_SIZE = { 160, 0 };
 
@@ -77,7 +77,7 @@ namespace {
 UI_Manager::UI_Manager() : message_window_(std::make_shared<MessageWindow>()), control_explanation_window_(std::make_shared<MessageWindow>()),
 	view_status_window_(std::make_shared<MessageWindow>()), magic_explation_window_(std::make_shared<MessageWindow>()),
 	two_select_window_(std::make_shared<SelectWindow>()), main_menu_select_window_(std::make_shared<SelectWindow>()), magic_select_window_(std::make_shared<SelectWindow>()),
-	hp_bar_(std::make_shared<StatusBar>()), mp_bar_(std::make_shared<StatusBar>()), floor_(0)
+	hp_bar_(std::make_shared<StatusBar>()), mp_bar_(std::make_shared<StatusBar>()), floor_(0), draw_message_window_time_(3.0f)
 {
 	// ------------------------- メッセージウィンドウの初期化 -------------------------
 	message_window_->setWindowPos(DEFAULT_MESS_WINDOW_POS);
@@ -115,8 +115,9 @@ UI_Manager::UI_Manager() : message_window_(std::make_shared<MessageWindow>()), c
 
 	// ------------------------- ステータス確認ウィンドウの初期化 ---------------------
 	view_status_window_->setWindowPos( SUB_WINDOW_POS );
-	view_status_window_->setWindowSize(tnl::Vector2i(300, 40 * 5));
-	view_status_window_->setMessageLine(5);
+	view_status_window_->setWindowSize(tnl::Vector2i(400, 0));
+	view_status_window_->setMessageLine(6);
+	view_status_window_->calculateWindowSize();
 
 	// ------------------------- 2択選択ウィンドウの初期化 ----------------------------
 
@@ -166,8 +167,9 @@ UI_Manager::UI_Manager() : message_window_(std::make_shared<MessageWindow>()), c
 	);
 
 	magic_explation_window_->setWindowSize( MAGIC_EXPLANTION_WINDOW_SIZE );
-	magic_explation_window_->setMessageLine(3);
-	magic_explation_window_->setMessageTopPos(tnl::Vector2i(20, 20));
+	magic_explation_window_->setMessageLine(5);
+	magic_explation_window_->setMessageTopPos(tnl::Vector2i(10, 10));
+	magic_explation_window_->calculateWindowSize();
 
 	// ------------------------- ステータスバーの初期化 --------------------------------
 	hp_bar_->setStatusBarPos(STATUS_BAR_TOP_POS);
@@ -306,7 +308,7 @@ void UI_Manager::updateMagicList() {
 	std::vector<std::string> select_cmd_names(magic_list.size());
 
 	for (int i = 0; i < magic_list.size(); ++i) {
-		select_cmd_names[i] = magic_list[i]->getMagicName();
+		select_cmd_names[i] = magic_list[i]->getMagicStatus()->getMagicName();
 	}
 
 	magic_select_window_->setWindowSize(tnl::Vector2i( MAGIC_WINDOW_SIZE.x, MAGIC_WINDOW_SIZE.y + SELECT_WINDOW_CMD_SPACE * ( select_cmd_names.size() - 1 ) ) );
@@ -396,13 +398,13 @@ void UI_Manager::displayStatusWindow() {
 	// 現在ステータスの設定
 	std::shared_ptr<Character> target = ui_target_.lock();
 	if (target) {
-
 		const CharaStatus& status = target->getStatus();
-		view_status_window_->setMessgae( "レベル：" + std::to_string( status.getLevel() ) );
-		view_status_window_->setMessgae( "HP    ：" + std::to_string( status.getHP()) + " / " + std::to_string(status.getMaxHP()));
-		view_status_window_->setMessgae( "MP    ：" + std::to_string( status.getMP()) + " / " + std::to_string(status.getMaxMP()));
-		view_status_window_->setMessgae( "攻撃力：" + std::to_string( status.getAtk() ) );
-		view_status_window_->setMessgae( "経験値：" + std::to_string( status.getExp() ) );
+		view_status_window_->setMessgae( "レベル　　　　：" + std::to_string( status.getLevel() ) );
+		view_status_window_->setMessgae( "HP   　　　　 ：" + std::to_string( status.getHP()) + " / " + std::to_string(status.getMaxHP()));
+		view_status_window_->setMessgae( "MP   　　　　 ：" + std::to_string( status.getMP()) + " / " + std::to_string(status.getMaxMP()));
+		view_status_window_->setMessgae( "攻撃力　　　　：" + std::to_string( status.getAtk() ) );
+		view_status_window_->setMessgae( "経験値　　　　：" + std::to_string( status.getExp() ) );
+		view_status_window_->setMessgae( "次のレベルまで：" + std::to_string( target->getExpToNextLevel() ) );
 	}
 
 	view_status_window_->setEnable(true);
@@ -428,7 +430,7 @@ int UI_Manager::getSelectedIndexFromTwoSelectCmd() {
 // =====================================================================================
 // 階段での選択処理の実行
 // =====================================================================================
-void UI_Manager::executeStairSelect() {
+void UI_Manager::executeSelectYesOrNoWindow(const std::string& message) {
 	// 二択の選択ウィンドウの有効にする
 	two_select_window_->setDrawing(true);
 	two_select_window_->setOperate(true);
@@ -440,14 +442,14 @@ void UI_Manager::executeStairSelect() {
 	message_window_->clearMessage();
 	message_window_->setWindowPos(STAIR_SEL_MESS_WINDOW_POS);
 	message_window_->setWindowSize(STAIR_SEL_MESS_WINDOW_SIZE);
-	message_window_->setMessgae(STAIR_SEL_MESSAGE);
+	message_window_->setMessgae(message);
 	message_window_->setEnable(true);
 }
 
 // =====================================================================================
 // 階段での選択終了の処理の実行
 // =====================================================================================
-void UI_Manager::executeStairSelectEnd() {
+void UI_Manager::finishSelectYesOrNoWindow() {
 	// メッセージウィンドウ関連の処理
 	two_select_window_->setDrawing(false);
 	two_select_window_->setOperate(false);
@@ -500,6 +502,10 @@ void UI_Manager::setMessage(const std::string& message, float draw_time) {
 // =====================================================================================
 void UI_Manager::clearMessage() {
 	message_window_->clearMessage();
+}
+
+void UI_Manager::setEnableEnterUI(bool is_enable) {
+	message_window_->setEnableEnterUI(is_enable);
 }
 
 // =====================================================================================

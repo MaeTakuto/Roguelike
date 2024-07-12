@@ -239,7 +239,7 @@
     <ClCompile Include="program\game\manager\resource_manager.cpp">
       <Filter>program\[003] game\manager</Filter>
     </ClCompile>
-    <ClCompile Include="program\game\dungeon\dungeon_manager.cpp">
+    <ClCompile Include="program\game\dungeon\dungeon_generator.cpp">
       <Filter>program\[003] game\dungeon</Filter>
     </ClCompile>
     <ClCompile Include="program\game\base\scene_base.cpp">
@@ -302,7 +302,7 @@
     <ClCompile Include="program\game\object\character\enemy\pumpkin.cpp">
       <Filter>program\[003] game\object\character\enemy</Filter>
     </ClCompile>
-    <ClCompile Include="program\game\magic\magnetism.cpp">
+    <ClCompile Include="program\game\magic\magnetism_magic.cpp">
       <Filter>program\[003] game\magic</Filter>
     </ClCompile>
     <ClCompile Include="program\game\scene\scene_game_clear.cpp">
@@ -312,6 +312,12 @@
       <Filter>program\[003] game\common</Filter>
     </ClCompile>
     <ClCompile Include="program\game\dungeon\dungeon_log.cpp">
+      <Filter>program\[003] game\dungeon</Filter>
+    </ClCompile>
+    <ClCompile Include="program\game\common\magic_status.cpp">
+      <Filter>program\[003] game\common</Filter>
+    </ClCompile>
+    <ClCompile Include="program\game\dungeon\magic_selector.cpp">
       <Filter>program\[003] game\dungeon</Filter>
     </ClCompile>
   </ItemGroup>
@@ -530,7 +536,7 @@
     <ClInclude Include="program\game\manager\resource_manager.h">
       <Filter>program\[003] game\manager</Filter>
     </ClInclude>
-    <ClInclude Include="program\game\dungeon\dungeon_manager.h">
+    <ClInclude Include="program\game\dungeon\dungeon_generator.h">
       <Filter>program\[003] game\dungeon</Filter>
     </ClInclude>
     <ClInclude Include="program\game\base\character_base.h">
@@ -606,6 +612,12 @@
       <Filter>program\[003] game\common</Filter>
     </ClInclude>
     <ClInclude Include="program\game\dungeon\dungeon_log.h">
+      <Filter>program\[003] game\dungeon</Filter>
+    </ClInclude>
+    <ClInclude Include="program\game\common\magic_status.h">
+      <Filter>program\[003] game\common</Filter>
+    </ClInclude>
+    <ClInclude Include="program\game\dungeon\magic_selector.h">
       <Filter>program\[003] game\dungeon</Filter>
     </ClInclude>
   </ItemGroup>

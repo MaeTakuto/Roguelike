@@ -24,4 +24,11 @@ namespace mtl {
 		if (str.size() >= width) return str;
 		return std::string(width - str.size(), ' ') + str;
 	}
+	
+	// 指定した浮動小数点数を固定小数点表記にし、指定した桁数に変換して文字列で返します。
+	std::string toStringWithPrecision(double value, int precision) {
+		std::ostringstream out;
+		out << std::fixed << std::setprecision(precision) << value;
+		return out.str();
+	}
 }

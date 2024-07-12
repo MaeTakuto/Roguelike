@@ -8,6 +8,7 @@
 #include "manager/gm_manager.h"
 #include "manager/resource_manager.h"
 #include "scene/scene_title.h"
+#include "scene/scene_play.h"
 
 
 //------------------------------------------------------------------------------------------------------------

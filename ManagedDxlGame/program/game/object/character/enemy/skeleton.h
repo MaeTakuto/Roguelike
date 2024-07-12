@@ -29,6 +29,8 @@ private:
 public:
 	// ============= プロトタイプ宣言 =============
 
+	// 次のレベルまでの必要経験値を取得
+	int getExpToNextLevel() const override { return 0; }
 	// クローンを生成する
 	std::shared_ptr<EnemyBase> createClone() const override;
 	// 敵のレベルを設定する

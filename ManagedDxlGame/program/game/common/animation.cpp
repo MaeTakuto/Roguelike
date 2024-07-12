@@ -5,7 +5,7 @@
 // =====================================================================================
 // コンストラクタ
 // =====================================================================================
-Animation::Animation() : pos_(0, 0), size_(0, 0), anim_frame_(0), blend_mode_(DX_BLENDMODE_NOBLEND), is_enable_(false), is_loop_(false),
+Animation::Animation() : draw_pos_(0, 0), draw_size_(0, 0), anim_frame_(0), blend_mode_(DX_BLENDMODE_NOBLEND), is_enable_(false), is_loop_(false),
 	frame_elapsed_(0.0f), frame_change_interval_(0.5f)
 {
 
@@ -58,11 +58,21 @@ void Animation::draw(const std::shared_ptr<Camera> camera) {
 		return;
 	}
 
-	tnl::Vector2i draw_pos = pos_ - tnl::Vector2i(static_cast<int>(camera->getPos().x), static_cast<int>(camera->getPos().y));
+	tnl::Vector2i draw_pos = draw_pos_ - tnl::Vector2i(static_cast<int>(camera->getPos().x), static_cast<int>(camera->getPos().y));
 
 	SetDrawBlendMode(blend_mode_, 255);
-	DrawExtendGraph(draw_pos.x, draw_pos.y, draw_pos.x + size_.x, draw_pos.y + size_.y, anim_gpc_hdl_[anim_frame_], true);
+	DrawExtendGraph(draw_pos.x, draw_pos.y, draw_pos.x + draw_size_.x, draw_pos.y + draw_size_.y, anim_gpc_hdl_[anim_frame_], true);
 	SetDrawBlendMode(DX_BLENDMODE_NOBLEND, 255);
+}
+
+void Animation::calculateChipSize() {
+
+	int width = 0;
+	int height = 0;
+
+	GetGraphSize(anim_gpc_hdl_[0], &width, &height);
+
+	chip_size_ = tnl::Vector2i(width, height);
 }
 
 // =====================================================================================

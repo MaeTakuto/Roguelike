@@ -56,7 +56,7 @@ public:
 	inline void setStatusBarPos(const tnl::Vector2i& pos) { 
 		status_bar_back_pos_ = pos;
 		status_bar_front_pos_ = status_bar_back_pos_ + (status_bar_back_size_ - status_bar_front_size_) / 2;
-		status_text_pos_ = status_bar_back_pos_ - tnl::Vector2i(150, -5);
+		status_text_pos_ = status_bar_back_pos_ - tnl::Vector2i(180, -5);
 	}
 	// ステータスバーのサイズを設定
 	inline void setStatusBarSize(const tnl::Vector2i& size) { status_bar_back_size_ = size; }

@@ -22,6 +22,9 @@ public:
 	// csv のセルの読み取りの最初の行
 	static constexpr int CSV_CELL_ROW_START = 1;
 
+	// ゲームフォントの通常サイズ
+	static constexpr int GM_DEFAULT_FONT_SIZE = 100;
+
 	// ダンジョンのサイズ
 	static constexpr int FIELD_WIDTH = 64;
 	static constexpr int FIELD_HEIGHT = 32;
@@ -39,13 +42,16 @@ public:
 	void changeScene(std::shared_ptr<SceneBase> next_scene, float fade_time = 1.0f);
 
 	// シーンのインスタンスを返す。
-	inline std::shared_ptr<SceneBase> getSceneInstance() { return now_scene_; }	
+	inline const std::shared_ptr<SceneBase> getSceneInstance() const { return now_scene_; }	
 
 	// フェード演出フラグを返す。
 	inline bool isTransition() const { return is_transition_; }
 
 	// ゲームをクリアしたか判定を返す
 	inline bool isGameClear() const { return is_game_clear_; }
+
+	// フォントハンドルを返す。
+	inline int getDefaultFontHdl() const { return default_font_hdl_; }
 
 	// "is_game_clear_" の値を設定する
 	inline void setGameClear(bool is_game_clear) { is_game_clear_ = is_game_clear; }
@@ -67,6 +73,11 @@ private:
 	// ダンジョン記録リスト
 	std::vector< std::shared_ptr<DungeonLog> > dungeon_log_list_;
 
+	// 通常のフォント
+	int default_font_hdl_;
+
+	// -------------------- フェード演出関連 -----------------------------
+
 	// フェード演出画像パス
 	std::string transition_gpc_hdl_path_;
 
@@ -79,6 +90,8 @@ private:
 	float fade_time_wait_;
 	// フェード演出フラグ
 	bool is_transition_;
+
+	// --------------------------------------------------------------------
 
 	// ゲームをクリアしたか判定
 	bool is_game_clear_;

@@ -29,11 +29,15 @@ private:
 	bool is_enable_;
 	// 時間制限指定しているか判定
 	bool is_time_limit_;
-	// 
+	// EnterのUIを描画するか判定
 	bool is_draw_enter_ui_;
+	// EnterのUIが有効か判定
+	bool is_enable_enter_ui_;
 
 	// 制限時間
-	float time_limit_;
+	float draw_time_limit_;
+	// EnterのUI切り替えからの経過時間
+	float swicth_enter_ui_elapsed_;
 
 	// 表示しているメッセージ数
 	int display_message_count_;
@@ -95,7 +99,7 @@ public:
 	// 表示時間を設定する
 	inline void setTimeLimit(float time_limit) { 
 		is_enable_ = true;
-		time_limit_ = time_limit;
+		draw_time_limit_ = time_limit;
 		is_time_limit_ = true;
 	}
 
@@ -108,6 +112,9 @@ public:
 	// メッセージウィンドウを表示、非表示の設定をする。
 	inline void setEnable(bool enable) { is_enable_ = enable; }
 
+	// EnterのUIを表示するか設定する
+	inline void setEnableEnterUI(bool is_enable_enter_ui) { is_enable_enter_ui_ = is_enable_enter_ui; }
+
 	// =====================================================================================
 	// その他関数
 	// =====================================================================================
@@ -117,7 +124,7 @@ public:
 
 	// 表示時間の設定を取り消し
 	inline void cancelTimeLimit() {
-		time_limit_ = 0.0f;
+		draw_time_limit_ = 0.0f;
 		is_time_limit_ = false;
 	}
 

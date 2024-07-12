@@ -10,10 +10,10 @@ class Camera;
 // =====================================================================================
 // ダンジョンの生成、管理するクラス
 // =====================================================================================
-class DungeonManager {
+class DungeonGenerator {
 public:
-	DungeonManager();
-	~DungeonManager();
+	DungeonGenerator();
+	~DungeonGenerator();
 
 	const int AREA_MAX_SIZE = 32;
 	const int AREA_MIN_SIZE = 16;

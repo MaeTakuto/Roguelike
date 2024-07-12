@@ -8,7 +8,7 @@
 
 // コンストラクタ
 GameManager::GameManager(std::shared_ptr<SceneBase> start_scene) : now_scene_(nullptr), next_scene_(nullptr), fade_time_(1.0f), fade_time_wait_(0.25f),
-	is_transition_(false), is_game_clear_(false), sequence_(tnl::Sequence<GameManager>(this, &GameManager::seqTransIn))
+	is_transition_(false), is_game_clear_(false), default_font_hdl_(0), sequence_(tnl::Sequence<GameManager>(this, &GameManager::seqTransIn))
 {
 	now_scene_ = start_scene;
 	transition_gpc_hdl_path_ = "graphics/black.bmp";
@@ -19,6 +19,17 @@ GameManager::GameManager(std::shared_ptr<SceneBase> start_scene) : now_scene_(nu
 
 	for (int i = 0; i < dungeon_log_list_.size(); ++i) {
 		dungeon_log_list_[i] = nullptr;
+	}
+
+	default_font_hdl_ = CreateFontToHandle("Zen Maru Gothic 太字", GM_DEFAULT_FONT_SIZE, 1, DX_FONTTYPE_ANTIALIASING_EDGE, -1, 5);
+
+	ChangeFontType(DX_FONTTYPE_ANTIALIASING_EDGE);
+
+	if (ChangeFont("UD デジタル 教科書体 N-B") + 1) {
+		tnl::DebugTrace("Fontを読み込みました。エッジサイズ：%d\n", GetFontEdgeSize());
+	}
+	else{
+		tnl::DebugTrace("Fontを読み込めませんでした\n");
 	}
 
 }
@@ -56,6 +67,7 @@ void GameManager::changeScene(std::shared_ptr<SceneBase> next_scene, float fade_
 	fade_time_ = fade_time;
 	sequence_.change(&GameManager::seqTransOut);
 	is_transition_ = true;
+
 }
 
 // ダンジョン記録を追加する（総合スコアがリストより低い場合、追加されない）

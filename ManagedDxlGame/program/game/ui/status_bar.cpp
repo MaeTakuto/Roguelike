@@ -27,8 +27,6 @@ StatusBar::StatusBar() : status_bar_front_gpc_hdl_{0}, status_bar_back_gpc_hdl_(
 
 	status_bar_front_pos_ += ( status_bar_back_size_ - status_bar_front_size_ ) / 2;
 
-	// CreateBaseImageToFile()
-
 	updateStatus_Text(max_status_, now_status_);
 }
 
@@ -52,29 +50,6 @@ void StatusBar::draw() {
 		status_bar_front_pos_.x + status_bar_front_size_.x * now_status_ / max_status_, status_bar_front_pos_.y + status_bar_front_size_.y, 
 		status_bar_front_gpc_hdl_[selected_color_], true
 	);
-
-	/*DrawBox(status_bar_pos_.x, status_bar_pos_.y, status_bar_pos_.x + status_bar_size_.x, status_bar_pos_.y + status_bar_size_.y, GetColor(50, 50, 50), true);
-	DrawBox(status_bar_pos_.x, status_bar_pos_.y, status_bar_pos_.x + status_bar_size_.x * now_status_ / max_status_, status_bar_pos_.y + status_bar_size_.y, GetColor(0, 192, 255), true);
-	*/
-	//// ˜gü‚Ì•`‰æ
-	//int status_bar_outline_size = status_bar_outline_size_ / 2;
-	//int outline_color = GetColor(224, 224, 224);
-
-	//DrawLine(status_bar_pos_.x - status_bar_outline_size, status_bar_pos_.y,
-	//	status_bar_pos_.x + status_bar_size_.x + status_bar_outline_size, status_bar_pos_.y,
-	//	outline_color, status_bar_outline_size_);
-	//
-	//DrawLine(status_bar_pos_.x, status_bar_pos_.y - status_bar_outline_size,
-	//	status_bar_pos_.x, status_bar_pos_.y + status_bar_size_.y + status_bar_outline_size,
-	//	outline_color, status_bar_outline_size_);
-	//
-	//DrawLine(status_bar_pos_.x + status_bar_size_.x, status_bar_pos_.y - status_bar_outline_size,
-	//	status_bar_pos_.x + status_bar_size_.x, status_bar_pos_.y + status_bar_size_.y + status_bar_outline_size,
-	//	outline_color, status_bar_outline_size_);
-	//
-	//DrawLine(status_bar_pos_.x - status_bar_outline_size, status_bar_pos_.y + status_bar_size_.y,
-	//	status_bar_pos_.x + status_bar_size_.x + status_bar_outline_size, status_bar_pos_.y + status_bar_size_.y,
-	//	outline_color, status_bar_outline_size_);
 }
 
 void StatusBar::updateStatus_Text(int max_status, int now_status) {
