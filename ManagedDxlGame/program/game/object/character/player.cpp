@@ -8,6 +8,7 @@
 #include "../../magic/fire_magic.h"
 #include "../../magic/magnetism_magic.h"
 #include "../../common/animation.h"
+#include "../../common/magic_status.h"
 #include "../projectile.h"
 #include "player.h"
 
@@ -16,7 +17,8 @@ namespace {
 	// 最大レベル
 	const int MAX_LEVEL = 6;
 	// 経験値テーブル
-	const int LEVEL_TABLE[MAX_LEVEL - 1] = { 12, 50, 100, 180, 280 };
+	const int LEVEL_TABLE[MAX_LEVEL - 1] = { 5, 10, 100, 180, 280 };
+	// const int LEVEL_TABLE[MAX_LEVEL - 1] = { 12, 50, 100, 180, 280 };
 
 	// MPの回復間隔 
 	const int REGENERATE_INTERVAL = 5;
@@ -24,7 +26,7 @@ namespace {
 
 
 Player::Player() : regenerating_count_(0), regenerating_mp_(1), sequence_(tnl::Sequence<Player>(this, &Player::seqIdle)), 
-	level_up_se_hdl_path_("sound/se/level_up.mp3"), can_operation_input_(true), magic_chanting_effect_(nullptr), is_use_magic_(false),
+	level_up_se_hdl_path_("sound/se/level_up2.mp3"), can_operation_input_(true), magic_chanting_effect_(nullptr), is_use_magic_(false),
 	use_magic_index_(0), select_cell_blue_gpc_hdl_(0), select_cell_red_gpc_hdl_(0)
 {
 
@@ -133,8 +135,6 @@ Player::Player() : regenerating_count_(0), regenerating_mp_(1), sequence_(tnl::S
 	);
 
 	magic_list_.emplace_back(std::make_shared<HealMagic>());
-	magic_list_.emplace_back(std::make_shared<FireMagic>());
-	magic_list_.emplace_back(std::make_shared<MagnetismMagic>());
 
 	looking_dir_ = eDir_8::DOWN;
 	anim_dir_ = eDir_4::DOWN;
@@ -241,6 +241,10 @@ void Player::drawEffect(std::shared_ptr<Camera> camera) {
 	level_up_effect_->draw(camera);
 }
 
+int Player::getExpToNextLevel() const {
+	return LEVEL_TABLE[status_.getLevel() - 1] - status_.getExp();
+}
+
 int Player::getMagicEffectAmount() const {
 	return magic_list_[use_magic_index_]->getMagicEffectAmount();
 }
@@ -329,7 +333,7 @@ void Player::startMagic() {
 
 	tnl::Vector2i effect_draw_size = tnl::Vector2i(GameManager::DRAW_CHIP_SIZE, GameManager::DRAW_CHIP_SIZE);
 
-	std::string message = magic_list_[use_magic_index_]->getMagicName() + "の魔法を唱えた。";
+	std::string message = magic_list_[use_magic_index_]->getMagicStatus()->getMagicName() + "の魔法を唱えた。";
 	scene_play->setMessage(message);
 
 	magic_chanting_effect_->setDrawPos(effect_draw_pos);
@@ -392,7 +396,7 @@ bool Player::tryUseMagic(int magic_index) {
 	}
 
 	// MPを確認する
-	if ( !status_.tryConsumeMP(magic_list_[magic_index]->getConsumedMP() ) ) {
+	if ( !status_.tryConsumeMP(magic_list_[magic_index]->getMagicStatus()->getConsumeMP() ) ) {
 		return false;
 	}
 	

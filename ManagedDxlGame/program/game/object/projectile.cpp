@@ -97,7 +97,7 @@ void Projectile::checkCellInMoveDir(const tnl::Vector3& pos) {
 		return;
 	}
 	// Å‘åŽË’öƒ}ƒX‚ð’´‚¦‚½‚çI—¹
-	if (cell_count_ > max_cell_reach_) {
+	if (cell_count_ >= max_cell_reach_) {
 		target_pos_ = pos - DIR_POS[std::underlying_type<eDir_8>::type(move_dir_)];
 		return;
 	}

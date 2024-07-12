@@ -4,7 +4,7 @@ class Camera;
 class MessageWindow;
 class SelectWindow;
 class StatusBar;
-class Charater;
+class Character;
 class MagicBase;
 
 // =====================================================================================
@@ -18,6 +18,13 @@ public:
 	// 更新と描画
 	void update(float delta_time);
 	void draw(const std::shared_ptr<Camera> camera);
+
+	enum class eExplanationType {
+		TYPE_1 = 0,
+		TYPE_2, 
+		TYPE_3,
+		MAX
+	};
 
 private:
 	// ------------------- 各 UIクラス -------------------
@@ -51,9 +58,17 @@ private:
 	// 現在の階数
 	int floor_;
 
+	// メッセージウィンドウを表示する時間
+	float draw_message_window_time_;
+
 public:
 	inline void setUITargetCharacter(std::weak_ptr<Character> target) {
 		ui_target_ = target;
+	}
+
+	// メッセージウィンドウを表示する時間を返す
+	float getDrawMessageWindowTime() const {
+		return draw_message_window_time_;
 	}
 
 	// 階段選択の現在選択中のインデックスを返す
@@ -89,9 +104,9 @@ public:
 	// -------------------------------------------------------------------
 
 	// 階段での選択の実行
-	void executeStairSelect();
+	void executeSelectYesOrNoWindow(const std::string& message);
 	// 階段での選択の実行
-	void executeStairSelectEnd();
+	void finishSelectYesOrNoWindow();
 
 	// 操作画面ウィンドウの表示を切り替える
 	void changeCtrlExplanationWindowType(int window_type);
@@ -102,6 +117,8 @@ public:
 	void setMessage(const std::string& message, float draw_time = -1.0f);
 	// メッセージウィンドウのメッセージを全削除する
 	void clearMessage();
+	// 
+	void setEnableEnterUI(bool is_enable);
 
 	// ステータスバーの状態を更新
 	void updateStatusBar();

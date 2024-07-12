@@ -25,10 +25,8 @@ private:
 
 	// 選択中コマンドのサイズ
 	tnl::Vector2i selected_cmd_ui_size_;
-
 	// 選択中コマンドUIの表示位置の間隔調整
 	tnl::Vector2i seleted_cmd_ui_space_;
-	
 	// メッセージの位置
 	tnl::Vector2i mess_str_top_pos_;
 	// メッセージの位置
@@ -36,9 +34,15 @@ private:
 
 	// 選択ウィンドウが描画するか判定
 	bool is_drawing_;
-
 	// 選択ウィンドウを操作するか判定
 	bool is_operate_;
+
+	// 選択中のコマンドUIの描画するか判定
+	bool is_drawing_selected_cmd_ui_;
+	// 選択中のUIの表示切り替え間隔
+	float swicth_draw_selected_ui_interval_;
+	// 切り替えからの経過時間
+	float swicth_draw_selected_ui_elapsed_;
 
 	// 表示するメッセージ
 	std::vector<std::string> command_names_;
@@ -115,6 +119,8 @@ public:
 	// 選択ウィンドウを操作するか設定する
 	inline void setOperate(bool is_operate) {
 		is_operate_ = is_operate;
+		is_drawing_selected_cmd_ui_ = true;
+		swicth_draw_selected_ui_elapsed_ = 0.0f;
 	}
 
 	// ==============================================

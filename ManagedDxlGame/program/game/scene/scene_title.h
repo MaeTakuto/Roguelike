@@ -31,6 +31,8 @@ private:
 
 	// ---------------------------------------------------------------------
 
+	int title_logo_gpc_hdl_;
+
 	// 操作説明ウィンドウ
 	std::shared_ptr<MessageWindow> control_explanation_window_;
 

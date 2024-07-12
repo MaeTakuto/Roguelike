@@ -12,21 +12,18 @@ namespace {
 	const tnl::Vector2i BACKGROUND_POS = { 0, 0 };
 	
 	// ゲームタイトルの表示位置
-	const tnl::Vector2i TITLE_POS = { 400, 200 };
-
-	// ゲームタイトル名
-	const std::string TITLE = "不思議な森";
+	const tnl::Vector2i TITLE_LOGO_POS = { 375, 150 };
 
 	// メニューのフォントサイズ
 	const int MENU_FONT_SIZE = 30;
 
 	// ゲームメニューの表示位置
-	const tnl::Vector2i TITLE_MENU_POS = { 500, 500 };
+	const tnl::Vector2i TITLE_MENU_POS = { 550, 500 };
 	// ゲームメニュー名
 	const std::string TITLE_MENU_STR = "Start Enter";
 
 	// メインメニューの位置
-	const tnl::Vector2i TITLE_MAIN_MENU_POS = { 400, 500 };
+	const tnl::Vector2i TITLE_MAIN_MENU_POS = { 450, 500 };
 	const tnl::Vector2i TITLE_MAIN_MENU_SIZE = { 400, 0 };
 
 	// 
@@ -38,7 +35,7 @@ namespace {
 
 SceneTitle::SceneTitle() : sequence_(tnl::Sequence<SceneTitle>(this, &SceneTitle::seqSceneStart)), title_menu_(std::make_shared<SelectWindow>()),
 	dungeon_log_menu_(std::make_shared<SelectWindow>()), selected_dungeon_log_list_index_(0), control_explanation_window_(std::make_shared<MessageWindow>()),
-	back_ground_gpc_hdl_(0), sunlight_gpc_hdl_(0), title_bgm_hdl_path_("sound/bgm/title.ogg"), title_bgm_hdl_(0), 
+	back_ground_gpc_hdl_(0), sunlight_gpc_hdl_(0), title_bgm_hdl_path_("sound/bgm/title.ogg"), title_bgm_hdl_(0), title_logo_gpc_hdl_(0),
 	bgm_end_freqency_(2722464), title_menu_alpha_(0), sunlight_alpha_(0), alpha_center_(176), sin_range_(32), scene_elapsed_time_(0.0f)
 {
 
@@ -62,6 +59,8 @@ SceneTitle::SceneTitle() : sequence_(tnl::Sequence<SceneTitle>(this, &SceneTitle
 	title_menu_->setSelectCmdMax(cmd_names.size());
 	title_menu_->setCommandNames(cmd_names);
 	title_menu_->calculateWindowSize();
+
+	title_logo_gpc_hdl_ = ResourceManager::getInstance()->loadGraph("graphics/title_logo12.png");
 
 	dungeon_log_list_.resize(10);
 
@@ -107,14 +106,14 @@ void SceneTitle::update(float delta_time) {
 
 void SceneTitle::draw() {
 
-	SetFontSize(80);
 	DrawExtendGraph(BACKGROUND_POS.x, BACKGROUND_POS.y, BACKGROUND_POS.x + DXE_WINDOW_WIDTH, BACKGROUND_POS.y + DXE_WINDOW_HEIGHT, back_ground_gpc_hdl_, true);
+
+	DrawGraph(TITLE_LOGO_POS.x, TITLE_LOGO_POS.y, title_logo_gpc_hdl_, true);
 
 	SetDrawBlendMode( DX_BLENDMODE_ALPHA, sunlight_alpha_ );
 	DrawExtendGraph(BACKGROUND_POS.x, BACKGROUND_POS.y, BACKGROUND_POS.x + DXE_WINDOW_WIDTH, BACKGROUND_POS.y + DXE_WINDOW_HEIGHT, sunlight_gpc_hdl_, true);
 	SetDrawBlendMode( DX_BLENDMODE_NOBLEND, 255 );
 
-	DrawStringEx(TITLE_POS.x, TITLE_POS.y, -1, TITLE.c_str());
 	SetFontSize(MENU_FONT_SIZE);
 	SetDrawBlendMode(DX_BLENDMODE_ALPHA, title_menu_alpha_);
 	DrawStringEx(TITLE_MENU_POS.x, TITLE_MENU_POS.y, -1, TITLE_MENU_STR.c_str());
@@ -250,9 +249,10 @@ bool SceneTitle::seqSelectMainMenu(const float delta_time) {
 
 	if (tnl::Input::IsKeyDownTrigger(eKeys::KB_RETURN)) {
 
-		ResourceManager::getInstance()->playSound("sound/button_enter.mp3", DX_PLAYTYPE_BACK);
+		ResourceManager::getInstance()->playSound("sound/se/button_enter.mp3", DX_PLAYTYPE_BACK);
 
 		if (title_menu_->getSelectedCmdIndex() == 0) {
+			ResourceManager::getInstance()->playSound("sound/se/walk.mp3", DX_PLAYTYPE_BACK);
 			GameManager::GetInstance()->changeScene(std::make_shared<ScenePlay>());
 			sequence_.change(&SceneTitle::seqTransitionNextScene);
 		}
@@ -274,7 +274,7 @@ bool SceneTitle::seqSelectDungeonLogList(const float delta_time) {
 	selected_dungeon_log_list_index_ = dungeon_log_menu_->getSelectedCmdIndex();
 
 	if (tnl::Input::IsKeyDownTrigger(eKeys::KB_BACK)) {
-		ResourceManager::getInstance()->playSound("sound/springin/cancel.mp3", DX_PLAYTYPE_BACK);
+		ResourceManager::getInstance()->playSound("sound/se/cancel.mp3", DX_PLAYTYPE_BACK);
 		title_menu_->setDrawing(true);
 		title_menu_->setOperate(true);
 		closeDungeonLogMenu();

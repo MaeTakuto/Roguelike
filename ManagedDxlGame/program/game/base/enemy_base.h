@@ -59,6 +59,8 @@ protected:
 public:
 	// ================= 仮想関数 =================
 	
+	// 次のレベルまでの必要経験値を取得
+	virtual int getExpToNextLevel() const = 0;
 	// クローンを生成する
 	virtual std::shared_ptr<EnemyBase> createClone() const = 0;
 	// 敵のレベルを設定する

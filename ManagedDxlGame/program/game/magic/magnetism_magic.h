@@ -22,8 +22,13 @@ private:
 	std::shared_ptr<tnl::Vector3> target_moving_position_;
 
 public:
+	void levelUpMagic() override;
+
 	void setupToUseMagic(const std::shared_ptr<Character> owner) override;
 	void startDrawEffect() override;
 	void useMagic(std::shared_ptr<Character> owner) override;
+
+private:
+	void updateMagicExplantion() override;
 
 };

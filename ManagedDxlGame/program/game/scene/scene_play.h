@@ -1,10 +1,11 @@
 #pragma once
 #include <queue>
 #include "../base/scene_base.h"
-#include "../dungeon/dungeon_manager.h"
+#include "../dungeon/dungeon_generator.h"
 #include "../object/character/player.h"
 
-class DungeonManager;
+class DungeonGenerator;
+class MagicSelector;
 class DungeonLog;
 class Camera;
 class Player;
@@ -38,7 +39,9 @@ private:
 	// プレイヤー
 	std::shared_ptr<Player> player_;
 	// ダンジョンの生成処理を行うクラス
-	std::shared_ptr<DungeonManager> dungeon_mgr_;
+	std::shared_ptr<DungeonGenerator> dungeon_mgr_;
+	// レベルアップ時に魔法を選択するクラス
+	std::shared_ptr<MagicSelector> magic_selector_;
 	// ダンジョンでの出来事を記録するクラス
 	std::shared_ptr<DungeonLog> dungeon_log_;
 	// ダンジョンに生成される敵の生成、行動制御などを管理するクラス
@@ -97,6 +100,12 @@ private:
 	bool is_hide_explanation_;
 
 	// --------------------------- フェード演出関連 -------------------------
+	
+	// ダンジョンタイトルロゴの画像
+	int dungeon_title_log_gpc_hdl_;
+	// ロード中の背景画像
+	int load_background_gpc_hdl_;
+	
 	// フェード演出の画像
 	int fade_gpc_hdl_;
 	// 透明度
@@ -247,6 +256,8 @@ private:
 	bool seqCharacterAttack(const float delta_time);
 	bool seqTargetDamaged(const float delta_time);
 	bool seqCharaLevelUp(const float delta_time);
+	bool seqPlayerLevelUp(const float delta_time);
+	bool seqMagicSelect(const float delta_time);
 	bool seqCharaMove(const float delta_time);
 	bool seqActEndProcess(const float delta_time);
 	bool seqStairSelect(const float delta_time);

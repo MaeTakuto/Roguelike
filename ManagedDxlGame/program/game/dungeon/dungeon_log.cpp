@@ -25,7 +25,7 @@ DungeonLog::DungeonLog() : dungeon_log_window_(std::make_shared<MessageWindow>()
 }
 
 DungeonLog::~DungeonLog() {
-
+	tnl::DebugTrace("DungeonLogのデストラクタが実行されました\n");
 }
 
 void DungeonLog::draw() {
@@ -66,12 +66,12 @@ void DungeonLog::updateDungeonLogData() {
 
 	log_messages_[0] = "・冒険の結果";
 	log_messages_[1] = "";
-	log_messages_[2] = "総合スコア　　　：" + mtl::rightAlign(std::to_string(overall_score_), LOG_MESSAGE_SPACE);
-	log_messages_[3] = "到達フロア　　　：";
-	log_messages_[4] = "レベル　　　　　：" + mtl::rightAlign(std::to_string(end_status_.getLevel()), LOG_MESSAGE_SPACE );
+	log_messages_[2] = "総合スコア　　  ：" + mtl::rightAlign(std::to_string(overall_score_), LOG_MESSAGE_SPACE);
+	log_messages_[3] = "到達フロア　　  ：";
+	log_messages_[4] = "レベル　　　　  ：" + mtl::rightAlign(std::to_string(end_status_.getLevel()), LOG_MESSAGE_SPACE );
 	log_messages_[5] = "HP　　　　　　　：" + mtl::rightAlign(std::to_string(end_status_.getMaxHP()), LOG_MESSAGE_SPACE );
 	log_messages_[6] = "MP　　　　　　　：" + mtl::rightAlign(std::to_string(end_status_.getMaxMP()), LOG_MESSAGE_SPACE );
-	log_messages_[7] = "敵撃退数　　　　：" + mtl::rightAlign(std::to_string(repelling_enemy_count_) + "体", LOG_MESSAGE_SPACE);
+	log_messages_[7] = "敵撃退数　　 　 ：" + mtl::rightAlign(std::to_string(repelling_enemy_count_) + "体", LOG_MESSAGE_SPACE);
 	log_messages_[8] = "";
 	log_messages_[9] = "・終了時メッセージ";
 	log_messages_[10] = end_message_;

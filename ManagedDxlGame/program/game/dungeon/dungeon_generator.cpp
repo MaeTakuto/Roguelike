@@ -1,6 +1,6 @@
 #include "../../dxlib_ext/dxlib_ext.h"
 #include "../manager/gm_manager.h"
-#include "dungeon_manager.h"
+#include "dungeon_generator.h"
 #include "../manager/enemy_manager.h"
 #include "../common/camera.h"
 
@@ -8,7 +8,7 @@
 // =====================================================================================
 // コンストラクタ
 // =====================================================================================
-DungeonManager::DungeonManager() {
+DungeonGenerator::DungeonGenerator() {
 
 	areas_.resize(AREA_MAX);
 
@@ -32,7 +32,7 @@ DungeonManager::DungeonManager() {
 // =====================================================================================
 // 
 // =====================================================================================
-DungeonManager::~DungeonManager() {
+DungeonGenerator::~DungeonGenerator() {
 
 	tnl::DebugTrace("DungeonManagerのデストラクタが実行されました。\n");
 
@@ -42,7 +42,7 @@ DungeonManager::~DungeonManager() {
 // =====================================================================================
 // ダンジョン生成
 // =====================================================================================
-void DungeonManager::generateDungeon() {
+void DungeonGenerator::generateDungeon() {
 
 	areaDataInit();
 	fieldDataInit();
@@ -89,7 +89,7 @@ void DungeonManager::generateDungeon() {
 // =====================================================================================
 // エントランスの位置と部屋のIDをデバッグで表示する
 // =====================================================================================
-void DungeonManager::debugEntranceData() {
+void DungeonGenerator::debugEntranceData() {
 
 	for (int i = 0; i < areas_.size(); i++) {
 		tnl::DebugTrace("========== area = %d ==========\n", i);
@@ -104,7 +104,7 @@ void DungeonManager::debugEntranceData() {
 // =====================================================================================
 // 分割したエリアデータを表示
 // =====================================================================================
-void DungeonManager::displayAreaNumber(const std::shared_ptr<Camera> camera) {
+void DungeonGenerator::displayAreaNumber(const std::shared_ptr<Camera> camera) {
 
 	SetFontSize(DEFAULT_FONT_SIZE);
 
@@ -119,7 +119,7 @@ void DungeonManager::displayAreaNumber(const std::shared_ptr<Camera> camera) {
 // =====================================================================================
 // エリアの初期化
 // =====================================================================================
-void DungeonManager::areaDataInit() {
+void DungeonGenerator::areaDataInit() {
 
 	for (int i = 0; i < AREA_MAX; i++) {
 		areas_[i].area.x = 0;
@@ -156,7 +156,7 @@ void DungeonManager::areaDataInit() {
 // =====================================================================================
 // フィールドデータの初期化
 // =====================================================================================
-void DungeonManager::fieldDataInit() {
+void DungeonGenerator::fieldDataInit() {
 
 	for (int y = 0; y < GameManager::FIELD_HEIGHT; y++) {
 		for (int x = 0; x < GameManager::FIELD_WIDTH; x++) {
@@ -171,7 +171,7 @@ void DungeonManager::fieldDataInit() {
 // =====================================================================================
 // エリアをランダムに分割
 // =====================================================================================
-void DungeonManager::splitArea(int area_index, int vertical) {
+void DungeonGenerator::splitArea(int area_index, int vertical) {
 
 	if (area_count_ >= AREA_MAX) return;
 
@@ -215,7 +215,7 @@ void DungeonManager::splitArea(int area_index, int vertical) {
 // =====================================================================================
 // エリア番号をエリアデータに設定
 // =====================================================================================
-void DungeonManager::settingAreaNumber() {
+void DungeonGenerator::settingAreaNumber() {
 
 	tnl::DebugTrace("area_count = %d\n", area_count_);
 
@@ -233,7 +233,7 @@ void DungeonManager::settingAreaNumber() {
 // =====================================================================================
 // 部屋を作成
 // =====================================================================================
-void DungeonManager::createRoom() {
+void DungeonGenerator::createRoom() {
 
 	for (int area_index = 0; area_index < area_count_; area_index++) {
 
@@ -253,7 +253,7 @@ void DungeonManager::createRoom() {
 // =====================================================================================
 // 
 // =====================================================================================
-void DungeonManager::connectRoom(int area_index) {
+void DungeonGenerator::connectRoom(int area_index) {
 
 	// 隣のエリアインデックス
 	int neighbor_index;
@@ -465,7 +465,7 @@ void DungeonManager::connectRoom(int area_index) {
 // 隣接するエリアの番号を比較し、
 // エリア番号が一番大きいエリアの方向に通路を繋げる設定をする。
 // =====================================================================================
-void DungeonManager::getNextConnectRoomIndex(int area_index) {
+void DungeonGenerator::getNextConnectRoomIndex(int area_index) {
 
 	int x, y;
 
@@ -541,7 +541,7 @@ void DungeonManager::getNextConnectRoomIndex(int area_index) {
 // 繋げようとしているエリアと指定された座標のエリアの番号が最大値か比較し、
 // 最大値の場合、繋げるエリア"connect_area_index"を引数で指定された座標のエリアの番号にする。
 // =====================================================================================
-bool DungeonManager::checkConnectAreaNumMax(int x, int y, int area_index) {
+bool DungeonGenerator::checkConnectAreaNumMax(int x, int y, int area_index) {
 
 	if (areas_[area_index].connect_area_index < field_[y][x].area_id) {
 
@@ -556,7 +556,7 @@ bool DungeonManager::checkConnectAreaNumMax(int x, int y, int area_index) {
 // =====================================================================================
 // 隣接する部屋の上下の通路作成
 // =====================================================================================
-void DungeonManager::connectUpAndDownRooms(int up_x, int up_y, int down_x, int down_y) {
+void DungeonGenerator::connectUpAndDownRooms(int up_x, int up_y, int down_x, int down_y) {
 
 	tnl::DebugTrace("down_y = %d, up_y = %d\n", down_y, up_y);
 	while (down_y != up_y) {
@@ -600,7 +600,7 @@ void DungeonManager::connectUpAndDownRooms(int up_x, int up_y, int down_x, int d
 // =====================================================================================
 // 隣接する部屋の左右の通路作成
 // =====================================================================================
-void DungeonManager::connectLeftAndRightRooms(int left_x, int left_y, int right_x, int right_y) {
+void DungeonGenerator::connectLeftAndRightRooms(int left_x, int left_y, int right_x, int right_y) {
 	
 	while (left_x != right_x) {
 		if (abs(left_x - right_x) == 1) {
@@ -637,7 +637,7 @@ void DungeonManager::connectLeftAndRightRooms(int left_x, int left_y, int right_
 // =====================================================================================
 // フィールドを作成
 // =====================================================================================
-void DungeonManager::generateRoom() {
+void DungeonGenerator::generateRoom() {
 
 	for (int i = 0; i < area_count_; i++) {
 
@@ -655,7 +655,7 @@ void DungeonManager::generateRoom() {
 // =====================================================================================
 // 階段の生成
 // =====================================================================================
-void DungeonManager::createStair() {
+void DungeonGenerator::createStair() {
 
 	int area_index = rand() % area_count_;
 
@@ -670,7 +670,7 @@ void DungeonManager::createStair() {
 // =====================================================================================
 // プレイヤーの生成位置を決める
 // =====================================================================================
-void DungeonManager::spawnPlayer() {
+void DungeonGenerator::spawnPlayer() {
 
 	while (1) {
 		int area_index = rand() % area_count_;
@@ -689,7 +689,7 @@ void DungeonManager::spawnPlayer() {
 // =====================================================================================
 // 敵の生成位置を決める
 // =====================================================================================
-void DungeonManager::spawnEnemy() {
+void DungeonGenerator::spawnEnemy() {
 
 	int spawn_num = 0;
 
@@ -707,7 +707,7 @@ void DungeonManager::spawnEnemy() {
 	}
 }
 
-int DungeonManager::countTerrainForDirection(int x, int y, eMapData terrain_data) {
+int DungeonGenerator::countTerrainForDirection(int x, int y, eMapData terrain_data) {
 
 	int count = 0;
 

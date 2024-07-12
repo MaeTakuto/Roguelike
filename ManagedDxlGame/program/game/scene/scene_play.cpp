@@ -2,7 +2,8 @@
 #include "../../dxlib_ext/dxlib_ext.h"
 #include "../manager/gm_manager.h"
 #include "../manager/resource_manager.h"
-#include "../dungeon/dungeon_manager.h"
+#include "../dungeon/dungeon_generator.h"
+#include "../dungeon/magic_selector.h"
 #include "../dungeon/dungeon_log.h"
 #include "../manager/enemy_manager.h"
 #include "../base/enemy_base.h"
@@ -19,34 +20,28 @@ namespace {
 	// 階層移動時のダンジョン名の表示時間
 	const float DRAW_TIME_DUNGEON_NAME = 2.0f;
 
-	// ダンジョンの名前
-	const std::string DUNGEON_NAME = "不思議な森";
-
 	// ダンジョンタイトルの位置
-	const tnl::Vector3 DUNGEON_NAME_POS = { 450, 100, 0 };
+	const tnl::Vector3 DUNGEON_NAME_POS = { 460, 100, 0 };
 
 	// タイトルのフォントサイズ
-	const int DUNGEON_NAME_FONT_SIZE = 60;
+	const int DUNGEON_NAME_FONT_SIZE = 50;
 
 	// クリア階数
 	const int CLEAR_FLOOR = 5;
-
-	// メッセージの表示時間
-	const float MESSAGE_DRAW_TIME = 3.0f;
 
 	//アイコン表示切り替え間隔（ミニマップ）
 	const float ICON_DISPLAY_CHANGE_INTERVAL = 0.5f;
 }
 
-ScenePlay::ScenePlay() : camera_(std::make_shared<Camera>()), player_(std::make_shared<Player>()), dungeon_mgr_(std::make_shared<DungeonManager>()),
-	dungeon_log_(std::make_shared<DungeonLog>()), enemy_mgr_(std::make_shared<EnemyManager>()), ui_mgr_(std::make_shared<UI_Manager>()),
-	dungeon_floor_(1), is_created_dungeon_(false), is_drawing_dng_title_(true), is_game_clear_(false),
+ScenePlay::ScenePlay() : camera_(std::make_shared<Camera>()), player_(std::make_shared<Player>()), dungeon_mgr_(std::make_shared<DungeonGenerator>()),
+	magic_selector_(std::make_shared<MagicSelector>()), dungeon_log_(std::make_shared<DungeonLog>()), enemy_mgr_(std::make_shared<EnemyManager>()), 
+	ui_mgr_(std::make_shared<UI_Manager>()), dungeon_floor_(1), is_created_dungeon_(false), is_drawing_dng_title_(true), is_game_clear_(false),
 	is_display_mini_map_(true), mini_map_pos_(50, 180), mini_map_size_(8), mini_map_cell_gpc_hdl_(0),
 	is_opened_menu_(false), is_display_player_icon_(true), elapsed_swich_icon_display_(0.0f),
-	is_hide_explanation_(false), fade_gpc_hdl_(0), alpha_(0), fade_time_(0.5f),
+	is_hide_explanation_(false), dungeon_title_log_gpc_hdl_(0), load_background_gpc_hdl_(0), fade_gpc_hdl_(0), alpha_(0), fade_time_(1.0f),
 	level_up_character_(nullptr), dungeon_bgm_hdl_(0), bgm_end_freqency_(2105775), dungeon_bgm_hdl_path_("sound/bgm/dungeon01.mp3"),
 	damage_se_hdl_path_("sound/damaged.mp3"), open_select_window_se_hdl_path_("sound/springin/open_window.mp3"), 
-	button_enter_se_hdl_path_("sound/button_enter.mp3"), cancel_se_hdl_path_("sound/springin/cancel.mp3")
+	button_enter_se_hdl_path_("sound/se/button_enter.mp3"), cancel_se_hdl_path_("sound/se/cancel.mp3")
 {
 
 	tnl::DebugTrace("ScenePlayのコンストラクタが実行されました\n");
@@ -77,6 +72,9 @@ ScenePlay::ScenePlay() : camera_(std::make_shared<Camera>()), player_(std::make_
 
 	mini_map_cell_gpc_hdl_ = ResourceManager::getInstance()->loadGraph("graphics/blue.bmp");
 
+	dungeon_title_log_gpc_hdl_ = ResourceManager::getInstance()->loadGraph("graphics/dungeon_title_logo.png");
+	load_background_gpc_hdl_ = ResourceManager::getInstance()->loadGraph("graphics/fade_back_ground.png");
+
 	fade_gpc_hdl_ = ResourceManager::getInstance()->loadGraph("graphics/black.bmp");
 
 	// -------------- サウンドのロード -----------------------------------
@@ -89,6 +87,10 @@ ScenePlay::ScenePlay() : camera_(std::make_shared<Camera>()), player_(std::make_
 	ui_mgr_->setUITargetCharacter(player_);
 	ui_mgr_->updateStatusBar();
 	ui_mgr_->setFloor(dungeon_floor_);
+
+	// ------------- MagicSelectorクラスの初期設定 -------------------------
+	magic_selector_->setUI_Manager(ui_mgr_);
+
 }
 
 ScenePlay::~ScenePlay() {
@@ -130,9 +132,16 @@ void ScenePlay::draw() {
 
 	// ダンジョンタイトルを表示しているか
 	if (is_drawing_dng_title_) {
+		DrawExtendGraph(0, 0, DXE_WINDOW_WIDTH, DXE_WINDOW_HEIGHT, load_background_gpc_hdl_, true);
+		DrawGraph(DUNGEON_NAME_POS.x, DUNGEON_NAME_POS.y, dungeon_title_log_gpc_hdl_, true);
 		SetFontSize(DUNGEON_NAME_FONT_SIZE);
-		DrawStringEx(DUNGEON_NAME_POS.x, DUNGEON_NAME_POS.y, -1, DUNGEON_NAME.c_str());
-		DrawStringEx(DUNGEON_NAME_POS.x + 150, DUNGEON_NAME_POS.y + 60, -1, "%dF", dungeon_floor_);
+
+		 DrawStringEx(DUNGEON_NAME_POS.x + 150, DUNGEON_NAME_POS.y + 100, -1, "%dF", dungeon_floor_);
+
+		/*double font_size = static_cast<float>(DUNGEON_NAME_FONT_SIZE) / GameManager::GM_DEFAULT_FONT_SIZE;
+
+		DrawExtendFormatStringToHandle(DUNGEON_NAME_POS.x + 150, DUNGEON_NAME_POS.y + 100, 
+			font_size, font_size, -1, GameManager::GetInstance()->getDefaultFontHdl(), "%dF", dungeon_floor_);*/
 	}
 	else {
 		// マップチップ描画
@@ -169,6 +178,8 @@ void ScenePlay::draw() {
 			drawMiniMap();
 		}
 		ui_mgr_->draw(camera_);
+
+		magic_selector_->draw(camera_);
 		dungeon_log_->draw();
 
 	}
@@ -344,7 +355,7 @@ void ScenePlay::applyDamage(std::shared_ptr<Character> attacker, std::shared_ptr
 	ResourceManager::getInstance()->playSound(damage_se_hdl_path_, DX_PLAYTYPE_BACK);
 	std::string message = attacker->getName() + "は" + target->getName() + "に" + std::to_string(damage) + "ダメージを与えた。\n";
 
-	ui_mgr_->setMessage(message, MESSAGE_DRAW_TIME);
+	ui_mgr_->setMessage(message, ui_mgr_->getDrawMessageWindowTime());
 	tnl::DebugTrace("%dダメージを与えた。\n", attacker->getStatus().getAtk());
 
 }
@@ -354,13 +365,14 @@ void ScenePlay::applyDamage(std::shared_ptr<Character> attacker, std::shared_ptr
 // ====================================================
 void ScenePlay::changeProcessNextFloor() {
 
-	ui_mgr_->executeStairSelectEnd();
+	ui_mgr_->finishSelectYesOrNoWindow();
 
 	// 階数がクリア階数だった場合
 	if ( dungeon_floor_ >= CLEAR_FLOOR ) {
 		executeGameClearProcess();
 		return;
 	}
+	ResourceManager::getInstance()->playSound("sound/se/walk.mp3", DX_PLAYTYPE_BACK);
 	player_->setOperationInput(true);
 	main_seq_.change(&ScenePlay::seqFadeOut);
 	dungeon_sequence_.change(&ScenePlay::seqPlayerAct);
@@ -452,14 +464,14 @@ bool ScenePlay::checkPlayerCell() {
 	if (getTerrainData(player_->getPos()) == eMapData::STAIR) {
 
 		dungeon_sequence_.change(&ScenePlay::seqStairSelect);
-		ui_mgr_->executeStairSelect();
+		ui_mgr_->executeSelectYesOrNoWindow("穴がある。落ちますか？");
 		ui_mgr_->closeMainMenu();
 		ResourceManager::getInstance()->playSound(open_select_window_se_hdl_path_, DX_PLAYTYPE_BACK);
 		return true;
 	}
 	dungeon_sequence_.change(&ScenePlay::seqPlayerAct);
 	closeMainMenu();
-	ui_mgr_->setMessage("何もない", MESSAGE_DRAW_TIME);
+	ui_mgr_->setMessage("何もない", ui_mgr_->getDrawMessageWindowTime());
 
 	return false;
 }
@@ -482,14 +494,14 @@ void ScenePlay::checkDeathCharacter(std::shared_ptr<Character> attacker, std::sh
 	attacker->addExp(target->getStatus().getExp());
 	setMapData(target->getNextPos(), getTerrainData(target->getNextPos()));
 	std::string message = target->getName() + "を倒した";
-	ui_mgr_->setMessage(message, MESSAGE_DRAW_TIME);
+	ui_mgr_->setMessage(message, ui_mgr_->getDrawMessageWindowTime());
 	tnl::DebugTrace("倒した\n");
 	dungeon_log_->additionRepellingEnemy();
 	modifyEnemyAction();
 
 	if (enemy_mgr_->getAliveEnemyNum() <= 0) {
 		std::string message = "敵の気配がなくなった";
-		ui_mgr_->setMessage(message, MESSAGE_DRAW_TIME);
+		ui_mgr_->setMessage(message, ui_mgr_->getDrawMessageWindowTime());
 	}
 }
 
@@ -523,7 +535,7 @@ void ScenePlay::changeAttacker() {
 // メッセージウィンドウにメッセージをセット
 // ====================================================
 void ScenePlay::setMessage(const std::string& message) {
-	ui_mgr_->setMessage(message, MESSAGE_DRAW_TIME);
+	ui_mgr_->setMessage(message, ui_mgr_->getDrawMessageWindowTime());
 }
 
 // ==================================================================================
@@ -880,8 +892,42 @@ bool ScenePlay::seqCharaLevelUp(const float delta_time) {
 	if (level_up_character_->getActState() != eActState::END) {
 		return true;
 	}
+
+	if (level_up_character_.get() == player_.get()) {
+		ui_mgr_->clearMessage();
+		std::string message = level_up_character_->getName() + "はレベルが" + std::to_string(level_up_character_->getStatus().getLevel()) + "になった";
+		ui_mgr_->setMessage(message);
+		ui_mgr_->setEnableEnterUI(true);
+		dungeon_sequence_.change(&ScenePlay::seqMagicSelect);
+		magic_selector_->setLearningCharacter(level_up_character_);
+		magic_selector_->beginMagicSelect();
+		return true;
+	}
+
 	std::string message = level_up_character_->getName() + "はレベルが" + std::to_string(level_up_character_->getStatus().getLevel()) + "になった";
-	ui_mgr_->setMessage(message, MESSAGE_DRAW_TIME);
+	ui_mgr_->setMessage(message, ui_mgr_->getDrawMessageWindowTime());
+
+	if (attackers_.empty()) {
+		enemy_mgr_->beginActionToMove();
+		dungeon_sequence_.change(&ScenePlay::seqCharaMove);
+		return true;
+	}
+
+	changeAttacker();
+	return true;
+}
+
+bool ScenePlay::seqMagicSelect(const float delta_time) {
+
+	charaUpdate(delta_time);
+
+	magic_selector_->update(delta_time);
+
+	if (!magic_selector_->isSelectEnd()) {
+		return true;
+	}
+
+	ui_mgr_->changeCtrlExplanationWindowType(is_hide_explanation_);
 
 	if (attackers_.empty()) {
 		enemy_mgr_->beginActionToMove();
@@ -924,7 +970,7 @@ bool ScenePlay::seqActEndProcess(const float delta_time) {
 	if (getTerrainData(player_->getPos()) == eMapData::STAIR) {
 		player_->setOperationInput(false);
 		dungeon_sequence_.change(&ScenePlay::seqStairSelect);
-		ui_mgr_->executeStairSelect();
+		ui_mgr_->executeSelectYesOrNoWindow("穴がある。落ちますか？");
 		ResourceManager::getInstance()->playSound(open_select_window_se_hdl_path_, DX_PLAYTYPE_BACK);
 		return true;
 	}
@@ -949,7 +995,7 @@ bool ScenePlay::seqStairSelect(const float delta_time) {
 		else {
 			ResourceManager::getInstance()->playSound(cancel_se_hdl_path_, DX_PLAYTYPE_BACK);
 			dungeon_sequence_.change(&ScenePlay::seqPlayerAct);
-			ui_mgr_->executeStairSelectEnd();
+			ui_mgr_->finishSelectYesOrNoWindow();
 			player_->setOperationInput(true);
 		}
 
@@ -959,7 +1005,7 @@ bool ScenePlay::seqStairSelect(const float delta_time) {
 	if (tnl::Input::IsKeyDownTrigger(eKeys::KB_BACK)) {
 		ResourceManager::getInstance()->playSound(cancel_se_hdl_path_, DX_PLAYTYPE_BACK);
 		dungeon_sequence_.change(&ScenePlay::seqPlayerAct);
-		ui_mgr_->executeStairSelectEnd();
+		ui_mgr_->finishSelectYesOrNoWindow();
 		player_->setOperationInput(true);
 	}
 
@@ -991,6 +1037,7 @@ bool ScenePlay::seqGameOver(const float delta_time) {
 
 	if (tnl::Input::IsKeyDownTrigger(eKeys::KB_RETURN)) {
 		if (is_game_clear_) {
+			ResourceManager::getInstance()->playSound("sound/se/walk.mp3", DX_PLAYTYPE_BACK);
 			GameManager::GetInstance()->changeScene(std::make_shared<SceneGameClear>(), 2.0f);
 		}
 		else {
@@ -1022,26 +1069,22 @@ bool ScenePlay::seqSelectMainMenu(const float delta_time) {
 			ui_mgr_->openMagicListWindow();
 			dungeon_sequence_.change(&ScenePlay::seqSelectMagicList);
 			ResourceManager::getInstance()->playSound(button_enter_se_hdl_path_, DX_PLAYTYPE_BACK);
-			return true;
 		}
 		// 足元を確認
 		else if (ui_mgr_->getSelectedIndexFromMainMenuCmd() == std::underlying_type<eMainMenuCmd>::type(eMainMenuCmd::CHECK_CELL)) {
 			checkPlayerCell();
-			return true;
 		}
 		// ステータス確認ウィンドウを開く
 		else if (ui_mgr_->getSelectedIndexFromMainMenuCmd() == std::underlying_type<eMainMenuCmd>::type(eMainMenuCmd::CHECK_STATUS)) {
 			ui_mgr_->displayStatusWindow();
 			dungeon_sequence_.change(&ScenePlay::seqDrawStatusWindow);
 			ResourceManager::getInstance()->playSound(button_enter_se_hdl_path_, DX_PLAYTYPE_BACK);
-			return true;
 		}
 		// メインメニューを閉じる
 		else if (ui_mgr_->getSelectedIndexFromMainMenuCmd() == std::underlying_type<eMainMenuCmd>::type(eMainMenuCmd::CLOSE)) {
 			ResourceManager::getInstance()->playSound(cancel_se_hdl_path_, DX_PLAYTYPE_BACK);
 			dungeon_sequence_.change(&ScenePlay::seqPlayerAct);
 			closeMainMenu();
-			return true;
 		}
 	}
 

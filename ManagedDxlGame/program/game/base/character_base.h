@@ -127,15 +127,22 @@ public:
 	// キャラクターの見ている方向を取得
 	inline eDir_8 getLookingDir() { return looking_dir_; }
 
-	// ================= 関数のプロトタイプ =================
-
 	// 経験値を追加する
 	inline void addExp(int exp) { status_.addExp(exp); }
 	// HPを回復する
 	inline void healHP(int amount) { status_.healHP(amount); }
 
+	// ================= 関数のプロトタイプ =================
+
+	// 指定した魔法があるか確認する
+	bool checkMagicList(std::shared_ptr<MagicBase> magic);
+	// 魔法を追加する
+	void addMagic(std::shared_ptr<MagicBase> magic);
+
 	// ================= 仮想関数 =================
 
+	// 次のレベルまでの必要経験値を取得
+	virtual int getExpToNextLevel() const = 0;
 	// 指定した目標位置にキャラクターを移動させる
 	virtual void moveToTargetPos(const tnl::Vector3& target_pos) = 0;
 	// レベルが上がるが判定

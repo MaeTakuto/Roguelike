@@ -1,10 +1,12 @@
 #include "../../dxlib_ext/dxlib_ext.h"
 #include "../manager/gm_manager.h"
 #include "../manager/resource_manager.h"
+#include "../my_library/my_library.h"
 #include "../scene/scene_play.h"
 #include "../base/character_base.h"
 #include "../common/camera.h"
 #include "../common/chara_status.h"
+#include "../common/magic_status.h"
 #include "../common/animation.h"
 #include "heal_magic.h"
 
@@ -14,10 +16,22 @@ HealMagic::HealMagic() : heal_amount_(0), draw_elapsed_time_(0.0f), effect_draw_
 
 	int index = GameManager::CSV_CELL_ROW_START + std::underlying_type<eMagicName>::type(eMagicName::HEAL);
 
-	magic_name_ = magic_data[index][0].getString();
-	consumed_mp_ = magic_data[index][1].getInt();
-	magic_explantion_[0] = "消費MP：" + std::to_string(consumed_mp_);
-	magic_explantion_[1] = magic_data[index][2].getString();
+	magic_status_->setMagicName(magic_data[index][0].getString());
+	magic_status_->setConsumeMP(magic_data[index][1].getInt());
+	magic_status_->setMagicRange(magic_data[index][2].getInt());
+	magic_status_->setMagicEffectMultiplier(magic_data[index][3].getFloat());
+
+	magic_explantion_[0] = "現在レベル：" + std::to_string(magic_status_->getNowLevel());
+	magic_explantion_[1] = "消費MP：" + std::to_string(magic_status_->getConsumeMP());
+	magic_explantion_[2] = "回復量：HP × " + mtl::toStringWithPrecision(magic_status_->getMagicEffectMultiplier(), 1);
+	std::string str, s;
+	str = magic_data[index][4].getString();
+
+	std::stringstream ss{ str };
+
+	for (int i = 3; std::getline(ss, s, '/'); ++i) {
+		magic_explantion_[i] = s;
+	}
 
 	magic_target_ = eMagicTarget::OWNER;
 
@@ -58,6 +72,14 @@ void HealMagic::draw(const std::shared_ptr<Camera> camera) {
 	magic_effect_->draw(camera);
 }
 
+void HealMagic::levelUpMagic() {
+
+	magic_status_->levelUp(magic_status_->getConsumeMP() + 1, 0, 0.1f);
+
+	// 説明文を更新
+	updateMagicExplantion();
+}
+
 void HealMagic::setupToUseMagic(const std::shared_ptr<Character> owner) {
 
 	auto& owner_pos = owner->getPos();
@@ -90,8 +112,26 @@ void HealMagic::useMagic(std::shared_ptr<Character> owner) {
 		return;
 	}
 
-	heal_amount_ = owner->getStatus().getMaxHP() * 0.6f;
+	heal_amount_ = owner->getStatus().getMaxHP() * magic_status_->getMagicEffectMultiplier();
 	owner->healHP(heal_amount_);
 	scene_play->setMessage(owner->getName() + "は" + std::to_string(heal_amount_) + "回復した");
 
+}
+
+void HealMagic::updateMagicExplantion() {
+
+	CsvData& magic_data = ResourceManager::getInstance()->loadCsvData("csv/magic_data.csv");
+	int index = GameManager::CSV_CELL_ROW_START + std::underlying_type<eMagicName>::type(eMagicName::HEAL);
+
+	magic_explantion_[0] = "現在レベル：" + std::to_string(magic_status_->getNowLevel());
+	magic_explantion_[1] = "消費MP：" + std::to_string(magic_status_->getConsumeMP());
+	magic_explantion_[2] = "回復量：HP × " + mtl::toStringWithPrecision(magic_status_->getMagicEffectMultiplier(), 1);
+	std::string str, s;
+	str = magic_data[index][4].getString();
+
+	std::stringstream ss{ str };
+
+	for (int i = 3; std::getline(ss, s, '/'); ++i) {
+		magic_explantion_[i] = s;
+	}
 }

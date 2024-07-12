@@ -59,6 +59,8 @@ private:
 	int select_cell_red_gpc_hdl_;
 
 public:
+	// 次のレベルまでの必要経験値を取得
+	int getExpToNextLevel() const override;
 	// 魔法効果量を取得
 	int getMagicEffectAmount() const;
 	// 操作入力できるようにするか設定
