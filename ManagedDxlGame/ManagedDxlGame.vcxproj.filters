@@ -320,6 +320,9 @@
     <ClCompile Include="program\game\dungeon\magic_selector.cpp">
       <Filter>program\[003] game\dungeon</Filter>
     </ClCompile>
+    <ClCompile Include="program\game\object\character\enemy\ghost.cpp">
+      <Filter>program\[003] game\object\character\enemy</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="ManagedDxlGame.rc">
@@ -619,6 +622,9 @@
     </ClInclude>
     <ClInclude Include="program\game\dungeon\magic_selector.h">
       <Filter>program\[003] game\dungeon</Filter>
+    </ClInclude>
+    <ClInclude Include="program\game\object\character\enemy\ghost.h">
+      <Filter>program\[003] game\object\character\enemy</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

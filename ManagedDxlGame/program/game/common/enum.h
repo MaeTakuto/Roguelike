@@ -57,6 +57,7 @@ enum class eEnemyType {
 	NONE = -1,
 	PUMPKIN = 0,
 	SKELETON,
+	GJOST,
 	MAX
 };
 

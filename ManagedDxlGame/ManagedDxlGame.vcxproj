@@ -206,6 +206,7 @@
     <ClCompile Include="program\game\manager\resource_manager.cpp" />
     <ClCompile Include="program\game\manager\ui_manager.cpp" />
     <ClCompile Include="program\game\my_library\my_library.cpp" />
+    <ClCompile Include="program\game\object\character\enemy\ghost.cpp" />
     <ClCompile Include="program\game\object\character\enemy\pumpkin.cpp" />
     <ClCompile Include="program\game\object\character\enemy\skeleton.cpp" />
     <ClCompile Include="program\game\object\character\player.cpp" />
@@ -303,6 +304,7 @@
     <ClInclude Include="program\game\manager\resource_manager.h" />
     <ClInclude Include="program\game\manager\ui_manager.h" />
     <ClInclude Include="program\game\my_library\my_library.h" />
+    <ClInclude Include="program\game\object\character\enemy\ghost.h" />
     <ClInclude Include="program\game\object\character\enemy\pumpkin.h" />
     <ClInclude Include="program\game\object\character\enemy\skeleton.h" />
     <ClInclude Include="program\game\object\character\player.h" />

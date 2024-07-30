@@ -1,3 +1,4 @@
 モンスター名,上方向の画像パス,下方向の画像パス,左方向の画像パス,右方向の画像パス
-おばけかぼちゃ,graphics/pumpkin_anim_up.png,graphics/pumpkin_anim_down.png,graphics/pumpkin_anim_left.png,graphics/pumpkin_anim_right.png
-がいこつ,graphics/hone_anim_up.png,graphics/hone_anim_down.png,graphics/hone_anim_left.png,graphics/hone_anim_right.png
+おばけかぼちゃ,graphics/enemy/pumpkin_anim_up.png,graphics/enemy/pumpkin_anim_down.png,graphics/enemy/pumpkin_anim_left.png,graphics/enemy/pumpkin_anim_right.png
+がいこつ,graphics/enemy/hone_anim_up.png,graphics/enemy/hone_anim_down.png,graphics/enemy/hone_anim_left.png,graphics/enemy/hone_anim_right.png
+ゆうれい,graphics/enemy/ghost_anim_up.png,graphics/enemy/ghost_anim_down.png,graphics/enemy/ghost_anim_left.png,graphics/enemy/ghost_anim_right.png
