@@ -103,7 +103,7 @@ public:
 
 	// -------------------------------------------------------------------
 
-	// 階段での選択の実行
+	// 「はい」か「いいえ」選択するウィンドウの実行
 	void executeSelectYesOrNoWindow(const std::string& message);
 	// 階段での選択の実行
 	void finishSelectYesOrNoWindow();

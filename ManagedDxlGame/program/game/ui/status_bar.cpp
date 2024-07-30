@@ -1,5 +1,6 @@
 #include "../../dxlib_ext/dxlib_ext.h"
 #include "../common/camera.h"
+#include "../manager/gm_manager.h"
 #include "../manager/resource_manager.h"
 #include "status_bar.h"
 
@@ -43,6 +44,8 @@ void StatusBar::draw() {
 	SetFontSize(message_font_size_);
 	DrawStringEx(status_text_pos_.x, status_text_pos_.y, -1, status_text_.c_str());
 
+	// GameManager::GetInstance()->getMainScreenEffect()->renderBegin();
+
 	DrawExtendGraph(status_bar_back_pos_.x, status_bar_back_pos_.y, 
 		status_bar_back_pos_.x + status_bar_back_size_.x, status_bar_back_pos_.y + status_bar_back_size_.y, status_bar_back_gpc_hdl_, true);
 	
@@ -50,6 +53,8 @@ void StatusBar::draw() {
 		status_bar_front_pos_.x + status_bar_front_size_.x * now_status_ / max_status_, status_bar_front_pos_.y + status_bar_front_size_.y, 
 		status_bar_front_gpc_hdl_[selected_color_], true
 	);
+
+	// GameManager::GetInstance()->getMainScreenEffect()->renderEnd();
 }
 
 void StatusBar::updateStatus_Text(int max_status, int now_status) {

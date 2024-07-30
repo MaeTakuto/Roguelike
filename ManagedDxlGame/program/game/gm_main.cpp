@@ -1,4 +1,5 @@
 
+
 #include <time.h>
 #include <string>
 #include <numbers>
@@ -17,7 +18,7 @@ void gameStart() {
 	srand(time(0));
 	SetBackgroundColor(32, 32, 32);
 
-	GameManager::GetInstance(std::make_shared<SceneTitle>());
+	GameManager::getInstance(std::make_shared<SceneTitle>());
 }
 
 
@@ -25,7 +26,7 @@ void gameStart() {
 // 毎フレーム実行されます
 void gameMain(float delta_time) {
 
-	GameManager::GetInstance()->update(delta_time);
+	GameManager::getInstance()->update(delta_time);
 
 	// DrawFpsIndicator({ 10, DXE_WINDOW_HEIGHT - 10, 0 }, delta_time);
 
@@ -35,6 +36,6 @@ void gameMain(float delta_time) {
 // ゲーム終了時に１度だけ実行されます
 void gameEnd() {
 
-	GameManager::Destroy();
+	GameManager::destroy();
 	ResourceManager::destroy();
 }

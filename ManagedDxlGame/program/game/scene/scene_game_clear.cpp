@@ -100,7 +100,7 @@ void SceneGameClear::checkToPlaySE()
 // =====================================================================================
 bool SceneGameClear::seqSceneStart(const float delta_time) {
 
-	if (!GameManager::GetInstance()->isTransition()) {
+	if (!GameManager::getInstance()->isTransition()) {
 		message_window_->setEnable(true);
 		sequence_.change(&SceneGameClear::seqMessageEvent);
 	}
@@ -144,12 +144,12 @@ bool SceneGameClear::seqMessageEvent(const float delta_time) {
 // =====================================================================================
 bool SceneGameClear::seqSceneEnd(const float delta_time) {
 
-	if (GameManager::GetInstance()->isTransition()) {
+	if (GameManager::getInstance()->isTransition()) {
 		return true;
 	}
 
 	if (tnl::Input::IsKeyDownTrigger(eKeys::KB_RETURN)) {
-		GameManager::GetInstance()->changeScene(std::make_shared<SceneTitle>(), 2.0f);
+		GameManager::getInstance()->changeScene(std::make_shared<SceneTitle>(), 2.0f);
 	}
 
 	return true;

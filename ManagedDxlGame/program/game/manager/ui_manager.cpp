@@ -17,8 +17,8 @@ namespace {
 	const tnl::Vector2i DEFAULT_MESS_WINDOW_SIZE = { 900, 160 };
 
 	// 階段での選択時のメッセージウィンドウの位置、サイズ、メッセージ
-	const tnl::Vector2i STAIR_SEL_MESS_WINDOW_POS = { 150, 500 };
-	const tnl::Vector2i STAIR_SEL_MESS_WINDOW_SIZE = { 750, 160 };
+	const tnl::Vector2i STAIR_SEL_MESS_WINDOW_POS = { 150, 540 };
+	const tnl::Vector2i STAIR_SEL_MESS_WINDOW_SIZE = { 750, 120 };
 
 	// 階数の表示位置
 	const tnl::Vector2i FLOOR_STR_POS = { 750, 90 };
@@ -42,7 +42,7 @@ namespace {
 	// ================= 2択選択ウィンドウ（はい、いいえ）の設定 =================
 
 	// 階段選択ウィンドウの表示位置
-	const tnl::Vector2i STAIR_SELECT_WINDOW_POS = { 950, 500 };
+	const tnl::Vector2i STAIR_SELECT_WINDOW_POS = { 950, 540 };
 	// 2択ウィンドウの表示サイズ
 	const tnl::Vector2i TWO_SELECT_WINDOW_SIZE = { 160, 0 };
 
@@ -60,7 +60,7 @@ namespace {
 	// 魔法選択メニューの表示サイズ
 	const tnl::Vector2i MAGIC_WINDOW_SIZE = { 300, 0 };
 	// 
-	const tnl::Vector2i MAGIC_EXPLANTION_WINDOW_SIZE = { 450, 120 };
+	const tnl::Vector2i MAGIC_EXPLANTION_WINDOW_SIZE = { 450, 0 };
 
 	// ステータスバーの始点位置
 	const tnl::Vector2i STATUS_BAR_TOP_POS = { 200, 25 };
@@ -170,6 +170,8 @@ UI_Manager::UI_Manager() : message_window_(std::make_shared<MessageWindow>()), c
 	magic_explation_window_->setMessageLine(5);
 	magic_explation_window_->setMessageTopPos(tnl::Vector2i(10, 10));
 	magic_explation_window_->calculateWindowSize();
+	magic_explation_window_->setDrawGpcHdlPos(magic_explation_window_->getWindowPos() + MAGIC_EXPLANTION_WINDOW_SIZE - tnl::Vector2i(50, -10));
+	magic_explation_window_->setDrawGpcHdlSize(tnl::Vector2i(60, 60));
 
 	// ------------------------- ステータスバーの初期化 --------------------------------
 	hp_bar_->setStatusBarPos(STATUS_BAR_TOP_POS);
@@ -344,6 +346,7 @@ void UI_Manager::openMagicListWindow() {
 	auto& magic_list = target->getMagicList();
 	magic_explation_window_->setEnable(true);
 	magic_explation_window_->setAllLineMessage( magic_list[magic_select_window_->getSelectedCmdIndex()]->getMagicExplantion() );
+	magic_explation_window_->setGpcHdl(magic_list[magic_select_window_->getSelectedCmdIndex()]->getMagicIconGpcHdl());
 }
 
 // =====================================================================================
@@ -365,6 +368,7 @@ void UI_Manager::updateMagicExplation() {
 		}
 		auto& magic_list = target->getMagicList();
 		magic_explation_window_->setAllLineMessage(magic_list[magic_select_window_->getSelectedCmdIndex()]->getMagicExplantion());
+		magic_explation_window_->setGpcHdl(magic_list[magic_select_window_->getSelectedCmdIndex()]->getMagicIconGpcHdl());
 	}
 }
 
@@ -440,6 +444,7 @@ void UI_Manager::executeSelectYesOrNoWindow(const std::string& message) {
 	// メッセージウィンドウ関連の処理
 	message_window_->cancelTimeLimit();
 	message_window_->clearMessage();
+	message_window_->setMessageLine(3);
 	message_window_->setWindowPos(STAIR_SEL_MESS_WINDOW_POS);
 	message_window_->setWindowSize(STAIR_SEL_MESS_WINDOW_SIZE);
 	message_window_->setMessgae(message);
@@ -455,6 +460,7 @@ void UI_Manager::finishSelectYesOrNoWindow() {
 	two_select_window_->setOperate(false);
 	
 	// メッセージウィンドウ関連の処理
+	message_window_->setMessageLine(4);
 	message_window_->setWindowPos(DEFAULT_MESS_WINDOW_POS);
 	message_window_->setWindowSize(DEFAULT_MESS_WINDOW_SIZE);
 	message_window_->clearMessage();

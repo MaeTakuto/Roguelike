@@ -20,6 +20,8 @@ private:
 	float effect_draw_time_;
 
 public:
+	std::shared_ptr<MagicBase> createClone() override;
+
 	void levelUpMagic() override;
 
 	void setupToUseMagic(const std::shared_ptr<Character> owner) override;

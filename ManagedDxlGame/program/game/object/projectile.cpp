@@ -92,7 +92,7 @@ void Projectile::startToLaunchProjectile() {
 // =====================================================================================
 void Projectile::checkCellInMoveDir(const tnl::Vector3& pos) {
 
-	std::shared_ptr<ScenePlay> scene_play = std::dynamic_pointer_cast<ScenePlay>(GameManager::GetInstance()->getSceneInstance());
+	std::shared_ptr<ScenePlay> scene_play = std::dynamic_pointer_cast<ScenePlay>(GameManager::getInstance()->getSceneInstance());
 	if (!scene_play) {
 		return;
 	}

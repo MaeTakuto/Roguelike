@@ -7,7 +7,7 @@
 // コンストラクタ
 EnemyBase::EnemyBase() : target_pos_(0, 0, 0) {
 
-	auto scene_play = std::dynamic_pointer_cast<ScenePlay>(GameManager::GetInstance()->getSceneInstance());
+	auto scene_play = std::dynamic_pointer_cast<ScenePlay>(GameManager::getInstance()->getSceneInstance());
 	if (scene_play) scene_play_ = scene_play;
 }
 

@@ -18,18 +18,34 @@ MagnetismMagic::MagnetismMagic() : launch_dir_{0}, magic_bullet_(std::make_share
 
 	int index = GameManager::CSV_CELL_ROW_START + std::underlying_type<eMagicName>::type(eMagicName::MAGNETISM);
 
-	magic_status_->setMagicName(magic_data[index][0].getString());
-	magic_status_->setConsumeMP(magic_data[index][1].getInt());
-	magic_status_->setMagicRange(magic_data[index][2].getInt());
-	magic_status_->setMagicEffectMultiplier(magic_data[index][3].getFloat());
+	magic_icon_gpc_hdl_ = ResourceManager::getInstance()->loadGraph("graphics/magic_icon/magnetism_magic_icon.png");
 
+	// ----------------------------------- ステータス設定 -------------------------------------------------------------------------
 
-	magic_explantion_[0] = "現在レベル：" + std::to_string(magic_status_->getNowLevel());
-	magic_explantion_[1] = "消費MP：" + std::to_string(magic_status_->getConsumeMP());
+	magic_status_->setMagicID(magic_data[index][0].getInt());
+	magic_status_->setMagicName(magic_data[index][1].getString());
+	magic_status_->setConsumeMP(magic_data[index][2].getInt());
+	magic_status_->setMagicRange(magic_data[index][3].getInt());
+	magic_status_->setMagicEffectMultiplier(magic_data[index][4].getFloat());
+
+	level_up_bonus_status_->setConsumeMP(1);
+	level_up_bonus_status_->setMagicRange(2);
+	level_up_bonus_status_->setMagicEffectMultiplier(0.f);
+
+	// ----------------------------------------------------------------------------------------------------------------------------
+
+	magic_status_explantion_.resize(3);
+
+	magic_status_explantion_[0] = "レベル　　：";
+	magic_status_explantion_[1] = "消費MP　　：";
+	magic_status_explantion_[2] = "射程　　　：";
+
+	magic_explantion_[0] = magic_status_explantion_[0] + std::to_string(magic_status_->getNowLevel());
+	magic_explantion_[1] = magic_status_explantion_[1] + std::to_string(magic_status_->getConsumeMP());
 	magic_explantion_[2] = "";
 	std::string str, s;
 
-	str = std::to_string(magic_status_->getMagicRange()) + magic_data[index][4].getString();
+	str = std::to_string(magic_status_->getMagicRange()) + magic_data[index][5].getString();
 	std::stringstream ss{ str };
 
 	for (int i = 3; std::getline(ss, s, '/'); ++i) {
@@ -86,9 +102,14 @@ void MagnetismMagic::draw(std::shared_ptr<Camera> camera) {
 	magic_bullet_->draw(camera);
 }
 
+std::shared_ptr<MagicBase> MagnetismMagic::createClone() {
+	auto clone = std::make_shared<MagnetismMagic>();
+	return clone;
+}
+
 void MagnetismMagic::levelUpMagic() {
 
-	magic_status_->levelUp(magic_status_->getConsumeMP() + 1, 2, 0.0f);
+	magic_status_->levelUp(level_up_bonus_status_);
 
 	// 説明文を更新
 	updateMagicExplantion();
@@ -122,7 +143,7 @@ void MagnetismMagic::startDrawEffect() {
 // =====================================================================================
 void MagnetismMagic::useMagic(std::shared_ptr<Character> owner) {
 
-	auto scene_play = std::dynamic_pointer_cast<ScenePlay>(GameManager::GetInstance()->getSceneInstance());
+	auto scene_play = std::dynamic_pointer_cast<ScenePlay>(GameManager::getInstance()->getSceneInstance());
 	if (!scene_play) {
 		return;
 	}
@@ -148,7 +169,7 @@ void MagnetismMagic::updateMagicExplantion() {
 	magic_explantion_[2] = "";
 	std::string str, s;
 
-	str = std::to_string(magic_status_->getMagicRange()) + magic_data[index][4].getString();
+	str = std::to_string(magic_status_->getMagicRange()) + magic_data[index][5].getString();
 	std::stringstream ss{ str };
 
 	for (int i = 3; std::getline(ss, s, '/'); ++i) {

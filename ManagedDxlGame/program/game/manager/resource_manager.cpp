@@ -43,9 +43,14 @@ void ResourceManager::destroy() {
 int ResourceManager::loadGraph(const std::string& gpc_hdl_path) {
 
 	auto it = gpc_hdl_container_.find(gpc_hdl_path);
-	if (it != gpc_hdl_container_.end()) return gpc_hdl_container_[gpc_hdl_path];
+	
+	if (it != gpc_hdl_container_.end()) {
+		return gpc_hdl_container_[gpc_hdl_path];
+	}
+
 	int gpc_hdl = LoadGraph(gpc_hdl_path.c_str());
 	gpc_hdl_container_.insert(std::make_pair(gpc_hdl_path, gpc_hdl));
+
 	return gpc_hdl;
 }
 

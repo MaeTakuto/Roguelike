@@ -12,7 +12,7 @@ namespace {
 	const tnl::Vector2i BACKGROUND_POS = { 0, 0 };
 	
 	// ゲームタイトルの表示位置
-	const tnl::Vector2i TITLE_LOGO_POS = { 375, 150 };
+	const tnl::Vector2i TITLE_LOGO_POS = { 325, 100 };
 
 	// メニューのフォントサイズ
 	const int MENU_FONT_SIZE = 30;
@@ -60,7 +60,15 @@ SceneTitle::SceneTitle() : sequence_(tnl::Sequence<SceneTitle>(this, &SceneTitle
 	title_menu_->setCommandNames(cmd_names);
 	title_menu_->calculateWindowSize();
 
-	title_logo_gpc_hdl_ = ResourceManager::getInstance()->loadGraph("graphics/title_logo12.png");
+	// -------------------------- タイトルロゴの設定 -------------------------------------------------------------
+	title_logo_gpc_hdl_ = ResourceManager::getInstance()->loadGraph("graphics/title_logo1.png");
+
+	int width = 0;
+	int height = 0;
+	GetGraphSize(title_logo_gpc_hdl_, &width, &height);
+
+	title_logo_size_ = tnl::Vector2i(width, height);
+	// ------------------------------------------------------------------------------------------------------------
 
 	dungeon_log_list_.resize(10);
 
@@ -108,7 +116,12 @@ void SceneTitle::draw() {
 
 	DrawExtendGraph(BACKGROUND_POS.x, BACKGROUND_POS.y, BACKGROUND_POS.x + DXE_WINDOW_WIDTH, BACKGROUND_POS.y + DXE_WINDOW_HEIGHT, back_ground_gpc_hdl_, true);
 
-	DrawGraph(TITLE_LOGO_POS.x, TITLE_LOGO_POS.y, title_logo_gpc_hdl_, true);
+	// DrawGraph(TITLE_LOGO_POS.x, TITLE_LOGO_POS.y, title_logo_gpc_hdl_, true);
+
+	int width = static_cast<int>(title_logo_size_.x * 2.5f);
+	int height = static_cast<int>(title_logo_size_.y * 2.5f);
+
+	DrawExtendGraph(TITLE_LOGO_POS.x, TITLE_LOGO_POS.y, TITLE_LOGO_POS.x + width, TITLE_LOGO_POS.y + height, title_logo_gpc_hdl_, true);
 
 	SetDrawBlendMode( DX_BLENDMODE_ALPHA, sunlight_alpha_ );
 	DrawExtendGraph(BACKGROUND_POS.x, BACKGROUND_POS.y, BACKGROUND_POS.x + DXE_WINDOW_WIDTH, BACKGROUND_POS.y + DXE_WINDOW_HEIGHT, sunlight_gpc_hdl_, true);
@@ -132,7 +145,7 @@ void SceneTitle::draw() {
 
 void SceneTitle::setupDugeonLogMenu() {
 	// ダンジョン記録リストを取得
-	dungeon_log_list_ = GameManager::GetInstance()->getDungeonLogList();
+	dungeon_log_list_ = GameManager::getInstance()->getDungeonLogList();
 
 	// 記録の数をカウント
 	int log_count = 0;
@@ -214,7 +227,7 @@ void SceneTitle::closeDungeonLogMenu() {
 
 bool SceneTitle::seqSceneStart(const float delta_time) {
 
-	if (!GameManager::GetInstance()->isTransition()) {
+	if (!GameManager::getInstance()->isTransition()) {
 		setupDugeonLogMenu();
 		sequence_.change(&SceneTitle::seqRun);
 		PlaySoundMem(title_bgm_hdl_, DX_PLAYTYPE_LOOP, true);
@@ -227,7 +240,7 @@ bool SceneTitle::seqRun(const float delta_time) {
 
 	title_menu_alpha_ = 255 * abs(sin(2 * tnl::PI * sequence_.getProgressTime() / 5.0f));
 
-	if (GameManager::GetInstance()->isTransition()) {
+	if (GameManager::getInstance()->isTransition()) {
 		return true;
 	}
 
@@ -253,7 +266,7 @@ bool SceneTitle::seqSelectMainMenu(const float delta_time) {
 
 		if (title_menu_->getSelectedCmdIndex() == 0) {
 			ResourceManager::getInstance()->playSound("sound/se/walk.mp3", DX_PLAYTYPE_BACK);
-			GameManager::GetInstance()->changeScene(std::make_shared<ScenePlay>());
+			GameManager::getInstance()->changeScene(std::make_shared<ScenePlay>());
 			sequence_.change(&SceneTitle::seqTransitionNextScene);
 		}
 		else {

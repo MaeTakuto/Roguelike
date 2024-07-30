@@ -83,6 +83,8 @@ public:
 	void takeDamage(int damage) override;
 	// ステータス回復の処理
 	void executeRecoveryStatusProcess();
+	// 
+	void executeGetMagicEffect() override;
 	
 	// 魔法を使えるか試す
 	bool tryUseMagic(int magic_index);

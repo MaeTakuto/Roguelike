@@ -31,7 +31,10 @@ private:
 
 	// ---------------------------------------------------------------------
 
+	// タイトルロゴ画像
 	int title_logo_gpc_hdl_;
+
+	tnl::Vector2i title_logo_size_;
 
 	// 操作説明ウィンドウ
 	std::shared_ptr<MessageWindow> control_explanation_window_;

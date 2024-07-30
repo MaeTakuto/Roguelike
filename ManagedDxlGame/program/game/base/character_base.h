@@ -38,7 +38,7 @@ protected:
 	const float DAMAGE_EFFECT_CHANGE_INTERVAL = 0.05f;
 
 	// 各方向の表示画像の方向
-	const eDir_4 ANIM_DIR[static_cast<int>(eDir_8::MAX)] 
+	const eDir_4 ANIM_DIR[static_cast<int>(eDir_8::MAX)]
 		= { eDir_4::UP, eDir_4::DOWN, eDir_4::LEFT, eDir_4::RIGHT, eDir_4::UP, eDir_4::UP, eDir_4::DOWN, eDir_4::DOWN };
 
 	// 逆方向
@@ -90,19 +90,19 @@ protected:
 
 public:
 	// ================= ゲッター、セッター =================
-	
+
 	// 攻撃対象を取得 対象がいない場合、"nullptr" を返す。
 	inline std::shared_ptr<Character> getAttackTarget() { return atk_target_; }
-	
+
 	// 現在の位置を取得
 	inline const tnl::Vector3& getPos() const { return pos_; }
-	
+
 	// 位置をセット
 	inline void setPos(const tnl::Vector3& pos) {
 		pos_ = pos;
 		next_pos_ = pos_;
 	}
-	
+
 	// 移動先の座標を取得
 	inline const tnl::Vector3& getNextPos() const { return next_pos_; }
 
@@ -114,16 +114,16 @@ public:
 
 	// 行動状態を取得
 	inline eActState getActState() { return act_state_; }
-	
+
 	// 名前を取得
 	inline const std::string& getName() const { return name_; };
-	
+
 	// ステータスクラスを取得
 	inline const CharaStatus& getStatus() { return status_; }
-	
+
 	// 魔法一覧を取得
 	const std::vector<std::shared_ptr<MagicBase>>& getMagicList() const;
-	
+
 	// キャラクターの見ている方向を取得
 	inline eDir_8 getLookingDir() { return looking_dir_; }
 
@@ -138,6 +138,8 @@ public:
 	bool checkMagicList(std::shared_ptr<MagicBase> magic);
 	// 魔法を追加する
 	void addMagic(std::shared_ptr<MagicBase> magic);
+	// 魔法レベルを上げる
+	bool levelUpMagic(std::shared_ptr<MagicBase> magic);
 
 	// ================= 仮想関数 =================
 
@@ -159,5 +161,8 @@ public:
 protected:
 	// 指定した位置がフィールドの中か判定
 	bool isInField(const tnl::Vector3& pos);
+
+	// 魔法取得のエフェクトを表示
+	virtual void executeGetMagicEffect() {};
 
 };

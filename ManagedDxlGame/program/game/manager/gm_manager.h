@@ -30,10 +30,10 @@ public:
 	static constexpr int FIELD_HEIGHT = 32;
 
 	// ゲームマネージャーのアドレスを返す
-	static GameManager* GetInstance(std::shared_ptr<SceneBase> = nullptr);
+	static GameManager* getInstance(std::shared_ptr<SceneBase> = nullptr);
 
 	// アドレスの削除
-	inline static void Destroy() { delete GetInstance(); }
+	inline static void destroy() { delete getInstance(); }
 
 	// ゲームマネージャーの更新
 	void update(float delta_time);
@@ -56,6 +56,9 @@ public:
 	// "is_game_clear_" の値を設定する
 	inline void setGameClear(bool is_game_clear) { is_game_clear_ = is_game_clear; }
 
+	// スクリーンエフェクトを返す
+	/*inline std::shared_ptr<dxe::ScreenEffect>& getMainScreenEffect() { return main_screen_effect_; }*/
+
 	// ダンジョン記録を追加する（総合スコアがリストより低い場合、追加されない）
 	void addDungeonLog(std::shared_ptr<DungeonLog> dungeon_log);
 	// ダンジョン記録のリストを取得
@@ -69,6 +72,9 @@ private:
 	std::shared_ptr<SceneBase> now_scene_;
 	// 次のシーン
 	std::shared_ptr<SceneBase> next_scene_;
+
+	// スクリーンエフェクト
+	// std::shared_ptr<dxe::ScreenEffect> main_screen_effect_;
 
 	// ダンジョン記録リスト
 	std::vector< std::shared_ptr<DungeonLog> > dungeon_log_list_;

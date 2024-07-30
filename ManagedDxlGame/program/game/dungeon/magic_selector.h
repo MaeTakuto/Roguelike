@@ -36,8 +36,14 @@ private:
 	// 選択できる魔法リスト
 	std::vector< std::shared_ptr<MagicBase> > select_magic_list_;
 
+	// 魔法選択の説明ウィンドウ
+	std::shared_ptr<MessageWindow> magic_selector_explanation_window_;
+
 	// 魔法の説明ウィンドウ
 	std::vector<std::shared_ptr<MessageWindow> > magic_explanation_window_;
+
+	// 魔法のステータスウィンドウ（現在、強化後のステータスの表示）
+	std::shared_ptr<MessageWindow> magic_status_window_;
 
 	// 魔法説明ウィンドウの位置
 	std::vector<tnl::Vector2i> window_pos_;
@@ -92,6 +98,8 @@ private:
 	void endToSelectMagic();
 	// 魔法のレベルを上げる
 	void levelUpMagic(std::shared_ptr<MagicBase> magic);
+	// 魔法ステータスウィンドウの更新
+	void updateMagicStatusWindow();
 
 	// メッセージを表示するシーケンス
 	bool seqDisplayMessage(const float delta_time);

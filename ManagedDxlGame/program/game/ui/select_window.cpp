@@ -112,7 +112,7 @@ void SelectWindow::setWindowSize(const tnl::Vector2i& size) {
 
 void SelectWindow::calculateWindowSize() {
 
-	window_size_.y = (message_font_size_ + message_space_) * message_line_ + ( mess_str_top_pos_.y * 2 );
+	window_size_.y =  message_font_size_ * message_line_ + message_space_ * (message_line_ - 1) + (mess_str_top_pos_.y * 2);
 }
 
 // =====================================================================================

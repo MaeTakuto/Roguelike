@@ -70,6 +70,9 @@ https://soundeffect-lab.info/
 無料効果音で遊ぼう
 https://taira-komori.jpn.org/freesound.html
 
+ポケットサウンド
+https://pocket-se.info/
+
 画像、音楽ファイルなどの素材の二次配布不可。
 
 

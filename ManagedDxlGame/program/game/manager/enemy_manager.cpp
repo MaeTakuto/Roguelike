@@ -159,7 +159,7 @@ void EnemyManager::deathAllEnemys() {
 void EnemyManager::desideAction() {
 
 	std::shared_ptr<ScenePlay> scene_play 
-		= std::dynamic_pointer_cast<ScenePlay>( GameManager::GetInstance()->getSceneInstance());
+		= std::dynamic_pointer_cast<ScenePlay>( GameManager::getInstance()->getSceneInstance());
 
 	if (!scene_play) {
 		tnl::DebugTrace("EnemyManager::desideAction() : scene_play ‚ğæ“¾‚Å‚«‚Ü‚¹‚ñ‚Å‚µ‚½");
@@ -181,7 +181,7 @@ void EnemyManager::desideAction() {
 // “G‚Ìs“®‚ğC³‚·‚é
 void EnemyManager::modifyEnemiesAction() {
 	std::shared_ptr<ScenePlay> scene_play
-		= std::dynamic_pointer_cast<ScenePlay>(GameManager::GetInstance()->getSceneInstance());
+		= std::dynamic_pointer_cast<ScenePlay>(GameManager::getInstance()->getSceneInstance());
 
 	if (!scene_play) {
 		tnl::DebugTrace("EnemyManager::desideAction() : scene_play ‚ğæ“¾‚Å‚«‚Ü‚¹‚ñ‚Å‚µ‚½");
