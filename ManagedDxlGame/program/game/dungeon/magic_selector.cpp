@@ -21,14 +21,18 @@ namespace {
 	const int SELECT_MAGIC_MAX = 2;
 
 	// 魔法選択ウィンドウの位置
-	const tnl::Vector2i WINDOW_TOP_POS = { 350, 150 };
+	const tnl::Vector2i WINDOW_TOP_POS = { 200, 220 };
 
 	// 魔法選択ウィンドウの間隔
-	const int WINDOW_SPACE = 50;
+	const int WINDOW_SPACE = 40;
+
+	// 
+	const int FONT_SIZE = 25;
 
 }
 
-MagicSelector::MagicSelector() : sequence_(tnl::Sequence<MagicSelector>(this, &MagicSelector::seqDisplayMessage)),
+MagicSelector::MagicSelector() : sequence_(tnl::Sequence<MagicSelector>(this, &MagicSelector::seqDisplayMessage)), 
+	magic_selector_explanation_window_(std::make_shared<MessageWindow>()), magic_status_window_(std::make_shared<MessageWindow>()), 
 	cursor_anim_(std::make_shared<Animation>()), is_select_end_(false), is_drawing_(false), is_learn_magic_(false), selected_magic_window_(0)
 {
 
@@ -47,11 +51,22 @@ MagicSelector::MagicSelector() : sequence_(tnl::Sequence<MagicSelector>(this, &M
 	magic_explanation_window_.resize(SELECT_MAGIC_MAX);
 	window_pos_.resize(SELECT_MAGIC_MAX);
 
+	tnl::Vector2i window_size = tnl::Vector2i(500, 0);
+
+	magic_selector_explanation_window_->setWindowPos(tnl::Vector2i(450, 140));
+	magic_selector_explanation_window_->setMessageLine(1);
+	magic_selector_explanation_window_->setWindowSize(tnl::Vector2i(350, 0));
+	magic_selector_explanation_window_->setMessageTopPos(tnl::Vector2i(10, 10));
+	magic_selector_explanation_window_->setFontSize(FONT_SIZE);
+	magic_selector_explanation_window_->calculateWindowSize();
+	magic_selector_explanation_window_->setMessgae("魔法の習得・強化ができます");
+	magic_selector_explanation_window_->setEnable(true);
+
 	for (int i = 0; i < magic_explanation_window_.size(); ++i) {
 		magic_explanation_window_[i] = std::make_shared<MessageWindow>();
-		magic_explanation_window_[i]->setWindowSize(tnl::Vector2i(500, 0));
+		magic_explanation_window_[i]->setWindowSize(window_size);
 		magic_explanation_window_[i]->setMessageLine(3);
-		magic_explanation_window_[i]->setFontSize(25);
+		magic_explanation_window_[i]->setFontSize(FONT_SIZE);
 		magic_explanation_window_[i]->setMessageTopPos(tnl::Vector2i(10, 10));
 		magic_explanation_window_[i]->calculateWindowSize();
 
@@ -59,8 +74,22 @@ MagicSelector::MagicSelector() : sequence_(tnl::Sequence<MagicSelector>(this, &M
 
 		magic_explanation_window_[i]->setWindowPos(window_pos_[i]);
 
+		magic_explanation_window_[i]->setDrawGpcHdlPos(magic_explanation_window_[i]->getWindowPos() + window_size - tnl::Vector2i(80, -10));
+		magic_explanation_window_[i]->setDrawGpcHdlSize(tnl::Vector2i( 95, 95 ));
+
 		magic_explanation_window_[i]->setEnable(true);
 	}
+
+	tnl::Vector2i pos = WINDOW_TOP_POS;
+	pos.x += magic_explanation_window_[0]->getWindowSize().x + 50;
+
+	magic_status_window_->setWindowPos(pos);
+	magic_status_window_->setWindowSize(tnl::Vector2i(400, 0));
+	magic_status_window_->setMessageTopPos(tnl::Vector2i(10, 10));
+	magic_status_window_->setFontSize(FONT_SIZE);
+	magic_status_window_->setMessageLine(4);
+	magic_status_window_->calculateWindowSize();
+	magic_status_window_->setEnable(true);
 
 	cursor_anim_->setAnimGraphicHandle(
 		ResourceManager::getInstance()->loadAnimation(
@@ -82,17 +111,25 @@ MagicSelector::~MagicSelector() {
 	tnl::DebugTrace("MagicSelectorのデストラクタが実行されました\n");
 }
 
+// =====================================================================================
+// アップデート
+// =====================================================================================
 void MagicSelector::update(float delta_time) {
 
 	sequence_.update(delta_time);
 
 }
 
+// =====================================================================================
+// 描画
+// =====================================================================================
 void MagicSelector::draw(const std::shared_ptr<Camera> camera) {
 
 	if (!is_drawing_) {
 		return;
 	}
+
+	magic_selector_explanation_window_->draw();
 
 	for (int i = 0; i < magic_explanation_window_.size(); ++i) {
 		if (!magic_explanation_window_[i]) {
@@ -100,6 +137,8 @@ void MagicSelector::draw(const std::shared_ptr<Camera> camera) {
 		}
 		magic_explanation_window_[i]->draw();
 	}
+
+	magic_status_window_->draw();
 
 	tnl::Vector2i draw_pos = window_pos_[selected_magic_window_] + tnl::Vector2i( 0, ( magic_explanation_window_[selected_magic_window_]->getWindowSize().y / 2 )) ;
 	draw_pos -= tnl::Vector2i( 50, 0 );
@@ -113,10 +152,16 @@ void MagicSelector::draw(const std::shared_ptr<Camera> camera) {
 
 }
 
+// =====================================================================================
+// 魔法選択を開始する
+// =====================================================================================
 void MagicSelector::beginMagicSelect() {
 	is_select_end_ = false;
 }
 
+// =====================================================================================
+// 選択できる魔法をランダムで取得
+// =====================================================================================
 void MagicSelector::getRandomMagic() {
 
 	auto list = magic_list_;
@@ -142,11 +187,15 @@ void MagicSelector::getRandomMagic() {
 		auto itr_begin = select_magic_list_[i]->getMagicExplantion().begin() + 3;
 		message.insert(message.end(), itr_begin, select_magic_list_[i]->getMagicExplantion().end());
 		magic_explanation_window_[i]->setAllLineMessage(message);
+		magic_explanation_window_[i]->setGpcHdl(select_magic_list_[i]->getMagicIconGpcHdl());
 		message.clear();
 	}
 
 }
 
+// =====================================================================================
+// 魔法選択を終了する
+// =====================================================================================
 void MagicSelector::endToSelectMagic() {
 
 	is_select_end_ = true;
@@ -154,13 +203,24 @@ void MagicSelector::endToSelectMagic() {
 	sequence_.change(&MagicSelector::seqDisplayMessage);
 }
 
+// =====================================================================================
+// 魔法のレベルを上げる
+// =====================================================================================
 void MagicSelector::levelUpMagic(std::shared_ptr<MagicBase> magic) {
+
+	auto sp_character = learning_character_.lock();
+
+	if (!sp_character) {
+		return;
+	}
+
 
 	for (int i = 0; i < magic_list_.size(); ++i) {
 		if (magic_list_[i] != magic) {
 			continue;
 		}
 
+		sp_character->levelUpMagic(magic_list_[i]);
 		magic_list_[i]->levelUpMagic();
 
 		if (magic_list_[i]->getMagicStatus()->getNowLevel() < magic_list_[i]->getMagicStatus()->getMaxLevel()) {
@@ -171,6 +231,22 @@ void MagicSelector::levelUpMagic(std::shared_ptr<MagicBase> magic) {
 		magic_list_.erase(magic_list_.begin() + i);
 		return;
 	}
+}
+
+// =======================================================================================
+// 魔法ステータスウィンドウの更新
+// =======================================================================================
+void MagicSelector::updateMagicStatusWindow() {
+
+	auto sp_character = learning_character_.lock();
+
+	std::vector<std::string> text = sp_character->checkMagicList(select_magic_list_[selected_magic_window_]) ?
+		select_magic_list_[selected_magic_window_]->getLevelUpStatusComparisonText() : select_magic_list_[selected_magic_window_]->getStatusComparisonText();
+
+	magic_status_window_->clearMessage();
+	magic_status_window_->setEnable(true);
+	magic_status_window_->setAllLineMessage(text);
+
 }
 
 // =======================================================================================
@@ -194,6 +270,7 @@ bool MagicSelector::seqDisplayMessage(const float delta_time) {
 		getRandomMagic();
 		is_drawing_ = true;
 		cursor_anim_->startAnimation();
+		updateMagicStatusWindow();
 	}
 
 	return true;
@@ -210,6 +287,7 @@ bool MagicSelector::seqMagicSelect(const float delta_time) {
 		if (selected_magic_window_ < 0) {
 			selected_magic_window_ = magic_explanation_window_.size() - 1;
 		}
+		updateMagicStatusWindow();
 	}
 
 	// 下キー
@@ -219,6 +297,7 @@ bool MagicSelector::seqMagicSelect(const float delta_time) {
 		if (selected_magic_window_ >= magic_explanation_window_.size()) {
 			selected_magic_window_ = 0;
 		}
+		updateMagicStatusWindow();
 	}
 
 	// Enterキー
@@ -310,7 +389,7 @@ bool MagicSelector::seqLearnMagic(const float delta_time) {
 		sp_ui_manager->setMessage(select_magic_list_[selected_magic_window_]->getMagicStatus()->getMagicName() + "のレベルが上がった", sp_ui_manager->getDrawMessageWindowTime());
 	}
 	else {
-		sp_character->addMagic(select_magic_list_[selected_magic_window_]);
+		sp_character->addMagic(select_magic_list_[selected_magic_window_]->createClone());
 		sp_ui_manager->setMessage(select_magic_list_[selected_magic_window_]->getMagicStatus()->getMagicName() + "を覚えた", sp_ui_manager->getDrawMessageWindowTime());
 	}
 

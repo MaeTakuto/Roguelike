@@ -16,17 +16,36 @@ FireMagic::FireMagic() : atk_target_(nullptr), fire_ball_(std::make_shared<Proje
 
 	int index = GameManager::CSV_CELL_ROW_START + std::underlying_type<eMagicName>::type(eMagicName::FIRE);
 
-	magic_status_->setMagicName(magic_data[index][0].getString());
-	magic_status_->setConsumeMP(magic_data[index][1].getInt());
-	magic_status_->setMagicRange(magic_data[index][2].getInt());
-	magic_status_->setMagicEffectMultiplier(magic_data[index][3].getFloat());
+	magic_icon_gpc_hdl_ = ResourceManager::getInstance()->loadGraph("graphics/magic_icon/fire_magic_icon.png");
 
-	magic_explantion_[0] = "現在レベル：" + std::to_string(magic_status_->getNowLevel());
-	magic_explantion_[1] = "消費MP：" + std::to_string(magic_status_->getConsumeMP());
-	magic_explantion_[2] = "ダメージ量：攻撃力 × " + mtl::toStringWithPrecision(magic_status_->getMagicEffectMultiplier(), 2);
+	// ----------------------------------- ステータス設定 -------------------------------------------------------------------------
+
+	magic_status_->setMagicID(magic_data[index][0].getInt());
+	magic_status_->setMagicName(magic_data[index][1].getString());
+	magic_status_->setConsumeMP(magic_data[index][2].getInt());
+	magic_status_->setMagicRange(magic_data[index][3].getInt());
+	magic_status_->setMagicEffectMultiplier(magic_data[index][4].getFloat());
+
+	level_up_bonus_status_->setConsumeMP(1);
+	level_up_bonus_status_->setMagicRange(2);
+	level_up_bonus_status_->setMagicEffectMultiplier(0.05f);
+
+	tnl::DebugTrace("Multiplier = %f\n", magic_status_->getMagicEffectMultiplier());
+	tnl::DebugTrace("Multiplier = %f\n", level_up_bonus_status_->getMagicEffectMultiplier());
+
+	// ----------------------------------------------------------------------------------------------------------------------------
+
+	magic_status_explantion_[0] = "レベル　　：";
+	magic_status_explantion_[1] = "消費MP　　：";
+	magic_status_explantion_[2] = "ダメージ率：";
+	magic_status_explantion_[3] = "射程　　　：";
+
+	magic_explantion_[0] = magic_status_explantion_[0] + std::to_string(magic_status_->getNowLevel());
+	magic_explantion_[1] = magic_status_explantion_[1] + std::to_string(magic_status_->getConsumeMP());
+	magic_explantion_[2] = magic_status_explantion_[2] + std::to_string(static_cast<int>(magic_status_->getMagicEffectMultiplier() * 100.0f)) + "％";
 	std::string str, s;
 
-	str = std::to_string(magic_status_->getMagicRange()) + magic_data[index][4].getString();
+	str = std::to_string(magic_status_->getMagicRange()) + magic_data[index][5].getString();
 	std::stringstream ss{ str };
 
 	for (int i = 3; std::getline(ss, s, '/'); ++i) {
@@ -70,9 +89,14 @@ void FireMagic::draw(const std::shared_ptr<Camera> camera) {
 	fire_ball_->draw(camera);
 }
 
+std::shared_ptr<MagicBase> FireMagic::createClone() {
+	auto clone = std::make_shared<FireMagic>();
+	return clone;
+}
+
 void FireMagic::levelUpMagic() {
 
-	magic_status_->levelUp(magic_status_->getConsumeMP() + 1, 2, 0.05f);
+	magic_status_->levelUp(level_up_bonus_status_);
 
 	// 説明文を更新
 	updateMagicExplantion();
@@ -84,7 +108,7 @@ void FireMagic::levelUpMagic() {
 // =====================================================================================
 void FireMagic::setupToUseMagic(const std::shared_ptr<Character> owner) {
 
-	auto scene_play = std::dynamic_pointer_cast<ScenePlay>(GameManager::GetInstance()->getSceneInstance());
+	auto scene_play = std::dynamic_pointer_cast<ScenePlay>(GameManager::getInstance()->getSceneInstance());
 	if (!scene_play) {
 		return;
 	}
@@ -115,7 +139,7 @@ void FireMagic::useMagic(std::shared_ptr<Character> owner) {
 		return;
 	}
 
-	auto scene_play = std::dynamic_pointer_cast<ScenePlay>(GameManager::GetInstance()->getSceneInstance());
+	auto scene_play = std::dynamic_pointer_cast<ScenePlay>(GameManager::getInstance()->getSceneInstance());
 	if (!scene_play) {
 		return;
 	}
@@ -136,7 +160,7 @@ void FireMagic::updateMagicExplantion() {
 	magic_explantion_[2] = "ダメージ量：攻撃力 × " + mtl::toStringWithPrecision(magic_status_->getMagicEffectMultiplier(), 2);
 	std::string str, s;
 
-	str = std::to_string(magic_status_->getMagicRange()) + magic_data[index][4].getString();
+	str = std::to_string(magic_status_->getMagicRange()) + magic_data[index][5].getString();
 	std::stringstream ss{ str };
 
 	for (int i = 3; std::getline(ss, s, '/'); ++i) {

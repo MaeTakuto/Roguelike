@@ -17,7 +17,7 @@ namespace {
 	// 最大レベル
 	const int MAX_LEVEL = 6;
 	// 経験値テーブル
-	const int LEVEL_TABLE[MAX_LEVEL - 1] = { 5, 10, 100, 180, 280 };
+	const int LEVEL_TABLE[MAX_LEVEL - 1] = { 5, 10, 15, 20, 25 };
 	// const int LEVEL_TABLE[MAX_LEVEL - 1] = { 12, 50, 100, 180, 280 };
 
 	// MPの回復間隔 
@@ -242,6 +242,11 @@ void Player::drawEffect(std::shared_ptr<Camera> camera) {
 }
 
 int Player::getExpToNextLevel() const {
+	
+	if (status_.getLevel() >= MAX_LEVEL) {
+		return 0;
+	}
+
 	return LEVEL_TABLE[status_.getLevel() - 1] - status_.getExp();
 }
 
@@ -261,7 +266,7 @@ void Player::beginAction() {
 // ====================================================
 void Player::moveToTargetPos(const tnl::Vector3& target_pos) {
 
-	std::shared_ptr<ScenePlay> scene_play = std::dynamic_pointer_cast<ScenePlay>(GameManager::GetInstance()->getSceneInstance());
+	std::shared_ptr<ScenePlay> scene_play = std::dynamic_pointer_cast<ScenePlay>(GameManager::getInstance()->getSceneInstance());
 	if (!scene_play) {
 		return;
 	}
@@ -309,7 +314,7 @@ void Player::startAttack() {
 // 使用する魔法の準備
 // ====================================================
 void Player::setupMagic() {
-	std::shared_ptr<ScenePlay> scene_play = std::dynamic_pointer_cast<ScenePlay>(GameManager::GetInstance()->getSceneInstance());
+	std::shared_ptr<ScenePlay> scene_play = std::dynamic_pointer_cast<ScenePlay>(GameManager::getInstance()->getSceneInstance());
 
 	if (!scene_play) {
 		return;
@@ -323,7 +328,7 @@ void Player::setupMagic() {
 // ====================================================
 void Player::startMagic() {
 
-	std::shared_ptr<ScenePlay> scene_play = std::dynamic_pointer_cast<ScenePlay>(GameManager::GetInstance()->getSceneInstance());
+	std::shared_ptr<ScenePlay> scene_play = std::dynamic_pointer_cast<ScenePlay>(GameManager::getInstance()->getSceneInstance());
 	if (!scene_play) {
 		return;
 	}
@@ -381,6 +386,10 @@ void Player::executeRecoveryStatusProcess() {
 	}
 }
 
+void Player::executeGetMagicEffect() {
+
+}
+
 // ====================================================
 // 魔法が使用できるか試す
 // ====================================================
@@ -389,7 +398,7 @@ bool Player::tryUseMagic(int magic_index) {
 		return false;
 	}
 
-	if (GameManager::GetInstance()->isGameClear()) {
+	if (GameManager::getInstance()->isGameClear()) {
 		use_magic_index_ = magic_index;
 		act_state_ = eActState::USE_MAGIC;
 		return true;
@@ -410,7 +419,7 @@ bool Player::tryUseMagic(int magic_index) {
 // ====================================================
 bool Player::checkMapDataFromPos(const tnl::Vector3& pos, eMapData map_data) {
 
-	std::shared_ptr<ScenePlay> scene_play = std::dynamic_pointer_cast<ScenePlay>(GameManager::GetInstance()->getSceneInstance());
+	std::shared_ptr<ScenePlay> scene_play = std::dynamic_pointer_cast<ScenePlay>(GameManager::getInstance()->getSceneInstance());
 	if (!scene_play) {
 		return false;
 	}
@@ -423,7 +432,7 @@ bool Player::checkMapDataFromPos(const tnl::Vector3& pos, eMapData map_data) {
 // ====================================================
 void Player::setNextPosInDir(eDir_8 dir) {
 
-	std::shared_ptr<ScenePlay> scene_play = std::dynamic_pointer_cast<ScenePlay>(GameManager::GetInstance()->getSceneInstance());
+	std::shared_ptr<ScenePlay> scene_play = std::dynamic_pointer_cast<ScenePlay>(GameManager::getInstance()->getSceneInstance());
 	if (!scene_play) {
 		return;
 	}
@@ -584,7 +593,7 @@ bool Player::seqIdle(const float delta_time) {
 
 	// ======== 攻撃入力 ========
 	if (tnl::Input::IsKeyDownTrigger(eKeys::KB_RETURN)) {
-		std::shared_ptr<ScenePlay> scene_play = std::dynamic_pointer_cast<ScenePlay>(GameManager::GetInstance()->getSceneInstance());
+		std::shared_ptr<ScenePlay> scene_play = std::dynamic_pointer_cast<ScenePlay>(GameManager::getInstance()->getSceneInstance());
 		if (!scene_play) {
 			return true;
 		}
@@ -629,7 +638,7 @@ bool Player::seqAttack(const float delta_time) {
 	// 攻撃方向が有効だった場合
 	if (canActionToCell(looking_dir_)) {
 
-		std::shared_ptr<ScenePlay> scene_play = std::dynamic_pointer_cast<ScenePlay>(GameManager::GetInstance()->getSceneInstance());
+		std::shared_ptr<ScenePlay> scene_play = std::dynamic_pointer_cast<ScenePlay>(GameManager::getInstance()->getSceneInstance());
 
 		if (!scene_play) {
 			return true;
@@ -665,7 +674,7 @@ bool Player::seqMagicChanting(const float delta_time) {
 // ====================================================
 bool Player::seqUseMagic(const float delta_time) {
 
-	std::shared_ptr<ScenePlay> scene_play = std::dynamic_pointer_cast<ScenePlay>(GameManager::GetInstance()->getSceneInstance());
+	std::shared_ptr<ScenePlay> scene_play = std::dynamic_pointer_cast<ScenePlay>(GameManager::getInstance()->getSceneInstance());
 
 	if (!scene_play) {
 		return true;

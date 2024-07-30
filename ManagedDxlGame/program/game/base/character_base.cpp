@@ -28,7 +28,7 @@ bool Character::checkMagicList(std::shared_ptr<MagicBase> magic) {
 	}
 
 	for (int i = 0; i < magic_list_.size(); ++i) {
-		if (magic_list_[i]->getMagicStatus()->getMagicName() == magic->getMagicStatus()->getMagicName()) {
+		if (magic_list_[i]->getMagicStatus()->getMagicID() == magic->getMagicStatus()->getMagicID()) {
 			return true;
 		}
 	}
@@ -37,10 +37,26 @@ bool Character::checkMagicList(std::shared_ptr<MagicBase> magic) {
 }
 
 // =====================================================================================
-// 魔法一覧を返す
+// 魔法を覚える
 // =====================================================================================
 void Character::addMagic(std::shared_ptr<MagicBase> magic) {
 	magic_list_.emplace_back(magic);
+	executeGetMagicEffect();
+}
+
+// =====================================================================================
+// 魔法のレベルを上げる
+// =====================================================================================
+bool Character::levelUpMagic(std::shared_ptr<MagicBase> magic)
+{
+	for (int i = 0; i < magic_list_.size(); ++i) {
+		if (magic_list_[i]->getMagicStatus()->getMagicID() == magic->getMagicStatus()->getMagicID()) {
+			magic_list_[i]->levelUpMagic();
+			return true;
+		}
+	}
+
+	return false;
 }
 
 // =====================================================================================

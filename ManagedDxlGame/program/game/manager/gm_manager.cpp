@@ -7,7 +7,8 @@
 #include "resource_manager.h"
 
 // コンストラクタ
-GameManager::GameManager(std::shared_ptr<SceneBase> start_scene) : now_scene_(nullptr), next_scene_(nullptr), fade_time_(1.0f), fade_time_wait_(0.25f),
+GameManager::GameManager(std::shared_ptr<SceneBase> start_scene) : now_scene_(nullptr), next_scene_(nullptr), 
+	/*main_screen_effect_(std::make_shared<dxe::ScreenEffect>(DXE_WINDOW_WIDTH, DXE_WINDOW_HEIGHT)),*/ fade_time_(1.0f), fade_time_wait_(0.25f),
 	is_transition_(false), is_game_clear_(false), default_font_hdl_(0), sequence_(tnl::Sequence<GameManager>(this, &GameManager::seqTransIn))
 {
 	now_scene_ = start_scene;
@@ -39,7 +40,7 @@ GameManager::~GameManager() {
 }
 
 // ゲームマネージャーのアドレスを返す
-GameManager* GameManager::GetInstance(std::shared_ptr<SceneBase> start_scene) {
+GameManager* GameManager::getInstance(std::shared_ptr<SceneBase> start_scene) {
 
 	static GameManager* instance = nullptr;
 

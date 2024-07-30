@@ -21,7 +21,7 @@ namespace {
 	const float DRAW_TIME_DUNGEON_NAME = 2.0f;
 
 	// ダンジョンタイトルの位置
-	const tnl::Vector3 DUNGEON_NAME_POS = { 460, 100, 0 };
+	const tnl::Vector3 DUNGEON_NAME_POS = { 500, 100, 0 };
 
 	// タイトルのフォントサイズ
 	const int DUNGEON_NAME_FONT_SIZE = 50;
@@ -33,11 +33,11 @@ namespace {
 	const float ICON_DISPLAY_CHANGE_INTERVAL = 0.5f;
 }
 
-ScenePlay::ScenePlay() : camera_(std::make_shared<Camera>()), player_(std::make_shared<Player>()), dungeon_mgr_(std::make_shared<DungeonGenerator>()),
-	magic_selector_(std::make_shared<MagicSelector>()), dungeon_log_(std::make_shared<DungeonLog>()), enemy_mgr_(std::make_shared<EnemyManager>()), 
-	ui_mgr_(std::make_shared<UI_Manager>()), dungeon_floor_(1), is_created_dungeon_(false), is_drawing_dng_title_(true), is_game_clear_(false),
-	is_display_mini_map_(true), mini_map_pos_(50, 180), mini_map_size_(8), mini_map_cell_gpc_hdl_(0),
-	is_opened_menu_(false), is_display_player_icon_(true), elapsed_swich_icon_display_(0.0f),
+ScenePlay::ScenePlay() : camera_(std::make_shared<Camera>()), player_(std::make_shared<Player>()), 
+	dungeon_mgr_(std::make_shared<DungeonGenerator>()), magic_selector_(std::make_shared<MagicSelector>()), 
+	dungeon_log_(std::make_shared<DungeonLog>()), enemy_mgr_(std::make_shared<EnemyManager>()), ui_mgr_(std::make_shared<UI_Manager>()),
+	dungeon_floor_(1), is_created_dungeon_(false), is_drawing_dng_title_(true), is_game_clear_(false), is_display_mini_map_(true), 
+	mini_map_pos_(50, 180), mini_map_size_(8), mini_map_cell_gpc_hdl_(0), is_opened_menu_(false), is_display_player_icon_(true), elapsed_swich_icon_display_(0.0f),
 	is_hide_explanation_(false), dungeon_title_log_gpc_hdl_(0), load_background_gpc_hdl_(0), fade_gpc_hdl_(0), alpha_(0), fade_time_(1.0f),
 	level_up_character_(nullptr), dungeon_bgm_hdl_(0), bgm_end_freqency_(2105775), dungeon_bgm_hdl_path_("sound/bgm/dungeon01.mp3"),
 	damage_se_hdl_path_("sound/damaged.mp3"), open_select_window_se_hdl_path_("sound/springin/open_window.mp3"), 
@@ -72,7 +72,7 @@ ScenePlay::ScenePlay() : camera_(std::make_shared<Camera>()), player_(std::make_
 
 	mini_map_cell_gpc_hdl_ = ResourceManager::getInstance()->loadGraph("graphics/blue.bmp");
 
-	dungeon_title_log_gpc_hdl_ = ResourceManager::getInstance()->loadGraph("graphics/dungeon_title_logo.png");
+	dungeon_title_log_gpc_hdl_ = ResourceManager::getInstance()->loadGraph("graphics/title_logo1.png");
 	load_background_gpc_hdl_ = ResourceManager::getInstance()->loadGraph("graphics/fade_back_ground.png");
 
 	fade_gpc_hdl_ = ResourceManager::getInstance()->loadGraph("graphics/black.bmp");
@@ -144,6 +144,9 @@ void ScenePlay::draw() {
 			font_size, font_size, -1, GameManager::GetInstance()->getDefaultFontHdl(), "%dF", dungeon_floor_);*/
 	}
 	else {
+
+		// GameManager::GetInstance()->getMainScreenEffect()->renderBegin();
+
 		// マップチップ描画
 		for (int y = 0; y < field_.size(); ++y) {
 			for (int x = 0; x < field_[y].size(); ++x) {
@@ -167,13 +170,15 @@ void ScenePlay::draw() {
 				}
 			}
 		}
-		
+
 		player_->draw(camera_);
 		enemy_mgr_->draw(camera_);
 
 		player_->drawEffect(camera_);
 		enemy_mgr_->drawEffect(camera_);
 
+		// GameManager::GetInstance()->getMainScreenEffect()->renderEnd();
+		
 		if (is_display_mini_map_ && !is_opened_menu_) {
 			drawMiniMap();
 		}
@@ -181,6 +186,9 @@ void ScenePlay::draw() {
 
 		magic_selector_->draw(camera_);
 		dungeon_log_->draw();
+
+		SetFontSize(DEFAULT_FONT_SIZE);
+		// GameManager::GetInstance()->getMainScreenEffect()->drawGuiController({ 0, 0 });
 
 	}
 	SetDrawBlendMode(DX_BLENDMODE_ALPHA, alpha_);
@@ -385,7 +393,7 @@ void ScenePlay::writeDungeonLog() {
 	dungeon_log_->setEndFloor(dungeon_floor_);
 	dungeon_log_->setEndStatus(player_->getStatus());
 	dungeon_log_->updateDungeonLogData();
-	GameManager::GetInstance()->addDungeonLog(dungeon_log_);
+	GameManager::getInstance()->addDungeonLog(dungeon_log_);
 }
 
 // ====================================================
@@ -446,7 +454,7 @@ void ScenePlay::executeGameClearProcess() {
 	ui_mgr_->setMessage(message);
 
 	is_game_clear_ = true;
-	GameManager::GetInstance()->setGameClear(true);
+	GameManager::getInstance()->setGameClear(true);
 	dungeon_sequence_.immediatelyChange(&ScenePlay::seqDrawGameOverMessage);
 	
 	dungeon_log_->setEndMessage("ダンジョンを制覇しました。");
@@ -917,6 +925,11 @@ bool ScenePlay::seqCharaLevelUp(const float delta_time) {
 	return true;
 }
 
+bool ScenePlay::seqPlayerLevelUp(const float delta_time)
+{
+	return false;
+}
+
 bool ScenePlay::seqMagicSelect(const float delta_time) {
 
 	charaUpdate(delta_time);
@@ -1038,10 +1051,10 @@ bool ScenePlay::seqGameOver(const float delta_time) {
 	if (tnl::Input::IsKeyDownTrigger(eKeys::KB_RETURN)) {
 		if (is_game_clear_) {
 			ResourceManager::getInstance()->playSound("sound/se/walk.mp3", DX_PLAYTYPE_BACK);
-			GameManager::GetInstance()->changeScene(std::make_shared<SceneGameClear>(), 2.0f);
+			GameManager::getInstance()->changeScene(std::make_shared<SceneGameClear>(), 2.0f);
 		}
 		else {
-			GameManager::GetInstance()->changeScene(std::make_shared<SceneTitle>(), 2.0f);
+			GameManager::getInstance()->changeScene(std::make_shared<SceneTitle>(), 2.0f);
 		}
 	}
 	return true;

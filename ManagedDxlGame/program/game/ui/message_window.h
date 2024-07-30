@@ -20,8 +20,6 @@ private:
 	tnl::Vector2i mess_str_top_pos_;
 	tnl::Vector2i mess_str_pos_;
 
-	//
-	std::string ui_message_;
 	// 表示するメッセージ
 	std::vector<std::string> message_;
 
@@ -47,6 +45,14 @@ private:
 	int message_line_;
 	// 行と行の間隔
 	int message_space_;
+
+	// ----------- 画像関連 -----------------
+	// ウィンドウに表示する画像
+	int gpc_hdl_;
+	// 画像の表示位置
+	tnl::Vector2i draw_gpc_hdl_pos_;
+	// 画像の表示サイズ
+	tnl::Vector2i draw_gpc_hdl_size_;
 
 public:
 
@@ -101,6 +107,21 @@ public:
 		is_enable_ = true;
 		draw_time_limit_ = time_limit;
 		is_time_limit_ = true;
+	}
+
+	// 
+	void setGpcHdl(int gpc_hdl) {
+		gpc_hdl_ = gpc_hdl;
+	}
+
+	// 
+	void setDrawGpcHdlPos(const tnl::Vector2i& pos) {
+		draw_gpc_hdl_pos_ = pos;
+	}
+
+	// 
+	void setDrawGpcHdlSize(const tnl::Vector2i& size) {
+		draw_gpc_hdl_size_ = size;
 	}
 
 	// メッセージをセットする

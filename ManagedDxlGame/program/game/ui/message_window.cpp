@@ -7,10 +7,10 @@
 // =====================================================================================
 // コンストラクタ
 // =====================================================================================
-MessageWindow::MessageWindow() : window_pos_(250, 450), window_size_(800, 200), mess_str_top_pos_(30, 20), 
-	mess_str_pos_(window_pos_ + mess_str_top_pos_), ui_message_(""), is_enable_(false), is_time_limit_(false), is_draw_enter_ui_(true),
-	is_enable_enter_ui_(false), draw_time_limit_(0.0f), swicth_enter_ui_elapsed_(0.0f), display_message_count_(0), message_font_size_(30), 
-	message_line_(4), message_space_(10)
+MessageWindow::MessageWindow() : window_pos_(250, 450), window_size_(800, 200), mess_str_top_pos_(30, 20),
+	mess_str_pos_(window_pos_ + mess_str_top_pos_), is_enable_(false), is_time_limit_(false), is_draw_enter_ui_(true),
+	is_enable_enter_ui_(false), draw_time_limit_(0.0f), swicth_enter_ui_elapsed_(0.0f), display_message_count_(0), message_font_size_(30),
+	message_line_(4), message_space_(10), gpc_hdl_(0), draw_gpc_hdl_pos_(0, 0), draw_gpc_hdl_size_(0, 0)
 {
 
 	message_.resize(message_line_);
@@ -78,6 +78,13 @@ void MessageWindow::draw() {
 	SetFontSize(message_font_size_);
 	for (int line = 0; line < message_line_; line++) {
 		DrawStringEx(mess_str_pos_.x, mess_str_pos_.y + ( ( message_font_size_ + message_space_ ) * line), -1, message_[line].c_str());
+	}
+
+	if (gpc_hdl_) {
+		DrawExtendGraph(draw_gpc_hdl_pos_.x, draw_gpc_hdl_pos_.y,
+			draw_gpc_hdl_pos_.x + draw_gpc_hdl_size_.x, draw_gpc_hdl_pos_.y + draw_gpc_hdl_size_.y,
+			gpc_hdl_, true
+		);
 	}
 
 	if (!is_enable_enter_ui_ || !is_draw_enter_ui_ ) {

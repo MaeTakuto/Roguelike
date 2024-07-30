@@ -7,6 +7,8 @@ public:
 	~MagicStatus();
 
 private:
+	// 魔法ID
+	int magic_id_;
 	// 魔法名
 	std::string magic_name_;
 	// 最大レベル
@@ -21,6 +23,8 @@ private:
 	float magic_effect_multiplier_;
 
 public:
+	// 魔法ID
+	int getMagicID() const { return magic_id_; }
 	// 魔法名を取得
 	const std::string& getMagicName() const { return magic_name_; }
 	// 最大レベルを取得
@@ -34,6 +38,8 @@ public:
 	// 魔法の効果倍率を取得
 	float getMagicEffectMultiplier() const { return magic_effect_multiplier_; }
 
+	// 魔法IDを設定する
+	void setMagicID(int magic_id) { magic_id_ = magic_id; }
 	// 魔法名を設定する
 	void setMagicName(const std::string& name) { magic_name_ = name; }
 	// 最大レベルを設定する
@@ -49,7 +55,7 @@ public:
 
 	// 魔法のレベルを上げる（ 最大の場合"false"を返す ）
 	// 引数：消費MP、増やす魔法の射程値、増やす魔法の効果倍率
-	bool levelUp(int consume_mp, int add_magic_range, float add_magic_effect_multiplier);
+	bool levelUp(const std::shared_ptr<MagicStatus> add_status);
 
 	MagicStatus& operator=(const MagicStatus& other) {
 		magic_name_ = other.magic_name_;
