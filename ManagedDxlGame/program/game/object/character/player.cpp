@@ -17,8 +17,8 @@ namespace {
 	// 最大レベル
 	const int MAX_LEVEL = 6;
 	// 経験値テーブル
-	const int LEVEL_TABLE[MAX_LEVEL - 1] = { 5, 10, 15, 20, 25 };
-	// const int LEVEL_TABLE[MAX_LEVEL - 1] = { 12, 50, 100, 180, 280 };
+	// const int LEVEL_TABLE[MAX_LEVEL - 1] = { 5, 10, 15, 20, 25 };
+	const int LEVEL_TABLE[MAX_LEVEL - 1] = { 12, 50, 100, 180, 280 };
 
 	// MPの回復間隔 
 	const int REGENERATE_INTERVAL = 5;
@@ -645,6 +645,14 @@ bool Player::seqAttack(const float delta_time) {
 		}
 
 		tnl::Vector3 attack_pos = pos_ + DIR_POS[std::underlying_type<eDir_8>::type(looking_dir_)];
+		
+		// 攻撃方向が壁の場合、抜ける
+		if (scene_play->getTerrainData(attack_pos) == eMapData::WALL) {
+			act_state_ = eActState::END;
+			sequence_.change(&Player::seqIdle);
+			return true;
+		}
+		
 		scene_play->addAttackTarget(scene_play->findEnemy(attack_pos));
 
 	}

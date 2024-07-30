@@ -9,6 +9,8 @@ class ScenePlay;
 struct CellCost {
 	// セルの位置
 	tnl::Vector2i pos_ = { 0, 0 };
+	// 
+	eDir_8 dir_ = eDir_8::NONE;
 	// 移動コスト
 	int cost_ = 0;
 	// 自身のセルが有効か判定

@@ -5,6 +5,7 @@
 #include "../my_library/my_library.h"
 #include "../object/character/enemy/pumpkin.h"
 #include "../object/character/enemy/skeleton.h"
+#include "../object//character/enemy/ghost.h"
 #include "../base/character_base.h"
 #include "enemy_manager.h"
 
@@ -22,6 +23,7 @@ EnemyManager::EnemyManager() {
 	// “Gƒf[ƒ^‚Ì“o˜^
 	enemy_data_.insert(make_pair("‚¨‚Î‚¯‚©‚Ú‚¿‚á", std::make_shared<Pumpkin>()));
 	enemy_data_.insert(make_pair("‚ª‚¢‚±‚Â", std::make_shared<Skeleton>()));
+	enemy_data_.insert(make_pair("‚ä‚¤‚ê‚¢", std::make_shared<Ghost>()));
 
 	enemy_table_ = tnl::LoadCsv( ENEMY_TABLE_CSV_PATH );
 }
@@ -211,27 +213,6 @@ void EnemyManager::modifyEnemiesAction() {
 		}
 	}
 }
-
-//// =====================================================================================
-//// UŒ‚s“®‚ğ‚·‚é“G‚ğæ“¾B‚¢‚È‚¢ê‡‚Í nullptr
-//// =====================================================================================
-//std::queue< std::shared_ptr<Character> > EnemyManager::getEnemyToAttackAction() {
-//	std::queue< std::shared_ptr<Character> > atk_enemies;
-//	
-//	for (int i = 0; i < enemies_.size(); i++) {
-//		if (!enemies_[i]) {
-//			continue;
-//		}
-//		if (!(enemies_[i]->isAlive())) {
-//			continue;
-//		}
-//		if (enemies_[i]->getActState() != eActState::ATTACK) {
-//			continue;
-//		}
-//		atk_enemies.push(enemies_[i]);
-//	}
-//	return atk_enemies;
-//}
 
 // =====================================================================================
 // ˆÚ“®‚ğs‚¤“G‚Ìs“®‚ğŠJn‚³‚¹‚é
