@@ -29,7 +29,7 @@ MagnetismMagic::MagnetismMagic() : launch_dir_{0}, magic_bullet_(std::make_share
 	magic_status_->setMagicEffectMultiplier(magic_data[index][4].getFloat());
 
 	level_up_bonus_status_->setConsumeMP(1);
-	level_up_bonus_status_->setMagicRange(2);
+	level_up_bonus_status_->setMagicRange(3);
 	level_up_bonus_status_->setMagicEffectMultiplier(0.f);
 
 	// ----------------------------------------------------------------------------------------------------------------------------

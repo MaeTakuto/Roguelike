@@ -42,6 +42,9 @@ public:
 	// 生存している敵の数を取得
 	int getAliveEnemyNum();
 
+	// 
+	void addAttacker(EnemyBase* enemy);
+
 	// 階層の敵データを現在のフロアの敵データに更新
 	void updateEnemyDataToNowFloor(int floor);
 
