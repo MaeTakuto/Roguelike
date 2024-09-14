@@ -251,19 +251,10 @@
     <ClCompile Include="program\game\common\chara_status.cpp">
       <Filter>program\[003] game\common</Filter>
     </ClCompile>
-    <ClCompile Include="program\game\scene\scene_play.cpp">
-      <Filter>program\[003] game\scene</Filter>
-    </ClCompile>
     <ClCompile Include="program\game\scene\scene_title.cpp">
       <Filter>program\[003] game\scene</Filter>
     </ClCompile>
-    <ClCompile Include="program\game\manager\ui_manager.cpp">
-      <Filter>program\[003] game\manager</Filter>
-    </ClCompile>
     <ClCompile Include="program\game\ui\message_window.cpp">
-      <Filter>program\[003] game\ui</Filter>
-    </ClCompile>
-    <ClCompile Include="program\game\ui\status_bar.cpp">
       <Filter>program\[003] game\ui</Filter>
     </ClCompile>
     <ClCompile Include="program\game\ui\select_window.cpp">
@@ -322,6 +313,15 @@
     </ClCompile>
     <ClCompile Include="program\game\object\character\enemy\ghost.cpp">
       <Filter>program\[003] game\object\character\enemy</Filter>
+    </ClCompile>
+    <ClCompile Include="program\game\manager\ui_manager.cpp">
+      <Filter>program\[003] game\manager</Filter>
+    </ClCompile>
+    <ClCompile Include="program\game\scene\scene_play.cpp">
+      <Filter>program\[003] game\scene</Filter>
+    </ClCompile>
+    <ClCompile Include="program\game\ui\status_bar.cpp">
+      <Filter>program\[003] game\ui</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -557,19 +557,10 @@
     <ClInclude Include="program\game\common\enum.h">
       <Filter>program\[003] game\common</Filter>
     </ClInclude>
-    <ClInclude Include="program\game\scene\scene_play.h">
-      <Filter>program\[003] game\scene</Filter>
-    </ClInclude>
     <ClInclude Include="program\game\scene\scene_title.h">
       <Filter>program\[003] game\scene</Filter>
     </ClInclude>
-    <ClInclude Include="program\game\manager\ui_manager.h">
-      <Filter>program\[003] game\manager</Filter>
-    </ClInclude>
     <ClInclude Include="program\game\ui\message_window.h">
-      <Filter>program\[003] game\ui</Filter>
-    </ClInclude>
-    <ClInclude Include="program\game\ui\status_bar.h">
       <Filter>program\[003] game\ui</Filter>
     </ClInclude>
     <ClInclude Include="program\game\ui\select_window.h">
@@ -625,6 +616,15 @@
     </ClInclude>
     <ClInclude Include="program\game\object\character\enemy\ghost.h">
       <Filter>program\[003] game\object\character\enemy</Filter>
+    </ClInclude>
+    <ClInclude Include="program\game\manager\ui_manager.h">
+      <Filter>program\[003] game\manager</Filter>
+    </ClInclude>
+    <ClInclude Include="program\game\scene\scene_play.h">
+      <Filter>program\[003] game\scene</Filter>
+    </ClInclude>
+    <ClInclude Include="program\game\ui\status_bar.h">
+      <Filter>program\[003] game\ui</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

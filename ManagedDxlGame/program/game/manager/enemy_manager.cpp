@@ -92,6 +92,19 @@ int EnemyManager::getAliveEnemyNum() {
 	return count;
 }
 
+void EnemyManager::addAttacker(EnemyBase* enemy) {
+	
+	std::shared_ptr<ScenePlay> scene_play
+		= std::dynamic_pointer_cast<ScenePlay>(GameManager::getInstance()->getSceneInstance());
+
+	for (int i = 0; i < enemies_.size(); ++i) {
+		if (enemies_[i].get() == enemy) {
+			scene_play->addAttacker(enemies_[i]);
+		}
+	}
+
+}
+
 // =====================================================================================
 // 階層の敵データを現在のフロアの敵データに更新
 // =====================================================================================

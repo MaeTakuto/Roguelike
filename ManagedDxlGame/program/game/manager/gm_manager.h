@@ -73,9 +73,6 @@ private:
 	// 次のシーン
 	std::shared_ptr<SceneBase> next_scene_;
 
-	// スクリーンエフェクト
-	// std::shared_ptr<dxe::ScreenEffect> main_screen_effect_;
-
 	// ダンジョン記録リスト
 	std::vector< std::shared_ptr<DungeonLog> > dungeon_log_list_;
 

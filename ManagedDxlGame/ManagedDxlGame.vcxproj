@@ -214,9 +214,9 @@
     <ClCompile Include="program\game\scene\scene_game_clear.cpp" />
     <ClCompile Include="program\game\scene\scene_play.cpp" />
     <ClCompile Include="program\game\scene\scene_title.cpp" />
-    <ClCompile Include="program\game\ui\status_bar.cpp" />
     <ClCompile Include="program\game\ui\message_window.cpp" />
     <ClCompile Include="program\game\ui\select_window.cpp" />
+    <ClCompile Include="program\game\ui\status_bar.cpp" />
     <ClCompile Include="program\library\json11.cpp" />
     <ClCompile Include="program\library\tnl_font_texture.cpp" />
     <ClCompile Include="program\library\tnl_inclution_owner_locked.cpp" />
@@ -312,9 +312,9 @@
     <ClInclude Include="program\game\scene\scene_game_clear.h" />
     <ClInclude Include="program\game\scene\scene_play.h" />
     <ClInclude Include="program\game\scene\scene_title.h" />
-    <ClInclude Include="program\game\ui\status_bar.h" />
     <ClInclude Include="program\game\ui\message_window.h" />
     <ClInclude Include="program\game\ui\select_window.h" />
+    <ClInclude Include="program\game\ui\status_bar.h" />
     <ClInclude Include="program\library\json11.hpp" />
     <ClInclude Include="program\library\stb_image.h" />
     <ClInclude Include="program\library\tnl_csv.h" />
